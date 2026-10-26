@@ -1,0 +1,284 @@
+[
+  {
+    "staff_id": "S101",
+    "name": "Nikhil R.",
+    "role": "sales",
+    "store_code": "MM",
+    "location_id": 70000001,
+    "badges": [
+      "progressive_expert"
+    ],
+    "can_override_discount": false
+  },
+  {
+    "staff_id": "S102",
+    "name": "Kabir S.",
+    "role": "sales",
+    "store_code": "MM",
+    "location_id": 70000001,
+    "badges": [
+      "progressive_expert"
+    ],
+    "can_override_discount": false
+  },
+  {
+    "staff_id": "S103",
+    "name": "Riya R.",
+    "role": "optometrist",
+    "store_code": "MM",
+    "location_id": 70000001,
+    "badges": [
+      "progressive_expert"
+    ],
+    "can_override_discount": false
+  },
+  {
+    "staff_id": "S104",
+    "name": "Nikhil P.",
+    "role": "store_manager",
+    "store_code": "MM",
+    "location_id": 70000001,
+    "badges": [
+      "progressive_expert"
+    ],
+    "can_override_discount": true
+  },
+  {
+    "staff_id": "S105",
+    "name": "Vikram R.",
+    "role": "sales",
+    "store_code": "HSR",
+    "location_id": 70000002,
+    "badges": [
+      "progressive_expert"
+    ],
+    "can_override_discount": false
+  },
+  {
+    "staff_id": "S106",
+    "name": "Meera S.",
+    "role": "sales",
+    "store_code": "HSR",
+    "location_id": 70000002,
+    "badges": [],
+    "can_override_discount": false
+  },
+  {
+    "staff_id": "S107",
+    "name": "Aarav P.",
+    "role": "optometrist",
+    "store_code": "HSR",
+    "location_id": 70000002,
+    "badges": [
+      "progressive_expert"
+    ],
+    "can_override_discount": false
+  },
+  {
+    "staff_id": "S108",
+    "name": "Meera P.",
+    "role": "store_manager",
+    "store_code": "HSR",
+    "location_id": 70000002,
+    "badges": [],
+    "can_override_discount": true
+  },
+  {
+    "staff_id": "S109",
+    "name": "Sneha P.",
+    "role": "sales",
+    "store_code": "BR",
+    "location_id": 70000003,
+    "badges": [],
+    "can_override_discount": false
+  },
+  {
+    "staff_id": "S110",
+    "name": "Tara R.",
+    "role": "sales",
+    "store_code": "BR",
+    "location_id": 70000003,
+    "badges": [],
+    "can_override_discount": false
+  },
+  {
+    "staff_id": "S111",
+    "name": "Rohan M.",
+    "role": "optometrist",
+    "store_code": "BR",
+    "location_id": 70000003,
+    "badges": [
+      "progressive_expert"
+    ],
+    "can_override_discount": false
+  },
+  {
+    "staff_id": "S112",
+    "name": "Ananya K.",
+    "role": "store_manager",
+    "store_code": "BR",
+    "location_id": 70000003,
+    "badges": [
+      "progressive_expert"
+    ],
+    "can_override_discount": true
+  },
+  {
+    "staff_id": "S113",
+    "name": "Dev K.",
+    "role": "sales",
+    "store_code": "KMG",
+    "location_id": 70000004,
+    "badges": [
+      "progressive_expert"
+    ],
+    "can_override_discount": false
+  },
+  {
+    "staff_id": "S114",
+    "name": "Vikram R.",
+    "role": "sales",
+    "store_code": "KMG",
+    "location_id": 70000004,
+    "badges": [],
+    "can_override_discount": false
+  },
+  {
+    "staff_id": "S115",
+    "name": "Ananya P.",
+    "role": "optometrist",
+    "store_code": "KMG",
+    "location_id": 70000004,
+    "badges": [
+      "progressive_expert"
+    ],
+    "can_override_discount": false
+  },
+  {
+    "staff_id": "S116",
+    "name": "Kabir R.",
+    "role": "store_manager",
+    "store_code": "KMG",
+    "location_id": 70000004,
+    "badges": [],
+    "can_override_discount": true
+  },
+  {
+    "staff_id": "S117",
+    "name": "Arjun R.",
+    "role": "sales",
+    "store_code": "JN",
+    "location_id": 70000005,
+    "badges": [],
+    "can_override_discount": false
+  },
+  {
+    "staff_id": "S118",
+    "name": "Vikram R.",
+    "role": "sales",
+    "store_code": "JN",
+    "location_id": 70000005,
+    "badges": [],
+    "can_override_discount": false
+  },
+  {
+    "staff_id": "S119",
+    "name": "Tara P.",
+    "role": "optometrist",
+    "store_code": "JN",
+    "location_id": 70000005,
+    "badges": [
+      "progressive_expert"
+    ],
+    "can_override_discount": false
+  },
+  {
+    "staff_id": "S120",
+    "name": "Tara K.",
+    "role": "store_manager",
+    "store_code": "JN",
+    "location_id": 70000005,
+    "badges": [],
+    "can_override_discount": true
+  },
+  {
+    "staff_id": "S121",
+    "name": "Riya R.",
+    "role": "sales",
+    "store_code": "IN",
+    "location_id": 70000006,
+    "badges": [
+      "progressive_expert"
+    ],
+    "can_override_discount": false
+  },
+  {
+    "staff_id": "S122",
+    "name": "Meera K.",
+    "role": "sales",
+    "store_code": "IN",
+    "location_id": 70000006,
+    "badges": [],
+    "can_override_discount": false
+  },
+  {
+    "staff_id": "S123",
+    "name": "Tara S.",
+    "role": "optometrist",
+    "store_code": "IN",
+    "location_id": 70000006,
+    "badges": [
+      "progressive_expert"
+    ],
+    "can_override_discount": false
+  },
+  {
+    "staff_id": "S124",
+    "name": "Tara R.",
+    "role": "store_manager",
+    "store_code": "IN",
+    "location_id": 70000006,
+    "badges": [],
+    "can_override_discount": true
+  },
+  {
+    "staff_id": "S125",
+    "name": "Sneha K.",
+    "role": "sales",
+    "store_code": "VC",
+    "location_id": 70000007,
+    "badges": [
+      "progressive_expert"
+    ],
+    "can_override_discount": false
+  },
+  {
+    "staff_id": "S126",
+    "name": "Ananya S.",
+    "role": "sales",
+    "store_code": "VC",
+    "location_id": 70000007,
+    "badges": [],
+    "can_override_discount": false
+  },
+  {
+    "staff_id": "S127",
+    "name": "Riya R.",
+    "role": "optometrist",
+    "store_code": "VC",
+    "location_id": 70000007,
+    "badges": [
+      "progressive_expert"
+    ],
+    "can_override_discount": false
+  },
+  {
+    "staff_id": "S128",
+    "name": "Pooja S.",
+    "role": "store_manager",
+    "store_code": "VC",
+    "location_id": 70000007,
+    "badges": [],
+    "can_override_discount": true
+  }
+]

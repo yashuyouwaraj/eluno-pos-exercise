@@ -1,0 +1,1992 @@
+[
+  {
+    "id": 95000001,
+    "order_number": 1001,
+    "name": "#1001",
+    "created_at": "2026-10-02T12:30:00+05:30",
+    "processed_at": "2026-10-02T12:30:00+05:30",
+    "location_id": 70000002,
+    "source_name": "eluno-pos",
+    "customer": {
+      "id": 80001005,
+      "first_name": "Karthik",
+      "last_name": "Reddy",
+      "phone": "+919000000005"
+    },
+    "currency": "INR",
+    "taxes_included": true,
+    "financial_status": "paid",
+    "fulfillment_status": null,
+    "subtotal_price": "20497.00",
+    "total_discounts": "1424.85",
+    "total_tax": "2062.14",
+    "total_price": "19072.15",
+    "total_line_items_price": "20497.00",
+    "tags": "pos,whatsapp_booked",
+    "note": null,
+    "note_attributes": [
+      {
+        "name": "invoice_no",
+        "value": "ELU/HSR/FY26/00001"
+      },
+      {
+        "name": "store_code",
+        "value": "HSR"
+      },
+      {
+        "name": "channel",
+        "value": "whatsapp_booked"
+      },
+      {
+        "name": "staff_id",
+        "value": "S105"
+      },
+      {
+        "name": "payment_method",
+        "value": "upi"
+      },
+      {
+        "name": "offer_codes",
+        "value": "PGX_CAMPAIGN15"
+      }
+    ],
+    "discount_applications": [
+      {
+        "type": "manual",
+        "title": "PGX_CAMPAIGN15",
+        "value": "1424.85",
+        "value_type": "fixed_amount",
+        "allocation_method": "each",
+        "target_selection": "explicit",
+        "target_type": "line_item"
+      }
+    ],
+    "line_items": [
+      {
+        "id": 96000001,
+        "variant_id": 91000003,
+        "product_id": 90000003,
+        "sku": "FR-0003",
+        "title": "Eluno Atelier Rectangle 03",
+        "variant_title": "Tortoise",
+        "quantity": 1,
+        "price": "10998.00",
+        "total_discount": "0.00",
+        "taxable": true,
+        "requires_shipping": false,
+        "fulfillment_status": null,
+        "tax_lines": [
+          {
+            "title": "CGST",
+            "rate": 0.09,
+            "price": "838.83"
+          },
+          {
+            "title": "SGST",
+            "rate": 0.09,
+            "price": "838.83"
+          }
+        ],
+        "discount_allocations": [],
+        "properties": [
+          {
+            "name": "line_type",
+            "value": "frame"
+          },
+          {
+            "name": "hsn",
+            "value": "90031900"
+          },
+          {
+            "name": "pair_ref",
+            "value": "1"
+          }
+        ]
+      },
+      {
+        "id": 96000002,
+        "variant_id": 91000083,
+        "product_id": 90000051,
+        "sku": "LN-0043",
+        "title": "Progressive 1.60",
+        "variant_title": "blue_cut",
+        "quantity": 1,
+        "price": "9499.00",
+        "total_discount": "1424.85",
+        "taxable": true,
+        "requires_shipping": false,
+        "fulfillment_status": null,
+        "tax_lines": [
+          {
+            "title": "CGST",
+            "rate": 0.025,
+            "price": "192.24"
+          },
+          {
+            "title": "SGST",
+            "rate": 0.025,
+            "price": "192.24"
+          }
+        ],
+        "discount_allocations": [
+          {
+            "amount": "1424.85",
+            "discount_application_index": 0
+          }
+        ],
+        "properties": [
+          {
+            "name": "line_type",
+            "value": "lens"
+          },
+          {
+            "name": "hsn",
+            "value": "90015000"
+          },
+          {
+            "name": "pair_ref",
+            "value": "1"
+          },
+          {
+            "name": "rx_id",
+            "value": "RX5007"
+          },
+          {
+            "name": "rx",
+            "value": "{\"od\":{\"sph\":-3.25,\"cyl\":0.0,\"axis\":null,\"add\":2.5},\"os\":{\"sph\":-3.5,\"cyl\":0.0,\"axis\":null,\"add\":2.5},\"pd\":60}"
+          },
+          {
+            "name": "lens_config",
+            "value": "progressive/1.6/blue_cut"
+          }
+        ]
+      }
+    ],
+    "transactions": [
+      {
+        "id": 97000001,
+        "kind": "sale",
+        "status": "success",
+        "gateway": "razorpay_terminal",
+        "amount": "19072.15",
+        "currency": "INR",
+        "authorization": "term_97000001",
+        "created_at": "2026-10-02T12:31:00+05:30",
+        "parent_id": null
+      }
+    ],
+    "refunds": []
+  },
+  {
+    "id": 95000002,
+    "order_number": 1002,
+    "name": "#1002",
+    "created_at": "2026-10-03T12:30:00+05:30",
+    "processed_at": "2026-10-03T12:30:00+05:30",
+    "location_id": 70000006,
+    "source_name": "eluno-pos",
+    "customer": {
+      "id": 80001007,
+      "first_name": "Amit",
+      "last_name": "Shah",
+      "phone": "+919000000007"
+    },
+    "currency": "INR",
+    "taxes_included": true,
+    "financial_status": "paid",
+    "fulfillment_status": null,
+    "subtotal_price": "7497.00",
+    "total_discounts": "599.80",
+    "total_tax": "894.83",
+    "total_price": "6897.20",
+    "total_line_items_price": "7497.00",
+    "tags": "pos,walk_in",
+    "note": null,
+    "note_attributes": [
+      {
+        "name": "invoice_no",
+        "value": "ELU/IN/FY26/00001"
+      },
+      {
+        "name": "store_code",
+        "value": "IN"
+      },
+      {
+        "name": "channel",
+        "value": "walk_in"
+      },
+      {
+        "name": "staff_id",
+        "value": "S121"
+      },
+      {
+        "name": "payment_method",
+        "value": "card"
+      },
+      {
+        "name": "offer_codes",
+        "value": "FESTIVE10"
+      }
+    ],
+    "discount_applications": [
+      {
+        "type": "manual",
+        "title": "FESTIVE10",
+        "value": "599.80",
+        "value_type": "fixed_amount",
+        "allocation_method": "each",
+        "target_selection": "explicit",
+        "target_type": "line_item"
+      }
+    ],
+    "line_items": [
+      {
+        "id": 96000003,
+        "variant_id": 91000015,
+        "product_id": 90000015,
+        "sku": "FR-0015",
+        "title": "Eluno Core Browline 15",
+        "variant_title": "Gunmetal",
+        "quantity": 1,
+        "price": "5998.00",
+        "total_discount": "599.80",
+        "taxable": true,
+        "requires_shipping": false,
+        "fulfillment_status": null,
+        "tax_lines": [
+          {
+            "title": "CGST",
+            "rate": 0.09,
+            "price": "411.73"
+          },
+          {
+            "title": "SGST",
+            "rate": 0.09,
+            "price": "411.72"
+          }
+        ],
+        "discount_allocations": [
+          {
+            "amount": "599.80",
+            "discount_application_index": 0
+          }
+        ],
+        "properties": [
+          {
+            "name": "line_type",
+            "value": "frame"
+          },
+          {
+            "name": "hsn",
+            "value": "90031900"
+          },
+          {
+            "name": "pair_ref",
+            "value": "1"
+          }
+        ]
+      },
+      {
+        "id": 96000004,
+        "variant_id": 91000042,
+        "product_id": 90000041,
+        "sku": "LN-0002",
+        "title": "Single Vision 1.50",
+        "variant_title": "anti_reflective",
+        "quantity": 1,
+        "price": "1499.00",
+        "total_discount": "0.00",
+        "taxable": true,
+        "requires_shipping": false,
+        "fulfillment_status": null,
+        "tax_lines": [
+          {
+            "title": "CGST",
+            "rate": 0.025,
+            "price": "35.69"
+          },
+          {
+            "title": "SGST",
+            "rate": 0.025,
+            "price": "35.69"
+          }
+        ],
+        "discount_allocations": [],
+        "properties": [
+          {
+            "name": "line_type",
+            "value": "lens"
+          },
+          {
+            "name": "hsn",
+            "value": "90015000"
+          },
+          {
+            "name": "pair_ref",
+            "value": "1"
+          },
+          {
+            "name": "rx_id",
+            "value": "RX5011"
+          },
+          {
+            "name": "rx",
+            "value": "{\"od\":{\"sph\":-0.5,\"cyl\":0.0,\"axis\":null,\"add\":2.0},\"os\":{\"sph\":-0.5,\"cyl\":0.0,\"axis\":null,\"add\":2.0},\"pd\":62}"
+          },
+          {
+            "name": "lens_config",
+            "value": "single_vision/1.5/anti_reflective"
+          }
+        ]
+      }
+    ],
+    "transactions": [
+      {
+        "id": 97000002,
+        "kind": "sale",
+        "status": "success",
+        "gateway": "razorpay_terminal",
+        "amount": "6897.20",
+        "currency": "INR",
+        "authorization": "term_97000002",
+        "created_at": "2026-10-03T12:31:00+05:30",
+        "parent_id": null
+      }
+    ],
+    "refunds": []
+  },
+  {
+    "id": 95000003,
+    "order_number": 1003,
+    "name": "#1003",
+    "created_at": "2026-10-05T12:30:00+05:30",
+    "processed_at": "2026-10-05T12:30:00+05:30",
+    "location_id": 70000004,
+    "source_name": "eluno-pos",
+    "customer": {
+      "id": 80001010,
+      "first_name": "Shreya",
+      "last_name": "Joshi",
+      "phone": "+919000000010"
+    },
+    "currency": "INR",
+    "taxes_included": true,
+    "financial_status": "paid",
+    "fulfillment_status": null,
+    "subtotal_price": "13494.00",
+    "total_discounts": "499.50",
+    "total_tax": "1720.06",
+    "total_price": "12994.50",
+    "total_line_items_price": "13494.00",
+    "tags": "pos,walk_in",
+    "note": "Two pairs, same Rx. Second pair lens at 50%.",
+    "note_attributes": [
+      {
+        "name": "invoice_no",
+        "value": "ELU/KMG/FY26/00001"
+      },
+      {
+        "name": "store_code",
+        "value": "KMG"
+      },
+      {
+        "name": "channel",
+        "value": "walk_in"
+      },
+      {
+        "name": "staff_id",
+        "value": "S113"
+      },
+      {
+        "name": "payment_method",
+        "value": "upi"
+      },
+      {
+        "name": "offer_codes",
+        "value": "SECONDPAIR50"
+      }
+    ],
+    "discount_applications": [
+      {
+        "type": "manual",
+        "title": "SECONDPAIR50",
+        "value": "499.50",
+        "value_type": "fixed_amount",
+        "allocation_method": "each",
+        "target_selection": "explicit",
+        "target_type": "line_item"
+      }
+    ],
+    "line_items": [
+      {
+        "id": 96000005,
+        "variant_id": 91000020,
+        "product_id": 90000020,
+        "sku": "FR-0020",
+        "title": "Eluno Core Browline 20",
+        "variant_title": "Gunmetal",
+        "quantity": 1,
+        "price": "6998.00",
+        "total_discount": "0.00",
+        "taxable": true,
+        "requires_shipping": false,
+        "fulfillment_status": null,
+        "tax_lines": [
+          {
+            "title": "CGST",
+            "rate": 0.09,
+            "price": "533.75"
+          },
+          {
+            "title": "SGST",
+            "rate": 0.09,
+            "price": "533.74"
+          }
+        ],
+        "discount_allocations": [],
+        "properties": [
+          {
+            "name": "line_type",
+            "value": "frame"
+          },
+          {
+            "name": "hsn",
+            "value": "90031900"
+          },
+          {
+            "name": "pair_ref",
+            "value": "1"
+          }
+        ]
+      },
+      {
+        "id": 96000006,
+        "variant_id": 91000046,
+        "product_id": 90000042,
+        "sku": "LN-0006",
+        "title": "Single Vision 1.56",
+        "variant_title": "anti_reflective",
+        "quantity": 1,
+        "price": "1999.00",
+        "total_discount": "0.00",
+        "taxable": true,
+        "requires_shipping": false,
+        "fulfillment_status": null,
+        "tax_lines": [
+          {
+            "title": "CGST",
+            "rate": 0.025,
+            "price": "47.60"
+          },
+          {
+            "title": "SGST",
+            "rate": 0.025,
+            "price": "47.59"
+          }
+        ],
+        "discount_allocations": [],
+        "properties": [
+          {
+            "name": "line_type",
+            "value": "lens"
+          },
+          {
+            "name": "hsn",
+            "value": "90015000"
+          },
+          {
+            "name": "pair_ref",
+            "value": "1"
+          },
+          {
+            "name": "rx_id",
+            "value": "RX5015"
+          },
+          {
+            "name": "rx",
+            "value": "{\"od\":{\"sph\":1.75,\"cyl\":-0.75,\"axis\":5,\"add\":null},\"os\":{\"sph\":2.0,\"cyl\":-0.75,\"axis\":5,\"add\":null},\"pd\":63}"
+          },
+          {
+            "name": "lens_config",
+            "value": "single_vision/1.56/anti_reflective"
+          }
+        ]
+      },
+      {
+        "id": 96000007,
+        "variant_id": 91000031,
+        "product_id": 90000031,
+        "sku": "FR-0031",
+        "title": "Eluno Lite Aviator 31",
+        "variant_title": "Tortoise",
+        "quantity": 1,
+        "price": "3498.00",
+        "total_discount": "0.00",
+        "taxable": true,
+        "requires_shipping": false,
+        "fulfillment_status": null,
+        "tax_lines": [
+          {
+            "title": "CGST",
+            "rate": 0.09,
+            "price": "266.80"
+          },
+          {
+            "title": "SGST",
+            "rate": 0.09,
+            "price": "266.79"
+          }
+        ],
+        "discount_allocations": [],
+        "properties": [
+          {
+            "name": "line_type",
+            "value": "frame"
+          },
+          {
+            "name": "hsn",
+            "value": "90031900"
+          },
+          {
+            "name": "pair_ref",
+            "value": "2"
+          }
+        ]
+      },
+      {
+        "id": 96000008,
+        "variant_id": 91000041,
+        "product_id": 90000041,
+        "sku": "LN-0001",
+        "title": "Single Vision 1.50",
+        "variant_title": "standard",
+        "quantity": 1,
+        "price": "999.00",
+        "total_discount": "499.50",
+        "taxable": true,
+        "requires_shipping": false,
+        "fulfillment_status": null,
+        "tax_lines": [
+          {
+            "title": "CGST",
+            "rate": 0.025,
+            "price": "11.90"
+          },
+          {
+            "title": "SGST",
+            "rate": 0.025,
+            "price": "11.89"
+          }
+        ],
+        "discount_allocations": [
+          {
+            "amount": "499.50",
+            "discount_application_index": 0
+          }
+        ],
+        "properties": [
+          {
+            "name": "line_type",
+            "value": "lens"
+          },
+          {
+            "name": "hsn",
+            "value": "90015000"
+          },
+          {
+            "name": "pair_ref",
+            "value": "2"
+          },
+          {
+            "name": "rx_id",
+            "value": "RX5015"
+          },
+          {
+            "name": "rx",
+            "value": "{\"od\":{\"sph\":1.75,\"cyl\":-0.75,\"axis\":5,\"add\":null},\"os\":{\"sph\":2.0,\"cyl\":-0.75,\"axis\":5,\"add\":null},\"pd\":63}"
+          },
+          {
+            "name": "lens_config",
+            "value": "single_vision/1.5/standard"
+          }
+        ]
+      }
+    ],
+    "transactions": [
+      {
+        "id": 97000003,
+        "kind": "sale",
+        "status": "success",
+        "gateway": "razorpay_terminal",
+        "amount": "12994.50",
+        "currency": "INR",
+        "authorization": "term_97000003",
+        "created_at": "2026-10-05T12:31:00+05:30",
+        "parent_id": null
+      }
+    ],
+    "refunds": []
+  },
+  {
+    "id": 95000004,
+    "order_number": 1004,
+    "name": "#1004",
+    "created_at": "2026-10-06T12:30:00+05:30",
+    "processed_at": "2026-10-06T12:30:00+05:30",
+    "location_id": 70000005,
+    "source_name": "eluno-pos",
+    "customer": {
+      "id": 80001012,
+      "first_name": "Kavya",
+      "last_name": "Hegde",
+      "phone": "+919000000012"
+    },
+    "currency": "INR",
+    "taxes_included": true,
+    "financial_status": "paid",
+    "fulfillment_status": null,
+    "subtotal_price": "8998.00",
+    "total_discounts": "0.00",
+    "total_tax": "1372.58",
+    "total_price": "8998.00",
+    "total_line_items_price": "8998.00",
+    "tags": "pos,walk_in",
+    "note": "Sunglasses only, no Rx.",
+    "note_attributes": [
+      {
+        "name": "invoice_no",
+        "value": "ELU/JN/FY26/00001"
+      },
+      {
+        "name": "store_code",
+        "value": "JN"
+      },
+      {
+        "name": "channel",
+        "value": "walk_in"
+      },
+      {
+        "name": "staff_id",
+        "value": "S117"
+      },
+      {
+        "name": "payment_method",
+        "value": "cash"
+      },
+      {
+        "name": "offer_codes",
+        "value": ""
+      }
+    ],
+    "discount_applications": [],
+    "line_items": [
+      {
+        "id": 96000009,
+        "variant_id": 91000004,
+        "product_id": 90000004,
+        "sku": "FR-0004",
+        "title": "Eluno Atelier Browline 04",
+        "variant_title": "Tortoise",
+        "quantity": 1,
+        "price": "8998.00",
+        "total_discount": "0.00",
+        "taxable": true,
+        "requires_shipping": false,
+        "fulfillment_status": null,
+        "tax_lines": [
+          {
+            "title": "CGST",
+            "rate": 0.09,
+            "price": "686.29"
+          },
+          {
+            "title": "SGST",
+            "rate": 0.09,
+            "price": "686.29"
+          }
+        ],
+        "discount_allocations": [],
+        "properties": [
+          {
+            "name": "line_type",
+            "value": "frame"
+          },
+          {
+            "name": "hsn",
+            "value": "90049000"
+          },
+          {
+            "name": "pair_ref",
+            "value": "1"
+          }
+        ]
+      }
+    ],
+    "transactions": [
+      {
+        "id": 97000004,
+        "kind": "sale",
+        "status": "success",
+        "gateway": "cash",
+        "amount": "8998.00",
+        "currency": "INR",
+        "authorization": "term_97000004",
+        "created_at": "2026-10-06T12:31:00+05:30",
+        "parent_id": null
+      }
+    ],
+    "refunds": []
+  },
+  {
+    "id": 95000005,
+    "order_number": 1005,
+    "name": "#1005",
+    "created_at": "2026-10-07T12:30:00+05:30",
+    "processed_at": "2026-10-07T12:30:00+05:30",
+    "location_id": 70000001,
+    "source_name": "eluno-pos",
+    "customer": {
+      "id": 80001015,
+      "first_name": "Varun",
+      "last_name": "Desai",
+      "phone": "+919000000015"
+    },
+    "currency": "INR",
+    "taxes_included": true,
+    "financial_status": "paid",
+    "fulfillment_status": null,
+    "subtotal_price": "13997.00",
+    "total_discounts": "500.00",
+    "total_tax": "1534.36",
+    "total_price": "13497.00",
+    "total_line_items_price": "13997.00",
+    "tags": "pos,walk_in",
+    "note": "Priority ₹500 applied on the frame line.",
+    "note_attributes": [
+      {
+        "name": "invoice_no",
+        "value": "ELU/MM/FY26/00001"
+      },
+      {
+        "name": "store_code",
+        "value": "MM"
+      },
+      {
+        "name": "channel",
+        "value": "walk_in"
+      },
+      {
+        "name": "staff_id",
+        "value": "S101"
+      },
+      {
+        "name": "payment_method",
+        "value": "upi"
+      },
+      {
+        "name": "offer_codes",
+        "value": "PRIORITY500"
+      }
+    ],
+    "discount_applications": [
+      {
+        "type": "manual",
+        "title": "PRIORITY500",
+        "value": "500.00",
+        "value_type": "fixed_amount",
+        "allocation_method": "each",
+        "target_selection": "explicit",
+        "target_type": "line_item"
+      }
+    ],
+    "line_items": [
+      {
+        "id": 96000010,
+        "variant_id": 91000008,
+        "product_id": 90000008,
+        "sku": "FR-0008",
+        "title": "Eluno Atelier Cat-eye 08",
+        "variant_title": "Crystal",
+        "quantity": 1,
+        "price": "8998.00",
+        "total_discount": "500.00",
+        "taxable": true,
+        "requires_shipping": false,
+        "fulfillment_status": null,
+        "tax_lines": [
+          {
+            "title": "CGST",
+            "rate": 0.09,
+            "price": "648.16"
+          },
+          {
+            "title": "SGST",
+            "rate": 0.09,
+            "price": "648.15"
+          }
+        ],
+        "discount_allocations": [
+          {
+            "amount": "500.00",
+            "discount_application_index": 0
+          }
+        ],
+        "properties": [
+          {
+            "name": "line_type",
+            "value": "frame"
+          },
+          {
+            "name": "hsn",
+            "value": "90031900"
+          },
+          {
+            "name": "pair_ref",
+            "value": "1"
+          }
+        ]
+      },
+      {
+        "id": 96000011,
+        "variant_id": 91000073,
+        "product_id": 90000049,
+        "sku": "LN-0033",
+        "title": "Progressive 1.50",
+        "variant_title": "standard",
+        "quantity": 1,
+        "price": "4999.00",
+        "total_discount": "0.00",
+        "taxable": true,
+        "requires_shipping": false,
+        "fulfillment_status": null,
+        "tax_lines": [
+          {
+            "title": "CGST",
+            "rate": 0.025,
+            "price": "119.03"
+          },
+          {
+            "title": "SGST",
+            "rate": 0.025,
+            "price": "119.02"
+          }
+        ],
+        "discount_allocations": [],
+        "properties": [
+          {
+            "name": "line_type",
+            "value": "lens"
+          },
+          {
+            "name": "hsn",
+            "value": "90015000"
+          },
+          {
+            "name": "pair_ref",
+            "value": "1"
+          },
+          {
+            "name": "rx_id",
+            "value": "RX5023"
+          },
+          {
+            "name": "rx",
+            "value": "{\"od\":{\"sph\":-1.75,\"cyl\":-1.25,\"axis\":40,\"add\":1.5},\"os\":{\"sph\":-2.0,\"cyl\":-1.25,\"axis\":40,\"add\":1.5},\"pd\":63}"
+          },
+          {
+            "name": "lens_config",
+            "value": "progressive/1.5/standard"
+          }
+        ]
+      }
+    ],
+    "transactions": [
+      {
+        "id": 97000005,
+        "kind": "sale",
+        "status": "success",
+        "gateway": "razorpay_terminal",
+        "amount": "13497.00",
+        "currency": "INR",
+        "authorization": "term_97000005",
+        "created_at": "2026-10-07T12:31:00+05:30",
+        "parent_id": null
+      }
+    ],
+    "refunds": []
+  },
+  {
+    "id": 95000006,
+    "order_number": 1006,
+    "name": "#1006",
+    "created_at": "2026-10-08T12:30:00+05:30",
+    "processed_at": "2026-10-08T12:30:00+05:30",
+    "location_id": 70000003,
+    "source_name": "eluno-pos",
+    "customer": {
+      "id": 80001018,
+      "first_name": "Nandini",
+      "last_name": "Krishnan",
+      "phone": "+919000000018"
+    },
+    "currency": "INR",
+    "taxes_included": true,
+    "financial_status": "paid",
+    "fulfillment_status": null,
+    "subtotal_price": "1999.00",
+    "total_discounts": "0.00",
+    "total_tax": "95.19",
+    "total_price": "1999.00",
+    "total_line_items_price": "1999.00",
+    "tags": "pos,walk_in",
+    "note": "Lens only: customer's own frame, measured in store.",
+    "note_attributes": [
+      {
+        "name": "invoice_no",
+        "value": "ELU/BR/FY26/00001"
+      },
+      {
+        "name": "store_code",
+        "value": "BR"
+      },
+      {
+        "name": "channel",
+        "value": "walk_in"
+      },
+      {
+        "name": "staff_id",
+        "value": "S109"
+      },
+      {
+        "name": "payment_method",
+        "value": "cash"
+      },
+      {
+        "name": "offer_codes",
+        "value": ""
+      }
+    ],
+    "discount_applications": [],
+    "line_items": [
+      {
+        "id": 96000012,
+        "variant_id": 91000043,
+        "product_id": 90000041,
+        "sku": "LN-0003",
+        "title": "Single Vision 1.50",
+        "variant_title": "blue_cut",
+        "quantity": 1,
+        "price": "1999.00",
+        "total_discount": "0.00",
+        "taxable": true,
+        "requires_shipping": false,
+        "fulfillment_status": null,
+        "tax_lines": [
+          {
+            "title": "CGST",
+            "rate": 0.025,
+            "price": "47.60"
+          },
+          {
+            "title": "SGST",
+            "rate": 0.025,
+            "price": "47.59"
+          }
+        ],
+        "discount_allocations": [],
+        "properties": [
+          {
+            "name": "line_type",
+            "value": "lens"
+          },
+          {
+            "name": "hsn",
+            "value": "90015000"
+          },
+          {
+            "name": "pair_ref",
+            "value": "1"
+          },
+          {
+            "name": "rx_id",
+            "value": "RX5029"
+          },
+          {
+            "name": "rx",
+            "value": "{\"od\":{\"sph\":-0.75,\"cyl\":-0.75,\"axis\":70,\"add\":null},\"os\":{\"sph\":-1.0,\"cyl\":-0.75,\"axis\":70,\"add\":null},\"pd\":64}"
+          },
+          {
+            "name": "lens_config",
+            "value": "single_vision/1.5/blue_cut"
+          }
+        ]
+      }
+    ],
+    "transactions": [
+      {
+        "id": 97000006,
+        "kind": "sale",
+        "status": "success",
+        "gateway": "cash",
+        "amount": "1999.00",
+        "currency": "INR",
+        "authorization": "term_97000006",
+        "created_at": "2026-10-08T12:31:00+05:30",
+        "parent_id": null
+      }
+    ],
+    "refunds": []
+  },
+  {
+    "id": 95000007,
+    "order_number": 1007,
+    "name": "#1007",
+    "created_at": "2026-10-09T12:30:00+05:30",
+    "processed_at": "2026-10-09T12:30:00+05:30",
+    "location_id": 70000002,
+    "source_name": "eluno-pos",
+    "customer": {
+      "id": 80001020,
+      "first_name": "Ritu",
+      "last_name": "Malhotra",
+      "phone": "+919000000020"
+    },
+    "currency": "INR",
+    "taxes_included": true,
+    "financial_status": "refunded",
+    "fulfillment_status": null,
+    "subtotal_price": "18497.00",
+    "total_discounts": "0.00",
+    "total_tax": "2297.07",
+    "total_price": "18497.00",
+    "total_line_items_price": "18497.00",
+    "tags": "pos,walk_in",
+    "note": null,
+    "note_attributes": [
+      {
+        "name": "invoice_no",
+        "value": "ELU/HSR/FY26/00002"
+      },
+      {
+        "name": "store_code",
+        "value": "HSR"
+      },
+      {
+        "name": "channel",
+        "value": "walk_in"
+      },
+      {
+        "name": "staff_id",
+        "value": "S105"
+      },
+      {
+        "name": "payment_method",
+        "value": "upi"
+      },
+      {
+        "name": "offer_codes",
+        "value": ""
+      }
+    ],
+    "discount_applications": [],
+    "line_items": [
+      {
+        "id": 96000013,
+        "variant_id": 91000011,
+        "product_id": 90000011,
+        "sku": "FR-0011",
+        "title": "Eluno Atelier Aviator 11",
+        "variant_title": "Tortoise",
+        "quantity": 1,
+        "price": "13498.00",
+        "total_discount": "0.00",
+        "taxable": true,
+        "requires_shipping": false,
+        "fulfillment_status": null,
+        "tax_lines": [
+          {
+            "title": "CGST",
+            "rate": 0.09,
+            "price": "1029.51"
+          },
+          {
+            "title": "SGST",
+            "rate": 0.09,
+            "price": "1029.51"
+          }
+        ],
+        "discount_allocations": [],
+        "properties": [
+          {
+            "name": "line_type",
+            "value": "frame"
+          },
+          {
+            "name": "hsn",
+            "value": "90031900"
+          },
+          {
+            "name": "pair_ref",
+            "value": "1"
+          }
+        ]
+      },
+      {
+        "id": 96000014,
+        "variant_id": 91000052,
+        "product_id": 90000043,
+        "sku": "LN-0012",
+        "title": "Single Vision 1.60",
+        "variant_title": "photochromic",
+        "quantity": 1,
+        "price": "4999.00",
+        "total_discount": "0.00",
+        "taxable": true,
+        "requires_shipping": false,
+        "fulfillment_status": null,
+        "tax_lines": [
+          {
+            "title": "CGST",
+            "rate": 0.025,
+            "price": "119.03"
+          },
+          {
+            "title": "SGST",
+            "rate": 0.025,
+            "price": "119.02"
+          }
+        ],
+        "discount_allocations": [],
+        "properties": [
+          {
+            "name": "line_type",
+            "value": "lens"
+          },
+          {
+            "name": "hsn",
+            "value": "90015000"
+          },
+          {
+            "name": "pair_ref",
+            "value": "1"
+          },
+          {
+            "name": "rx_id",
+            "value": "RX5032"
+          },
+          {
+            "name": "rx",
+            "value": "{\"od\":{\"sph\":-4.5,\"cyl\":-0.75,\"axis\":75,\"add\":0.75},\"os\":{\"sph\":-4.25,\"cyl\":-0.75,\"axis\":75,\"add\":0.75},\"pd\":62}"
+          },
+          {
+            "name": "lens_config",
+            "value": "single_vision/1.6/photochromic"
+          }
+        ]
+      }
+    ],
+    "transactions": [
+      {
+        "id": 97000007,
+        "kind": "sale",
+        "status": "success",
+        "gateway": "razorpay_terminal",
+        "amount": "18497.00",
+        "currency": "INR",
+        "authorization": "term_97000007",
+        "created_at": "2026-10-09T12:31:00+05:30",
+        "parent_id": null
+      }
+    ],
+    "refunds": [
+      {
+        "id": 98000001,
+        "order_id": 95000007,
+        "created_at": "2026-10-12T16:05:00+05:30",
+        "note": "Full refund within window. Frame restocked at HSR; lens scrapped.",
+        "refund_line_items": [
+          {
+            "line_item_id": 96000013,
+            "quantity": 1,
+            "restock_type": "return",
+            "location_id": 70000002,
+            "subtotal": "11438.98",
+            "total_tax": "2059.02"
+          },
+          {
+            "line_item_id": 96000014,
+            "quantity": 1,
+            "restock_type": "no_restock",
+            "location_id": null,
+            "subtotal": "4760.95",
+            "total_tax": "238.05"
+          }
+        ],
+        "transactions": [
+          {
+            "id": 97000008,
+            "kind": "refund",
+            "status": "success",
+            "gateway": "razorpay_terminal",
+            "amount": "18497.00",
+            "parent_id": 97000007,
+            "created_at": "2026-10-12T16:05:00+05:30"
+          }
+        ],
+        "note_attributes": [
+          {
+            "name": "credit_note_no",
+            "value": "ELU/HSR/FY26/CN/00002"
+          },
+          {
+            "name": "reason_code",
+            "value": "CHANGED_MIND"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 95000008,
+    "order_number": 1008,
+    "name": "#1008",
+    "created_at": "2026-10-10T12:30:00+05:30",
+    "processed_at": "2026-10-10T12:30:00+05:30",
+    "location_id": 70000006,
+    "source_name": "eluno-pos",
+    "customer": {
+      "id": 80001021,
+      "first_name": "Sanjay",
+      "last_name": "Rao",
+      "phone": "+919000000021"
+    },
+    "currency": "INR",
+    "taxes_included": true,
+    "financial_status": "paid",
+    "fulfillment_status": null,
+    "subtotal_price": "13997.00",
+    "total_discounts": "0.00",
+    "total_tax": "1138.47",
+    "total_price": "13997.00",
+    "total_line_items_price": "13997.00",
+    "tags": "pos,online_pickup",
+    "note": "Progressive, first-time wearer. Non-adaptation reported later; see remake.",
+    "note_attributes": [
+      {
+        "name": "invoice_no",
+        "value": "ELU/IN/FY26/00002"
+      },
+      {
+        "name": "store_code",
+        "value": "IN"
+      },
+      {
+        "name": "channel",
+        "value": "online_pickup"
+      },
+      {
+        "name": "staff_id",
+        "value": "S121"
+      },
+      {
+        "name": "payment_method",
+        "value": "upi"
+      },
+      {
+        "name": "offer_codes",
+        "value": ""
+      }
+    ],
+    "discount_applications": [],
+    "line_items": [
+      {
+        "id": 96000015,
+        "variant_id": 91000025,
+        "product_id": 90000025,
+        "sku": "FR-0025",
+        "title": "Eluno Core Cat-eye 25",
+        "variant_title": "Olive",
+        "quantity": 1,
+        "price": "4498.00",
+        "total_discount": "0.00",
+        "taxable": true,
+        "requires_shipping": false,
+        "fulfillment_status": null,
+        "tax_lines": [
+          {
+            "title": "CGST",
+            "rate": 0.09,
+            "price": "343.07"
+          },
+          {
+            "title": "SGST",
+            "rate": 0.09,
+            "price": "343.07"
+          }
+        ],
+        "discount_allocations": [],
+        "properties": [
+          {
+            "name": "line_type",
+            "value": "frame"
+          },
+          {
+            "name": "hsn",
+            "value": "90031900"
+          },
+          {
+            "name": "pair_ref",
+            "value": "1"
+          }
+        ]
+      },
+      {
+        "id": 96000016,
+        "variant_id": 91000083,
+        "product_id": 90000051,
+        "sku": "LN-0043",
+        "title": "Progressive 1.60",
+        "variant_title": "blue_cut",
+        "quantity": 1,
+        "price": "9499.00",
+        "total_discount": "0.00",
+        "taxable": true,
+        "requires_shipping": false,
+        "fulfillment_status": null,
+        "tax_lines": [
+          {
+            "title": "CGST",
+            "rate": 0.025,
+            "price": "226.17"
+          },
+          {
+            "title": "SGST",
+            "rate": 0.025,
+            "price": "226.16"
+          }
+        ],
+        "discount_allocations": [],
+        "properties": [
+          {
+            "name": "line_type",
+            "value": "lens"
+          },
+          {
+            "name": "hsn",
+            "value": "90015000"
+          },
+          {
+            "name": "pair_ref",
+            "value": "1"
+          },
+          {
+            "name": "rx_id",
+            "value": "RX5034"
+          },
+          {
+            "name": "rx",
+            "value": "{\"od\":{\"sph\":-5.75,\"cyl\":-0.75,\"axis\":15,\"add\":1.5},\"os\":{\"sph\":-5.5,\"cyl\":-0.75,\"axis\":15,\"add\":1.5},\"pd\":63}"
+          },
+          {
+            "name": "lens_config",
+            "value": "progressive/1.6/blue_cut"
+          }
+        ]
+      }
+    ],
+    "transactions": [
+      {
+        "id": 97000009,
+        "kind": "sale",
+        "status": "success",
+        "gateway": "razorpay_terminal",
+        "amount": "13997.00",
+        "currency": "INR",
+        "authorization": "term_97000009",
+        "created_at": "2026-10-10T12:31:00+05:30",
+        "parent_id": null
+      }
+    ],
+    "refunds": []
+  },
+  {
+    "id": 95000009,
+    "order_number": 1009,
+    "name": "#1009",
+    "created_at": "2026-10-15T12:30:00+05:30",
+    "processed_at": "2026-10-15T12:30:00+05:30",
+    "location_id": 70000006,
+    "source_name": "eluno-pos",
+    "customer": {
+      "id": 80001021,
+      "first_name": "Sanjay",
+      "last_name": "Rao",
+      "phone": "+919000000021"
+    },
+    "currency": "INR",
+    "taxes_included": true,
+    "financial_status": "paid",
+    "fulfillment_status": null,
+    "subtotal_price": "9499.00",
+    "total_discounts": "9499.00",
+    "total_tax": "0.00",
+    "total_price": "0.00",
+    "total_line_items_price": "9499.00",
+    "tags": "pos,walk_in,parent:ELU/IN/FY26/00002",
+    "note": "Remake at zero charge (progressive non-adaptation). Frame not re-billed, not re-reserved. Lab cost ownership open.",
+    "note_attributes": [
+      {
+        "name": "invoice_no",
+        "value": "ELU/IN/FY26/00003"
+      },
+      {
+        "name": "store_code",
+        "value": "IN"
+      },
+      {
+        "name": "channel",
+        "value": "walk_in"
+      },
+      {
+        "name": "staff_id",
+        "value": "S121"
+      },
+      {
+        "name": "payment_method",
+        "value": "upi"
+      },
+      {
+        "name": "offer_codes",
+        "value": "REMAKE_GOODWILL"
+      },
+      {
+        "name": "parent_invoice_no",
+        "value": "ELU/IN/FY26/00002"
+      }
+    ],
+    "discount_applications": [
+      {
+        "type": "manual",
+        "title": "REMAKE_GOODWILL",
+        "value": "9499.00",
+        "value_type": "fixed_amount",
+        "allocation_method": "each",
+        "target_selection": "explicit",
+        "target_type": "line_item"
+      }
+    ],
+    "line_items": [
+      {
+        "id": 96000017,
+        "variant_id": 91000083,
+        "product_id": 90000051,
+        "sku": "LN-0043",
+        "title": "Progressive 1.60",
+        "variant_title": "blue_cut",
+        "quantity": 1,
+        "price": "9499.00",
+        "total_discount": "9499.00",
+        "taxable": true,
+        "requires_shipping": false,
+        "fulfillment_status": null,
+        "tax_lines": [
+          {
+            "title": "CGST",
+            "rate": 0.025,
+            "price": "0.00"
+          },
+          {
+            "title": "SGST",
+            "rate": 0.025,
+            "price": "0.00"
+          }
+        ],
+        "discount_allocations": [
+          {
+            "amount": "9499.00",
+            "discount_application_index": 0
+          }
+        ],
+        "properties": [
+          {
+            "name": "line_type",
+            "value": "lens"
+          },
+          {
+            "name": "hsn",
+            "value": "90015000"
+          },
+          {
+            "name": "pair_ref",
+            "value": "1"
+          },
+          {
+            "name": "rx_id",
+            "value": "RX5034"
+          },
+          {
+            "name": "rx",
+            "value": "{\"od\":{\"sph\":-5.75,\"cyl\":-0.75,\"axis\":15,\"add\":1.5},\"os\":{\"sph\":-5.5,\"cyl\":-0.75,\"axis\":15,\"add\":1.5},\"pd\":63}"
+          },
+          {
+            "name": "lens_config",
+            "value": "progressive/1.6/blue_cut"
+          }
+        ]
+      }
+    ],
+    "transactions": [],
+    "refunds": []
+  },
+  {
+    "id": 95000010,
+    "order_number": 1010,
+    "name": "#1010",
+    "created_at": "2026-10-18T12:30:00+05:30",
+    "processed_at": "2026-10-18T12:30:00+05:30",
+    "location_id": 70000007,
+    "source_name": "eluno-pos",
+    "customer": {
+      "id": 80001025,
+      "first_name": "Harish",
+      "last_name": "Babu",
+      "phone": "+919000000025"
+    },
+    "currency": "INR",
+    "taxes_included": true,
+    "financial_status": "paid",
+    "fulfillment_status": null,
+    "subtotal_price": "5497.00",
+    "total_discounts": "300.00",
+    "total_tax": "530.56",
+    "total_price": "5197.00",
+    "total_line_items_price": "5497.00",
+    "tags": "pos,walk_in",
+    "note": null,
+    "note_attributes": [
+      {
+        "name": "invoice_no",
+        "value": "ELU/VC/FY26/00001"
+      },
+      {
+        "name": "store_code",
+        "value": "VC"
+      },
+      {
+        "name": "channel",
+        "value": "walk_in"
+      },
+      {
+        "name": "staff_id",
+        "value": "S125"
+      },
+      {
+        "name": "payment_method",
+        "value": "cash"
+      },
+      {
+        "name": "offer_codes",
+        "value": "BUNDLE300"
+      }
+    ],
+    "discount_applications": [
+      {
+        "type": "manual",
+        "title": "BUNDLE300",
+        "value": "300.00",
+        "value_type": "fixed_amount",
+        "allocation_method": "each",
+        "target_selection": "explicit",
+        "target_type": "line_item"
+      }
+    ],
+    "line_items": [
+      {
+        "id": 96000018,
+        "variant_id": 91000036,
+        "product_id": 90000036,
+        "sku": "FR-0036",
+        "title": "Eluno Lite Browline 36",
+        "variant_title": "Navy",
+        "quantity": 1,
+        "price": "2998.00",
+        "total_discount": "300.00",
+        "taxable": true,
+        "requires_shipping": false,
+        "fulfillment_status": null,
+        "tax_lines": [
+          {
+            "title": "CGST",
+            "rate": 0.09,
+            "price": "205.78"
+          },
+          {
+            "title": "SGST",
+            "rate": 0.09,
+            "price": "205.78"
+          }
+        ],
+        "discount_allocations": [
+          {
+            "amount": "300.00",
+            "discount_application_index": 0
+          }
+        ],
+        "properties": [
+          {
+            "name": "line_type",
+            "value": "frame"
+          },
+          {
+            "name": "hsn",
+            "value": "90031900"
+          },
+          {
+            "name": "pair_ref",
+            "value": "1"
+          }
+        ]
+      },
+      {
+        "id": 96000019,
+        "variant_id": 91000049,
+        "product_id": 90000043,
+        "sku": "LN-0009",
+        "title": "Single Vision 1.60",
+        "variant_title": "standard",
+        "quantity": 1,
+        "price": "2499.00",
+        "total_discount": "0.00",
+        "taxable": true,
+        "requires_shipping": false,
+        "fulfillment_status": null,
+        "tax_lines": [
+          {
+            "title": "CGST",
+            "rate": 0.025,
+            "price": "59.50"
+          },
+          {
+            "title": "SGST",
+            "rate": 0.025,
+            "price": "59.50"
+          }
+        ],
+        "discount_allocations": [],
+        "properties": [
+          {
+            "name": "line_type",
+            "value": "lens"
+          },
+          {
+            "name": "hsn",
+            "value": "90015000"
+          },
+          {
+            "name": "pair_ref",
+            "value": "1"
+          },
+          {
+            "name": "rx_id",
+            "value": "RX5040"
+          },
+          {
+            "name": "rx",
+            "value": "{\"od\":{\"sph\":-5.75,\"cyl\":-0.5,\"axis\":70,\"add\":0.75},\"os\":{\"sph\":-5.75,\"cyl\":-0.5,\"axis\":70,\"add\":0.75},\"pd\":58}"
+          },
+          {
+            "name": "lens_config",
+            "value": "single_vision/1.6/standard"
+          }
+        ]
+      }
+    ],
+    "transactions": [
+      {
+        "id": 97000011,
+        "kind": "sale",
+        "status": "success",
+        "gateway": "cash",
+        "amount": "5197.00",
+        "currency": "INR",
+        "authorization": "term_97000011",
+        "created_at": "2026-10-18T12:31:00+05:30",
+        "parent_id": null
+      }
+    ],
+    "refunds": []
+  },
+  {
+    "id": 95000011,
+    "order_number": 1011,
+    "name": "#1011",
+    "created_at": "2026-10-06T12:30:00+05:30",
+    "processed_at": "2026-10-06T12:30:00+05:30",
+    "location_id": 70000005,
+    "source_name": "eluno-pos",
+    "customer": {
+      "id": 80001002,
+      "first_name": "Anjali",
+      "last_name": "Rao",
+      "phone": "+919000000002"
+    },
+    "currency": "INR",
+    "taxes_included": true,
+    "financial_status": "paid",
+    "fulfillment_status": null,
+    "subtotal_price": "5498.00",
+    "total_discounts": "0.00",
+    "total_tax": "838.68",
+    "total_price": "5498.00",
+    "total_line_items_price": "5498.00",
+    "tags": "pos,walk_in",
+    "note": "Walk-in, frame only (plano demo lens).",
+    "note_attributes": [
+      {
+        "name": "invoice_no",
+        "value": "ELU/JN/FY26/00002"
+      },
+      {
+        "name": "store_code",
+        "value": "JN"
+      },
+      {
+        "name": "channel",
+        "value": "walk_in"
+      },
+      {
+        "name": "staff_id",
+        "value": "S117"
+      },
+      {
+        "name": "payment_method",
+        "value": "cash"
+      },
+      {
+        "name": "offer_codes",
+        "value": ""
+      }
+    ],
+    "discount_applications": [],
+    "line_items": [
+      {
+        "id": 96000020,
+        "variant_id": 91000022,
+        "product_id": 90000022,
+        "sku": "FR-0022",
+        "title": "Eluno Core Browline 22",
+        "variant_title": "Gunmetal",
+        "quantity": 1,
+        "price": "5498.00",
+        "total_discount": "0.00",
+        "taxable": true,
+        "requires_shipping": false,
+        "fulfillment_status": null,
+        "tax_lines": [
+          {
+            "title": "CGST",
+            "rate": 0.09,
+            "price": "419.34"
+          },
+          {
+            "title": "SGST",
+            "rate": 0.09,
+            "price": "419.34"
+          }
+        ],
+        "discount_allocations": [],
+        "properties": [
+          {
+            "name": "line_type",
+            "value": "frame"
+          },
+          {
+            "name": "hsn",
+            "value": "90031900"
+          },
+          {
+            "name": "pair_ref",
+            "value": "1"
+          }
+        ]
+      }
+    ],
+    "transactions": [
+      {
+        "id": 97000012,
+        "kind": "sale",
+        "status": "success",
+        "gateway": "cash",
+        "amount": "5498.00",
+        "currency": "INR",
+        "authorization": "term_97000012",
+        "created_at": "2026-10-06T12:31:00+05:30",
+        "parent_id": null
+      }
+    ],
+    "refunds": []
+  },
+  {
+    "id": 95000012,
+    "order_number": 1012,
+    "name": "#1012",
+    "created_at": "2026-10-06T12:30:00+05:30",
+    "processed_at": "2026-10-06T12:30:00+05:30",
+    "location_id": 70000005,
+    "source_name": "eluno-pos",
+    "customer": {
+      "id": 80001004,
+      "first_name": "Divya",
+      "last_name": "Iyer",
+      "phone": "+919000000004"
+    },
+    "currency": "INR",
+    "taxes_included": true,
+    "financial_status": "paid",
+    "fulfillment_status": null,
+    "subtotal_price": "6497.00",
+    "total_discounts": "0.00",
+    "total_tax": "833.79",
+    "total_price": "6497.00",
+    "total_line_items_price": "6497.00",
+    "tags": "pos,walk_in",
+    "note": null,
+    "note_attributes": [
+      {
+        "name": "invoice_no",
+        "value": "ELU/JN/FY26/00003"
+      },
+      {
+        "name": "store_code",
+        "value": "JN"
+      },
+      {
+        "name": "channel",
+        "value": "walk_in"
+      },
+      {
+        "name": "staff_id",
+        "value": "S117"
+      },
+      {
+        "name": "payment_method",
+        "value": "upi"
+      },
+      {
+        "name": "offer_codes",
+        "value": ""
+      }
+    ],
+    "discount_applications": [],
+    "line_items": [
+      {
+        "id": 96000021,
+        "variant_id": 91000019,
+        "product_id": 90000019,
+        "sku": "FR-0019",
+        "title": "Eluno Core Square 19",
+        "variant_title": "Olive",
+        "quantity": 1,
+        "price": "4998.00",
+        "total_discount": "0.00",
+        "taxable": true,
+        "requires_shipping": false,
+        "fulfillment_status": null,
+        "tax_lines": [
+          {
+            "title": "CGST",
+            "rate": 0.09,
+            "price": "381.21"
+          },
+          {
+            "title": "SGST",
+            "rate": 0.09,
+            "price": "381.20"
+          }
+        ],
+        "discount_allocations": [],
+        "properties": [
+          {
+            "name": "line_type",
+            "value": "frame"
+          },
+          {
+            "name": "hsn",
+            "value": "90031900"
+          },
+          {
+            "name": "pair_ref",
+            "value": "1"
+          }
+        ]
+      },
+      {
+        "id": 96000022,
+        "variant_id": 91000045,
+        "product_id": 90000042,
+        "sku": "LN-0005",
+        "title": "Single Vision 1.56",
+        "variant_title": "standard",
+        "quantity": 1,
+        "price": "1499.00",
+        "total_discount": "0.00",
+        "taxable": true,
+        "requires_shipping": false,
+        "fulfillment_status": null,
+        "tax_lines": [
+          {
+            "title": "CGST",
+            "rate": 0.025,
+            "price": "35.69"
+          },
+          {
+            "title": "SGST",
+            "rate": 0.025,
+            "price": "35.69"
+          }
+        ],
+        "discount_allocations": [],
+        "properties": [
+          {
+            "name": "line_type",
+            "value": "lens"
+          },
+          {
+            "name": "hsn",
+            "value": "90015000"
+          },
+          {
+            "name": "pair_ref",
+            "value": "1"
+          },
+          {
+            "name": "rx_id",
+            "value": "RX5006"
+          },
+          {
+            "name": "rx",
+            "value": "{\"od\":{\"sph\":0.0,\"cyl\":-0.5,\"axis\":80,\"add\":1.5},\"os\":{\"sph\":0.25,\"cyl\":-0.5,\"axis\":80,\"add\":1.5},\"pd\":60}"
+          },
+          {
+            "name": "lens_config",
+            "value": "single_vision/1.56/standard"
+          }
+        ]
+      }
+    ],
+    "transactions": [
+      {
+        "id": 97000013,
+        "kind": "sale",
+        "status": "success",
+        "gateway": "razorpay_terminal",
+        "amount": "6497.00",
+        "currency": "INR",
+        "authorization": "term_97000013",
+        "created_at": "2026-10-06T12:31:00+05:30",
+        "parent_id": null
+      }
+    ],
+    "refunds": []
+  }
+]

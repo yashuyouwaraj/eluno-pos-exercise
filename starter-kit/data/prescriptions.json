@@ -1,0 +1,1271 @@
+[
+  {
+    "rx_id": "RX5001",
+    "customer_id": 80001000,
+    "phone": "+919000000000",
+    "date": "2025-07-16",
+    "source": "in_store",
+    "optometrist_id": "S127",
+    "od": {
+      "sph": -4.0,
+      "cyl": 0.0,
+      "axis": null,
+      "add": 2.0
+    },
+    "os": {
+      "sph": -3.75,
+      "cyl": 0.0,
+      "axis": null,
+      "add": 2.0
+    },
+    "pd": {
+      "binocular": 62,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2026-07-16",
+    "notes": "prefers lighter lens"
+  },
+  {
+    "rx_id": "RX5002",
+    "customer_id": 80001001,
+    "phone": "+919000000001",
+    "date": "2026-08-12",
+    "source": "external",
+    "optometrist_id": null,
+    "od": {
+      "sph": 2.5,
+      "cyl": -2.0,
+      "axis": 155,
+      "add": null
+    },
+    "os": {
+      "sph": 2.75,
+      "cyl": -2.0,
+      "axis": 155,
+      "add": null
+    },
+    "pd": {
+      "binocular": 60,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2027-08-12",
+    "notes": null
+  },
+  {
+    "rx_id": "RX5003",
+    "customer_id": 80001001,
+    "phone": "+919000000001",
+    "date": "2026-05-15",
+    "source": "in_store",
+    "optometrist_id": "S103",
+    "od": {
+      "sph": 2.75,
+      "cyl": 0.0,
+      "axis": null,
+      "add": null
+    },
+    "os": {
+      "sph": 2.75,
+      "cyl": 0.0,
+      "axis": null,
+      "add": null
+    },
+    "pd": {
+      "binocular": 64,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2027-05-15",
+    "notes": "prefers lighter lens"
+  },
+  {
+    "rx_id": "RX5004",
+    "customer_id": 80001002,
+    "phone": "+919000000002",
+    "date": "2025-11-26",
+    "source": "in_store",
+    "optometrist_id": "S103",
+    "od": {
+      "sph": 2.25,
+      "cyl": 0.0,
+      "axis": null,
+      "add": null
+    },
+    "os": {
+      "sph": 2.25,
+      "cyl": 0.0,
+      "axis": null,
+      "add": null
+    },
+    "pd": {
+      "binocular": 58,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2026-11-26",
+    "notes": "external Rx photo on file"
+  },
+  {
+    "rx_id": "RX5005",
+    "customer_id": 80001002,
+    "phone": "+919000000002",
+    "date": "2024-12-07",
+    "source": "in_store",
+    "optometrist_id": "S119",
+    "od": {
+      "sph": 2.25,
+      "cyl": -0.75,
+      "axis": 35,
+      "add": null
+    },
+    "os": {
+      "sph": 2.25,
+      "cyl": -0.75,
+      "axis": 35,
+      "add": null
+    },
+    "pd": {
+      "binocular": 64,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2025-12-07",
+    "notes": "external Rx photo on file"
+  },
+  {
+    "rx_id": "RX5006",
+    "customer_id": 80001004,
+    "phone": "+919000000004",
+    "date": "2025-12-31",
+    "source": "external",
+    "optometrist_id": null,
+    "od": {
+      "sph": 0.0,
+      "cyl": -0.5,
+      "axis": 80,
+      "add": 1.5
+    },
+    "os": {
+      "sph": 0.25,
+      "cyl": -0.5,
+      "axis": 80,
+      "add": 1.5
+    },
+    "pd": {
+      "binocular": 60,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2026-12-31",
+    "notes": "first-time progressive"
+  },
+  {
+    "rx_id": "RX5007",
+    "customer_id": 80001005,
+    "phone": "+919000000005",
+    "date": "2026-07-10",
+    "source": "in_store",
+    "optometrist_id": "S103",
+    "od": {
+      "sph": -3.25,
+      "cyl": 0.0,
+      "axis": null,
+      "add": 2.5
+    },
+    "os": {
+      "sph": -3.5,
+      "cyl": 0.0,
+      "axis": null,
+      "add": 2.5
+    },
+    "pd": {
+      "binocular": 60,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2027-07-10",
+    "notes": "external Rx photo on file"
+  },
+  {
+    "rx_id": "RX5008",
+    "customer_id": 80001006,
+    "phone": "+919000000006",
+    "date": "2025-05-24",
+    "source": "in_store",
+    "optometrist_id": "S119",
+    "od": {
+      "sph": -4.75,
+      "cyl": 0.0,
+      "axis": null,
+      "add": 1.0
+    },
+    "os": {
+      "sph": -5.0,
+      "cyl": 0.0,
+      "axis": null,
+      "add": 1.0
+    },
+    "pd": {
+      "binocular": 62,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2026-05-24",
+    "notes": "external Rx photo on file"
+  },
+  {
+    "rx_id": "RX5009",
+    "customer_id": 80001007,
+    "phone": "+919000000007",
+    "date": "2024-06-09",
+    "source": "external",
+    "optometrist_id": null,
+    "od": {
+      "sph": 0.0,
+      "cyl": -0.5,
+      "axis": 30,
+      "add": null
+    },
+    "os": {
+      "sph": 0.0,
+      "cyl": -0.5,
+      "axis": 30,
+      "add": null
+    },
+    "pd": {
+      "binocular": 58,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2025-06-09",
+    "notes": "external Rx photo on file"
+  },
+  {
+    "rx_id": "RX5010",
+    "customer_id": 80001007,
+    "phone": "+919000000007",
+    "date": "2025-03-07",
+    "source": "external",
+    "optometrist_id": null,
+    "od": {
+      "sph": -0.25,
+      "cyl": -0.5,
+      "axis": 65,
+      "add": null
+    },
+    "os": {
+      "sph": -0.5,
+      "cyl": -0.5,
+      "axis": 65,
+      "add": null
+    },
+    "pd": {
+      "binocular": 62,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2026-03-07",
+    "notes": "external Rx photo on file"
+  },
+  {
+    "rx_id": "RX5011",
+    "customer_id": 80001007,
+    "phone": "+919000000007",
+    "date": "2026-06-11",
+    "source": "in_store",
+    "optometrist_id": "S103",
+    "od": {
+      "sph": -0.5,
+      "cyl": 0.0,
+      "axis": null,
+      "add": 2.0
+    },
+    "os": {
+      "sph": -0.5,
+      "cyl": 0.0,
+      "axis": null,
+      "add": 2.0
+    },
+    "pd": {
+      "binocular": 62,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2027-06-11",
+    "notes": null
+  },
+  {
+    "rx_id": "RX5012",
+    "customer_id": 80001008,
+    "phone": "+919000000008",
+    "date": "2024-11-13",
+    "source": "external",
+    "optometrist_id": null,
+    "od": {
+      "sph": 2.75,
+      "cyl": -1.25,
+      "axis": 135,
+      "add": 0.75
+    },
+    "os": {
+      "sph": 2.5,
+      "cyl": -1.25,
+      "axis": 135,
+      "add": 0.75
+    },
+    "pd": {
+      "binocular": 60,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2025-11-13",
+    "notes": "external Rx photo on file"
+  },
+  {
+    "rx_id": "RX5013",
+    "customer_id": 80001008,
+    "phone": "+919000000008",
+    "date": "2024-11-04",
+    "source": "external",
+    "optometrist_id": null,
+    "od": {
+      "sph": 2.5,
+      "cyl": -1.25,
+      "axis": 175,
+      "add": 1.0
+    },
+    "os": {
+      "sph": 2.75,
+      "cyl": -1.25,
+      "axis": 175,
+      "add": 1.0
+    },
+    "pd": {
+      "binocular": 58,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2025-11-04",
+    "notes": "first-time progressive"
+  },
+  {
+    "rx_id": "RX5014",
+    "customer_id": 80001009,
+    "phone": "+919000000009",
+    "date": "2026-04-14",
+    "source": "in_store",
+    "optometrist_id": "S115",
+    "od": {
+      "sph": 0.25,
+      "cyl": -0.5,
+      "axis": 175,
+      "add": null
+    },
+    "os": {
+      "sph": 0.0,
+      "cyl": -0.5,
+      "axis": 175,
+      "add": null
+    },
+    "pd": {
+      "binocular": 66,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2027-04-14",
+    "notes": null
+  },
+  {
+    "rx_id": "RX5015",
+    "customer_id": 80001010,
+    "phone": "+919000000010",
+    "date": "2026-08-29",
+    "source": "external",
+    "optometrist_id": null,
+    "od": {
+      "sph": 1.75,
+      "cyl": -0.75,
+      "axis": 5,
+      "add": null
+    },
+    "os": {
+      "sph": 2.0,
+      "cyl": -0.75,
+      "axis": 5,
+      "add": null
+    },
+    "pd": {
+      "binocular": 63,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2027-08-29",
+    "notes": null
+  },
+  {
+    "rx_id": "RX5016",
+    "customer_id": 80001011,
+    "phone": "+919000000011",
+    "date": "2026-05-20",
+    "source": "external",
+    "optometrist_id": null,
+    "od": {
+      "sph": -4.5,
+      "cyl": -0.75,
+      "axis": 10,
+      "add": null
+    },
+    "os": {
+      "sph": -4.25,
+      "cyl": -0.75,
+      "axis": 10,
+      "add": null
+    },
+    "pd": {
+      "binocular": 62,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2027-05-20",
+    "notes": "first-time progressive"
+  },
+  {
+    "rx_id": "RX5017",
+    "customer_id": 80001012,
+    "phone": "+919000000012",
+    "date": "2025-01-20",
+    "source": "in_store",
+    "optometrist_id": "S115",
+    "od": {
+      "sph": 1.25,
+      "cyl": 0.0,
+      "axis": null,
+      "add": null
+    },
+    "os": {
+      "sph": 1.5,
+      "cyl": 0.0,
+      "axis": null,
+      "add": null
+    },
+    "pd": {
+      "binocular": 62,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2026-01-20",
+    "notes": null
+  },
+  {
+    "rx_id": "RX5018",
+    "customer_id": 80001012,
+    "phone": "+919000000012",
+    "date": "2026-11-29",
+    "source": "in_store",
+    "optometrist_id": "S127",
+    "od": {
+      "sph": 1.0,
+      "cyl": -0.5,
+      "axis": 160,
+      "add": null
+    },
+    "os": {
+      "sph": 0.75,
+      "cyl": -0.5,
+      "axis": 160,
+      "add": null
+    },
+    "pd": {
+      "binocular": 62,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2027-11-29",
+    "notes": null
+  },
+  {
+    "rx_id": "RX5019",
+    "customer_id": 80001012,
+    "phone": "+919000000012",
+    "date": "2025-05-25",
+    "source": "in_store",
+    "optometrist_id": "S111",
+    "od": {
+      "sph": 0.75,
+      "cyl": 0.0,
+      "axis": null,
+      "add": null
+    },
+    "os": {
+      "sph": 0.75,
+      "cyl": 0.0,
+      "axis": null,
+      "add": null
+    },
+    "pd": {
+      "binocular": 58,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2026-05-25",
+    "notes": "external Rx photo on file"
+  },
+  {
+    "rx_id": "RX5020",
+    "customer_id": 80001013,
+    "phone": "+919000000013",
+    "date": "2026-08-15",
+    "source": "external",
+    "optometrist_id": null,
+    "od": {
+      "sph": -3.0,
+      "cyl": -0.75,
+      "axis": 160,
+      "add": 2.5
+    },
+    "os": {
+      "sph": -3.0,
+      "cyl": -0.75,
+      "axis": 160,
+      "add": 2.5
+    },
+    "pd": {
+      "binocular": 66,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2027-08-15",
+    "notes": "prefers lighter lens"
+  },
+  {
+    "rx_id": "RX5021",
+    "customer_id": 80001015,
+    "phone": "+919000000015",
+    "date": "2026-06-07",
+    "source": "external",
+    "optometrist_id": null,
+    "od": {
+      "sph": -1.25,
+      "cyl": -0.5,
+      "axis": 135,
+      "add": null
+    },
+    "os": {
+      "sph": -1.5,
+      "cyl": -0.5,
+      "axis": 135,
+      "add": null
+    },
+    "pd": {
+      "binocular": 62,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2027-06-07",
+    "notes": "external Rx photo on file"
+  },
+  {
+    "rx_id": "RX5022",
+    "customer_id": 80001015,
+    "phone": "+919000000015",
+    "date": "2025-08-16",
+    "source": "in_store",
+    "optometrist_id": "S123",
+    "od": {
+      "sph": -1.25,
+      "cyl": -2.0,
+      "axis": 95,
+      "add": null
+    },
+    "os": {
+      "sph": -1.0,
+      "cyl": -2.0,
+      "axis": 95,
+      "add": null
+    },
+    "pd": {
+      "binocular": 62,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2026-08-16",
+    "notes": "prefers lighter lens"
+  },
+  {
+    "rx_id": "RX5023",
+    "customer_id": 80001015,
+    "phone": "+919000000015",
+    "date": "2027-01-10",
+    "source": "external",
+    "optometrist_id": null,
+    "od": {
+      "sph": -1.75,
+      "cyl": -1.25,
+      "axis": 40,
+      "add": 1.5
+    },
+    "os": {
+      "sph": -2.0,
+      "cyl": -1.25,
+      "axis": 40,
+      "add": 1.5
+    },
+    "pd": {
+      "binocular": 63,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2028-01-10",
+    "notes": null
+  },
+  {
+    "rx_id": "RX5024",
+    "customer_id": 80001016,
+    "phone": "+919000000016",
+    "date": "2025-07-21",
+    "source": "in_store",
+    "optometrist_id": "S107",
+    "od": {
+      "sph": -1.0,
+      "cyl": 0.0,
+      "axis": null,
+      "add": null
+    },
+    "os": {
+      "sph": -0.75,
+      "cyl": 0.0,
+      "axis": null,
+      "add": null
+    },
+    "pd": {
+      "binocular": 64,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2026-07-21",
+    "notes": "external Rx photo on file"
+  },
+  {
+    "rx_id": "RX5025",
+    "customer_id": 80001016,
+    "phone": "+919000000016",
+    "date": "2026-07-31",
+    "source": "in_store",
+    "optometrist_id": "S107",
+    "od": {
+      "sph": -1.25,
+      "cyl": -0.75,
+      "axis": 140,
+      "add": null
+    },
+    "os": {
+      "sph": -1.5,
+      "cyl": -0.75,
+      "axis": 140,
+      "add": null
+    },
+    "pd": {
+      "binocular": 63,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2027-07-31",
+    "notes": null
+  },
+  {
+    "rx_id": "RX5026",
+    "customer_id": 80001017,
+    "phone": "+919000000017",
+    "date": "2025-11-10",
+    "source": "in_store",
+    "optometrist_id": "S123",
+    "od": {
+      "sph": -5.25,
+      "cyl": -0.5,
+      "axis": 25,
+      "add": null
+    },
+    "os": {
+      "sph": -5.0,
+      "cyl": -0.5,
+      "axis": 25,
+      "add": null
+    },
+    "pd": {
+      "binocular": 60,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2026-11-10",
+    "notes": null
+  },
+  {
+    "rx_id": "RX5027",
+    "customer_id": 80001017,
+    "phone": "+919000000017",
+    "date": "2025-02-26",
+    "source": "in_store",
+    "optometrist_id": "S127",
+    "od": {
+      "sph": -5.25,
+      "cyl": 0.0,
+      "axis": null,
+      "add": 2.0
+    },
+    "os": {
+      "sph": -5.25,
+      "cyl": 0.0,
+      "axis": null,
+      "add": 2.0
+    },
+    "pd": {
+      "binocular": 63,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2026-02-26",
+    "notes": "prefers lighter lens"
+  },
+  {
+    "rx_id": "RX5028",
+    "customer_id": 80001018,
+    "phone": "+919000000018",
+    "date": "2026-06-06",
+    "source": "external",
+    "optometrist_id": null,
+    "od": {
+      "sph": -0.75,
+      "cyl": -0.75,
+      "axis": 125,
+      "add": null
+    },
+    "os": {
+      "sph": -1.0,
+      "cyl": -0.75,
+      "axis": 125,
+      "add": null
+    },
+    "pd": {
+      "binocular": 66,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2027-06-06",
+    "notes": null
+  },
+  {
+    "rx_id": "RX5029",
+    "customer_id": 80001018,
+    "phone": "+919000000018",
+    "date": "2026-11-06",
+    "source": "external",
+    "optometrist_id": null,
+    "od": {
+      "sph": -0.75,
+      "cyl": -0.75,
+      "axis": 70,
+      "add": null
+    },
+    "os": {
+      "sph": -1.0,
+      "cyl": -0.75,
+      "axis": 70,
+      "add": null
+    },
+    "pd": {
+      "binocular": 64,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2027-11-06",
+    "notes": "prefers lighter lens"
+  },
+  {
+    "rx_id": "RX5030",
+    "customer_id": 80001020,
+    "phone": "+919000000020",
+    "date": "2024-10-15",
+    "source": "in_store",
+    "optometrist_id": "S127",
+    "od": {
+      "sph": -5.0,
+      "cyl": -2.0,
+      "axis": 165,
+      "add": null
+    },
+    "os": {
+      "sph": -4.75,
+      "cyl": -2.0,
+      "axis": 165,
+      "add": null
+    },
+    "pd": {
+      "binocular": 64,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2025-10-15",
+    "notes": "external Rx photo on file"
+  },
+  {
+    "rx_id": "RX5031",
+    "customer_id": 80001020,
+    "phone": "+919000000020",
+    "date": "2025-12-09",
+    "source": "in_store",
+    "optometrist_id": "S111",
+    "od": {
+      "sph": -4.75,
+      "cyl": -0.75,
+      "axis": 50,
+      "add": null
+    },
+    "os": {
+      "sph": -4.75,
+      "cyl": -0.75,
+      "axis": 50,
+      "add": null
+    },
+    "pd": {
+      "binocular": 66,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2026-12-09",
+    "notes": "first-time progressive"
+  },
+  {
+    "rx_id": "RX5032",
+    "customer_id": 80001020,
+    "phone": "+919000000020",
+    "date": "2027-03-22",
+    "source": "in_store",
+    "optometrist_id": "S107",
+    "od": {
+      "sph": -4.5,
+      "cyl": -0.75,
+      "axis": 75,
+      "add": 0.75
+    },
+    "os": {
+      "sph": -4.25,
+      "cyl": -0.75,
+      "axis": 75,
+      "add": 0.75
+    },
+    "pd": {
+      "binocular": 62,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2028-03-21",
+    "notes": "first-time progressive"
+  },
+  {
+    "rx_id": "RX5033",
+    "customer_id": 80001021,
+    "phone": "+919000000021",
+    "date": "2024-11-02",
+    "source": "in_store",
+    "optometrist_id": "S103",
+    "od": {
+      "sph": -5.25,
+      "cyl": -0.75,
+      "axis": 45,
+      "add": null
+    },
+    "os": {
+      "sph": -5.0,
+      "cyl": -0.75,
+      "axis": 45,
+      "add": null
+    },
+    "pd": {
+      "binocular": 63,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2025-11-02",
+    "notes": "first-time progressive"
+  },
+  {
+    "rx_id": "RX5034",
+    "customer_id": 80001021,
+    "phone": "+919000000021",
+    "date": "2026-04-07",
+    "source": "external",
+    "optometrist_id": null,
+    "od": {
+      "sph": -5.75,
+      "cyl": -0.75,
+      "axis": 15,
+      "add": 1.5
+    },
+    "os": {
+      "sph": -5.5,
+      "cyl": -0.75,
+      "axis": 15,
+      "add": 1.5
+    },
+    "pd": {
+      "binocular": 63,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2027-04-07",
+    "notes": "external Rx photo on file"
+  },
+  {
+    "rx_id": "RX5035",
+    "customer_id": 80001022,
+    "phone": "+919000000022",
+    "date": "2026-07-24",
+    "source": "in_store",
+    "optometrist_id": "S115",
+    "od": {
+      "sph": -5.75,
+      "cyl": -0.75,
+      "axis": 150,
+      "add": 1.5
+    },
+    "os": {
+      "sph": -5.5,
+      "cyl": -0.75,
+      "axis": 150,
+      "add": 1.5
+    },
+    "pd": {
+      "binocular": 64,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2027-07-24",
+    "notes": "external Rx photo on file"
+  },
+  {
+    "rx_id": "RX5036",
+    "customer_id": 80001022,
+    "phone": "+919000000022",
+    "date": "2026-12-27",
+    "source": "in_store",
+    "optometrist_id": "S103",
+    "od": {
+      "sph": -5.5,
+      "cyl": 0.0,
+      "axis": null,
+      "add": 1.5
+    },
+    "os": {
+      "sph": -5.25,
+      "cyl": 0.0,
+      "axis": null,
+      "add": 1.5
+    },
+    "pd": {
+      "binocular": 62,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2027-12-27",
+    "notes": "prefers lighter lens"
+  },
+  {
+    "rx_id": "RX5037",
+    "customer_id": 80001023,
+    "phone": "+919000000023",
+    "date": "2025-09-22",
+    "source": "external",
+    "optometrist_id": null,
+    "od": {
+      "sph": -4.5,
+      "cyl": -1.25,
+      "axis": 170,
+      "add": null
+    },
+    "os": {
+      "sph": -4.25,
+      "cyl": -1.25,
+      "axis": 170,
+      "add": null
+    },
+    "pd": {
+      "binocular": 64,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2026-09-22",
+    "notes": "external Rx photo on file"
+  },
+  {
+    "rx_id": "RX5038",
+    "customer_id": 80001023,
+    "phone": "+919000000023",
+    "date": "2026-08-08",
+    "source": "in_store",
+    "optometrist_id": "S107",
+    "od": {
+      "sph": -4.5,
+      "cyl": 0.0,
+      "axis": null,
+      "add": null
+    },
+    "os": {
+      "sph": -4.25,
+      "cyl": 0.0,
+      "axis": null,
+      "add": null
+    },
+    "pd": {
+      "binocular": 60,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2027-08-08",
+    "notes": null
+  },
+  {
+    "rx_id": "RX5039",
+    "customer_id": 80001024,
+    "phone": "+919000000024",
+    "date": "2025-01-03",
+    "source": "in_store",
+    "optometrist_id": "S127",
+    "od": {
+      "sph": -2.5,
+      "cyl": -0.5,
+      "axis": 105,
+      "add": null
+    },
+    "os": {
+      "sph": -2.25,
+      "cyl": -0.5,
+      "axis": 105,
+      "add": null
+    },
+    "pd": {
+      "binocular": 62,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2026-01-03",
+    "notes": null
+  },
+  {
+    "rx_id": "RX5040",
+    "customer_id": 80001025,
+    "phone": "+919000000025",
+    "date": "2025-12-05",
+    "source": "in_store",
+    "optometrist_id": "S107",
+    "od": {
+      "sph": -5.75,
+      "cyl": -0.5,
+      "axis": 70,
+      "add": 0.75
+    },
+    "os": {
+      "sph": -5.75,
+      "cyl": -0.5,
+      "axis": 70,
+      "add": 0.75
+    },
+    "pd": {
+      "binocular": 58,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2026-12-05",
+    "notes": "external Rx photo on file"
+  },
+  {
+    "rx_id": "RX5041",
+    "customer_id": 80001026,
+    "phone": "+919000000026",
+    "date": "2025-09-28",
+    "source": "in_store",
+    "optometrist_id": "S107",
+    "od": {
+      "sph": -3.75,
+      "cyl": -1.25,
+      "axis": 65,
+      "add": 1.5
+    },
+    "os": {
+      "sph": -4.0,
+      "cyl": -1.25,
+      "axis": 65,
+      "add": 1.5
+    },
+    "pd": {
+      "binocular": 64,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2026-09-28",
+    "notes": null
+  },
+  {
+    "rx_id": "RX5042",
+    "customer_id": 80001027,
+    "phone": "+919000000027",
+    "date": "2025-04-15",
+    "source": "in_store",
+    "optometrist_id": "S119",
+    "od": {
+      "sph": 1.25,
+      "cyl": -1.25,
+      "axis": 5,
+      "add": null
+    },
+    "os": {
+      "sph": 1.0,
+      "cyl": -1.25,
+      "axis": 5,
+      "add": null
+    },
+    "pd": {
+      "binocular": 63,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2026-04-15",
+    "notes": "prefers lighter lens"
+  },
+  {
+    "rx_id": "RX5043",
+    "customer_id": 80001027,
+    "phone": "+919000000027",
+    "date": "2026-10-01",
+    "source": "in_store",
+    "optometrist_id": "S127",
+    "od": {
+      "sph": 1.25,
+      "cyl": 0.0,
+      "axis": null,
+      "add": null
+    },
+    "os": {
+      "sph": 1.0,
+      "cyl": 0.0,
+      "axis": null,
+      "add": null
+    },
+    "pd": {
+      "binocular": 60,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2027-10-01",
+    "notes": null
+  },
+  {
+    "rx_id": "RX5044",
+    "customer_id": 80001027,
+    "phone": "+919000000027",
+    "date": "2027-01-10",
+    "source": "in_store",
+    "optometrist_id": "S119",
+    "od": {
+      "sph": 0.75,
+      "cyl": -2.0,
+      "axis": 35,
+      "add": null
+    },
+    "os": {
+      "sph": 0.75,
+      "cyl": -2.0,
+      "axis": 35,
+      "add": null
+    },
+    "pd": {
+      "binocular": 62,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2028-01-10",
+    "notes": "external Rx photo on file"
+  },
+  {
+    "rx_id": "RX5045",
+    "customer_id": 80001028,
+    "phone": "+919000000028",
+    "date": "2024-08-10",
+    "source": "external",
+    "optometrist_id": null,
+    "od": {
+      "sph": 0.0,
+      "cyl": -2.0,
+      "axis": 105,
+      "add": null
+    },
+    "os": {
+      "sph": 0.25,
+      "cyl": -2.0,
+      "axis": 105,
+      "add": null
+    },
+    "pd": {
+      "binocular": 63,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2025-08-10",
+    "notes": null
+  },
+  {
+    "rx_id": "RX5046",
+    "customer_id": 80001029,
+    "phone": "+919000000029",
+    "date": "2026-03-13",
+    "source": "in_store",
+    "optometrist_id": "S111",
+    "od": {
+      "sph": 2.75,
+      "cyl": -2.0,
+      "axis": 45,
+      "add": 2.5
+    },
+    "os": {
+      "sph": 2.5,
+      "cyl": -2.0,
+      "axis": 45,
+      "add": 2.5
+    },
+    "pd": {
+      "binocular": 64,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2027-03-13",
+    "notes": "prefers lighter lens"
+  },
+  {
+    "rx_id": "RX5999",
+    "customer_id": 80001003,
+    "phone": "+919000000003",
+    "date": "2026-09-30",
+    "source": "external",
+    "optometrist_id": null,
+    "od": {
+      "sph": -2.25,
+      "cyl": -0.75,
+      "axis": 87,
+      "add": null
+    },
+    "os": {
+      "sph": -2.0,
+      "cyl": -0.5,
+      "axis": 92,
+      "add": null
+    },
+    "pd": {
+      "binocular": 63,
+      "mono_r": null,
+      "mono_l": null
+    },
+    "valid_until": "2027-09-30",
+    "notes": "Transcribed from a paper Rx. Axis values as written."
+  }
+]

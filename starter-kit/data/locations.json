@@ -1,0 +1,146 @@
+[
+  {
+    "id": 70000001,
+    "name": "Eluno Mantri Mall",
+    "active": true,
+    "legacy": false,
+    "address1": "Mantri Mall, Bengaluru",
+    "city": "Bengaluru",
+    "province_code": "KA",
+    "country_code": "IN",
+    "zip": "5600xx",
+    "eluno": {
+      "store_code": "MM",
+      "invoice_prefix": "ELU/MM/FY26/",
+      "state_code": "29",
+      "kind": "store",
+      "opened_on": "2025-01-01"
+    }
+  },
+  {
+    "id": 70000002,
+    "name": "Eluno HSR Layout",
+    "active": true,
+    "legacy": false,
+    "address1": "HSR Layout, Bengaluru",
+    "city": "Bengaluru",
+    "province_code": "KA",
+    "country_code": "IN",
+    "zip": "5600xx",
+    "eluno": {
+      "store_code": "HSR",
+      "invoice_prefix": "ELU/HSR/FY26/",
+      "state_code": "29",
+      "kind": "store",
+      "opened_on": "2025-02-15"
+    }
+  },
+  {
+    "id": 70000003,
+    "name": "Eluno Bel Road",
+    "active": true,
+    "legacy": false,
+    "address1": "Bel Road, Bengaluru",
+    "city": "Bengaluru",
+    "province_code": "KA",
+    "country_code": "IN",
+    "zip": "5600xx",
+    "eluno": {
+      "store_code": "BR",
+      "invoice_prefix": "ELU/BR/FY26/",
+      "state_code": "29",
+      "kind": "store",
+      "opened_on": "2025-04-01"
+    }
+  },
+  {
+    "id": 70000004,
+    "name": "Eluno Koramangala",
+    "active": true,
+    "legacy": false,
+    "address1": "Koramangala, Bengaluru",
+    "city": "Bengaluru",
+    "province_code": "KA",
+    "country_code": "IN",
+    "zip": "5600xx",
+    "eluno": {
+      "store_code": "KMG",
+      "invoice_prefix": "ELU/KMG/FY26/",
+      "state_code": "29",
+      "kind": "store",
+      "opened_on": "2025-05-16"
+    }
+  },
+  {
+    "id": 70000005,
+    "name": "Eluno Jayanagar",
+    "active": true,
+    "legacy": false,
+    "address1": "Jayanagar, Bengaluru",
+    "city": "Bengaluru",
+    "province_code": "KA",
+    "country_code": "IN",
+    "zip": "5600xx",
+    "eluno": {
+      "store_code": "JN",
+      "invoice_prefix": "ELU/JN/FY26/",
+      "state_code": "29",
+      "kind": "store",
+      "opened_on": "2025-06-30"
+    }
+  },
+  {
+    "id": 70000006,
+    "name": "Eluno Indiranagar",
+    "active": true,
+    "legacy": false,
+    "address1": "Indiranagar, Bengaluru",
+    "city": "Bengaluru",
+    "province_code": "KA",
+    "country_code": "IN",
+    "zip": "5600xx",
+    "eluno": {
+      "store_code": "IN",
+      "invoice_prefix": "ELU/IN/FY26/",
+      "state_code": "29",
+      "kind": "store",
+      "opened_on": "2025-08-14"
+    }
+  },
+  {
+    "id": 70000007,
+    "name": "Eluno Vega City",
+    "active": true,
+    "legacy": false,
+    "address1": "Vega City, Bengaluru",
+    "city": "Bengaluru",
+    "province_code": "KA",
+    "country_code": "IN",
+    "zip": "5600xx",
+    "eluno": {
+      "store_code": "VC",
+      "invoice_prefix": "ELU/VC/FY26/",
+      "state_code": "29",
+      "kind": "store",
+      "opened_on": "2025-09-28"
+    }
+  },
+  {
+    "id": 70000008,
+    "name": "Eluno HQ & Lab",
+    "active": true,
+    "legacy": false,
+    "address1": "HQ, Bengaluru",
+    "city": "Bengaluru",
+    "province_code": "KA",
+    "country_code": "IN",
+    "zip": "5600xx",
+    "eluno": {
+      "store_code": "HQ",
+      "invoice_prefix": null,
+      "state_code": "29",
+      "kind": "warehouse",
+      "opened_on": "2024-06-01"
+    }
+  }
+]

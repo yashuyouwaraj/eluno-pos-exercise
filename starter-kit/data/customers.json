@@ -1,0 +1,692 @@
+[
+  {
+    "id": 80001000,
+    "first_name": "Priya",
+    "last_name": "Nair",
+    "phone": "+919000000000",
+    "email": null,
+    "tags": "",
+    "total_spent": "0.00",
+    "orders_count": 0,
+    "accepts_marketing": true,
+    "state": "enabled",
+    "created_at": "2026-02-24T11:00:00+05:30",
+    "note": null,
+    "default_address": {
+      "city": "Bengaluru",
+      "province_code": "KA",
+      "country_code": "IN"
+    },
+    "eluno": {
+      "dob": "1972-02-09",
+      "home_store": "IN"
+    }
+  },
+  {
+    "id": 80001001,
+    "first_name": "Rahul",
+    "last_name": "Menon",
+    "phone": "+919000000001",
+    "email": null,
+    "tags": "family",
+    "total_spent": "0.00",
+    "orders_count": 0,
+    "accepts_marketing": true,
+    "state": "enabled",
+    "created_at": "2025-12-30T11:00:00+05:30",
+    "note": null,
+    "default_address": {
+      "city": "Bengaluru",
+      "province_code": "KA",
+      "country_code": "IN"
+    },
+    "eluno": {
+      "dob": "1997-10-22",
+      "home_store": "VC"
+    }
+  },
+  {
+    "id": 80001002,
+    "first_name": "Anjali",
+    "last_name": "Rao",
+    "phone": "+919000000002",
+    "email": null,
+    "tags": "campaign:progressive_oct26,family",
+    "total_spent": "0.00",
+    "orders_count": 0,
+    "accepts_marketing": true,
+    "state": "enabled",
+    "created_at": "2025-03-05T11:00:00+05:30",
+    "note": null,
+    "default_address": {
+      "city": "Bengaluru",
+      "province_code": "KA",
+      "country_code": "IN"
+    },
+    "eluno": {
+      "dob": "1996-02-10",
+      "home_store": "BR"
+    }
+  },
+  {
+    "id": 80001003,
+    "first_name": "Suresh",
+    "last_name": "Kumar",
+    "phone": "+919000000003",
+    "email": null,
+    "tags": "campaign:progressive_oct26",
+    "total_spent": "0.00",
+    "orders_count": 0,
+    "accepts_marketing": true,
+    "state": "enabled",
+    "created_at": "2025-09-05T11:00:00+05:30",
+    "note": null,
+    "default_address": {
+      "city": "Bengaluru",
+      "province_code": "KA",
+      "country_code": "IN"
+    },
+    "eluno": {
+      "dob": "2000-12-16",
+      "home_store": "JN"
+    }
+  },
+  {
+    "id": 80001004,
+    "first_name": "Divya",
+    "last_name": "Iyer",
+    "phone": "+919000000004",
+    "email": null,
+    "tags": "family",
+    "total_spent": "0.00",
+    "orders_count": 0,
+    "accepts_marketing": true,
+    "state": "enabled",
+    "created_at": "2026-06-27T11:00:00+05:30",
+    "note": null,
+    "default_address": {
+      "city": "Bengaluru",
+      "province_code": "KA",
+      "country_code": "IN"
+    },
+    "eluno": {
+      "dob": "1977-09-30",
+      "home_store": "IN"
+    }
+  },
+  {
+    "id": 80001005,
+    "first_name": "Karthik",
+    "last_name": "Reddy",
+    "phone": "+919000000005",
+    "email": null,
+    "tags": "campaign:progressive_oct26,priority",
+    "total_spent": "18499.00",
+    "orders_count": 3,
+    "accepts_marketing": true,
+    "state": "enabled",
+    "created_at": "2026-08-29T11:00:00+05:30",
+    "note": null,
+    "default_address": {
+      "city": "Bengaluru",
+      "province_code": "KA",
+      "country_code": "IN"
+    },
+    "eluno": {
+      "dob": "1984-03-05",
+      "home_store": "BR"
+    }
+  },
+  {
+    "id": 80001006,
+    "first_name": "Neha",
+    "last_name": "Gupta",
+    "phone": "+919000000006",
+    "email": null,
+    "tags": "campaign:festive_frames,priority",
+    "total_spent": "11999.00",
+    "orders_count": 4,
+    "accepts_marketing": true,
+    "state": "enabled",
+    "created_at": "2025-06-22T11:00:00+05:30",
+    "note": null,
+    "default_address": {
+      "city": "Bengaluru",
+      "province_code": "KA",
+      "country_code": "IN"
+    },
+    "eluno": {
+      "dob": "1982-11-09",
+      "home_store": "KMG"
+    }
+  },
+  {
+    "id": 80001007,
+    "first_name": "Amit",
+    "last_name": "Shah",
+    "phone": "+919000000007",
+    "email": null,
+    "tags": "campaign:progressive_oct26,family",
+    "total_spent": "0.00",
+    "orders_count": 0,
+    "accepts_marketing": true,
+    "state": "enabled",
+    "created_at": "2025-05-24T11:00:00+05:30",
+    "note": null,
+    "default_address": {
+      "city": "Bengaluru",
+      "province_code": "KA",
+      "country_code": "IN"
+    },
+    "eluno": {
+      "dob": "1966-11-09",
+      "home_store": "IN"
+    }
+  },
+  {
+    "id": 80001008,
+    "first_name": "Lakshmi",
+    "last_name": "Venkat",
+    "phone": "+919000000008",
+    "email": null,
+    "tags": "campaign:progressive_oct26,family",
+    "total_spent": "2499.00",
+    "orders_count": 4,
+    "accepts_marketing": true,
+    "state": "enabled",
+    "created_at": "2026-03-02T11:00:00+05:30",
+    "note": null,
+    "default_address": {
+      "city": "Bengaluru",
+      "province_code": "KA",
+      "country_code": "IN"
+    },
+    "eluno": {
+      "dob": "1977-02-12",
+      "home_store": "JN"
+    }
+  },
+  {
+    "id": 80001009,
+    "first_name": "Farhan",
+    "last_name": "Ali",
+    "phone": "+919000000009",
+    "email": null,
+    "tags": "campaign:festive_frames,priority",
+    "total_spent": "18499.00",
+    "orders_count": 3,
+    "accepts_marketing": false,
+    "state": "enabled",
+    "created_at": "2025-02-12T11:00:00+05:30",
+    "note": null,
+    "default_address": {
+      "city": "Bengaluru",
+      "province_code": "KA",
+      "country_code": "IN"
+    },
+    "eluno": {
+      "dob": "1990-07-07",
+      "home_store": "IN"
+    }
+  },
+  {
+    "id": 80001010,
+    "first_name": "Shreya",
+    "last_name": "Joshi",
+    "phone": "+919000000010",
+    "email": null,
+    "tags": "family",
+    "total_spent": "0.00",
+    "orders_count": 0,
+    "accepts_marketing": false,
+    "state": "enabled",
+    "created_at": "2025-11-01T11:00:00+05:30",
+    "note": null,
+    "default_address": {
+      "city": "Bengaluru",
+      "province_code": "KA",
+      "country_code": "IN"
+    },
+    "eluno": {
+      "dob": "1994-06-23",
+      "home_store": "IN"
+    }
+  },
+  {
+    "id": 80001011,
+    "first_name": "Manish",
+    "last_name": "Agarwal",
+    "phone": "+919000000011",
+    "email": null,
+    "tags": "priority",
+    "total_spent": "7299.00",
+    "orders_count": 3,
+    "accepts_marketing": true,
+    "state": "enabled",
+    "created_at": "2026-05-11T11:00:00+05:30",
+    "note": null,
+    "default_address": {
+      "city": "Bengaluru",
+      "province_code": "KA",
+      "country_code": "IN"
+    },
+    "eluno": {
+      "dob": "1960-02-23",
+      "home_store": "IN"
+    }
+  },
+  {
+    "id": 80001012,
+    "first_name": "Kavya",
+    "last_name": "Hegde",
+    "phone": "+919000000012",
+    "email": null,
+    "tags": "campaign:festive_frames,priority",
+    "total_spent": "5499.00",
+    "orders_count": 2,
+    "accepts_marketing": true,
+    "state": "enabled",
+    "created_at": "2025-05-20T11:00:00+05:30",
+    "note": null,
+    "default_address": {
+      "city": "Bengaluru",
+      "province_code": "KA",
+      "country_code": "IN"
+    },
+    "eluno": {
+      "dob": "1999-01-18",
+      "home_store": "IN"
+    }
+  },
+  {
+    "id": 80001013,
+    "first_name": "Rajesh",
+    "last_name": "Pillai",
+    "phone": "+919000000013",
+    "email": null,
+    "tags": "campaign:progressive_oct26,family,priority",
+    "total_spent": "5499.00",
+    "orders_count": 2,
+    "accepts_marketing": true,
+    "state": "enabled",
+    "created_at": "2025-07-16T11:00:00+05:30",
+    "note": null,
+    "default_address": {
+      "city": "Bengaluru",
+      "province_code": "KA",
+      "country_code": "IN"
+    },
+    "eluno": {
+      "dob": "1984-03-12",
+      "home_store": "VC"
+    }
+  },
+  {
+    "id": 80001014,
+    "first_name": "Isha",
+    "last_name": "Bhat",
+    "phone": "+919000000014",
+    "email": null,
+    "tags": "campaign:festive_frames",
+    "total_spent": "0.00",
+    "orders_count": 0,
+    "accepts_marketing": true,
+    "state": "enabled",
+    "created_at": "2025-02-20T11:00:00+05:30",
+    "note": null,
+    "default_address": {
+      "city": "Bengaluru",
+      "province_code": "KA",
+      "country_code": "IN"
+    },
+    "eluno": {
+      "dob": "1965-01-06",
+      "home_store": "BR"
+    }
+  },
+  {
+    "id": 80001015,
+    "first_name": "Varun",
+    "last_name": "Desai",
+    "phone": "+919000000015",
+    "email": null,
+    "tags": "priority",
+    "total_spent": "5499.00",
+    "orders_count": 1,
+    "accepts_marketing": true,
+    "state": "enabled",
+    "created_at": "2026-09-04T11:00:00+05:30",
+    "note": null,
+    "default_address": {
+      "city": "Bengaluru",
+      "province_code": "KA",
+      "country_code": "IN"
+    },
+    "eluno": {
+      "dob": "2002-06-23",
+      "home_store": "MM"
+    }
+  },
+  {
+    "id": 80001016,
+    "first_name": "Sunita",
+    "last_name": "Patil",
+    "phone": "+919000000016",
+    "email": null,
+    "tags": "family",
+    "total_spent": "0.00",
+    "orders_count": 0,
+    "accepts_marketing": true,
+    "state": "enabled",
+    "created_at": "2025-04-12T11:00:00+05:30",
+    "note": null,
+    "default_address": {
+      "city": "Bengaluru",
+      "province_code": "KA",
+      "country_code": "IN"
+    },
+    "eluno": {
+      "dob": "1994-02-12",
+      "home_store": "JN"
+    }
+  },
+  {
+    "id": 80001017,
+    "first_name": "Deepak",
+    "last_name": "Verma",
+    "phone": "+919000000017",
+    "email": null,
+    "tags": "",
+    "total_spent": "2499.00",
+    "orders_count": 4,
+    "accepts_marketing": false,
+    "state": "enabled",
+    "created_at": "2025-07-20T11:00:00+05:30",
+    "note": null,
+    "default_address": {
+      "city": "Bengaluru",
+      "province_code": "KA",
+      "country_code": "IN"
+    },
+    "eluno": {
+      "dob": "1971-11-21",
+      "home_store": "JN"
+    }
+  },
+  {
+    "id": 80001018,
+    "first_name": "Nandini",
+    "last_name": "Krishnan",
+    "phone": "+919000000018",
+    "email": null,
+    "tags": "priority",
+    "total_spent": "11999.00",
+    "orders_count": 2,
+    "accepts_marketing": true,
+    "state": "enabled",
+    "created_at": "2026-03-16T11:00:00+05:30",
+    "note": null,
+    "default_address": {
+      "city": "Bengaluru",
+      "province_code": "KA",
+      "country_code": "IN"
+    },
+    "eluno": {
+      "dob": "1990-02-16",
+      "home_store": "IN"
+    }
+  },
+  {
+    "id": 80001019,
+    "first_name": "Imran",
+    "last_name": "Khan",
+    "phone": "+919000000019",
+    "email": null,
+    "tags": "campaign:progressive_oct26,priority",
+    "total_spent": "7299.00",
+    "orders_count": 4,
+    "accepts_marketing": true,
+    "state": "enabled",
+    "created_at": "2025-09-19T11:00:00+05:30",
+    "note": null,
+    "default_address": {
+      "city": "Bengaluru",
+      "province_code": "KA",
+      "country_code": "IN"
+    },
+    "eluno": {
+      "dob": "1962-11-15",
+      "home_store": "BR"
+    }
+  },
+  {
+    "id": 80001020,
+    "first_name": "Ritu",
+    "last_name": "Malhotra",
+    "phone": "+919000000020",
+    "email": null,
+    "tags": "campaign:festive_frames",
+    "total_spent": "0.00",
+    "orders_count": 0,
+    "accepts_marketing": true,
+    "state": "enabled",
+    "created_at": "2025-09-14T11:00:00+05:30",
+    "note": null,
+    "default_address": {
+      "city": "Bengaluru",
+      "province_code": "KA",
+      "country_code": "IN"
+    },
+    "eluno": {
+      "dob": "1960-04-27",
+      "home_store": "MM"
+    }
+  },
+  {
+    "id": 80001021,
+    "first_name": "Sanjay",
+    "last_name": "Rao",
+    "phone": "+919000000021",
+    "email": null,
+    "tags": "",
+    "total_spent": "0.00",
+    "orders_count": 0,
+    "accepts_marketing": true,
+    "state": "enabled",
+    "created_at": "2025-03-05T11:00:00+05:30",
+    "note": null,
+    "default_address": {
+      "city": "Bengaluru",
+      "province_code": "KA",
+      "country_code": "IN"
+    },
+    "eluno": {
+      "dob": "1998-07-24",
+      "home_store": "BR"
+    }
+  },
+  {
+    "id": 80001022,
+    "first_name": "Bhavana",
+    "last_name": "Shetty",
+    "phone": "+919000000022",
+    "email": null,
+    "tags": "campaign:festive_frames",
+    "total_spent": "0.00",
+    "orders_count": 0,
+    "accepts_marketing": true,
+    "state": "enabled",
+    "created_at": "2026-06-13T11:00:00+05:30",
+    "note": null,
+    "default_address": {
+      "city": "Bengaluru",
+      "province_code": "KA",
+      "country_code": "IN"
+    },
+    "eluno": {
+      "dob": "1969-08-11",
+      "home_store": "JN"
+    }
+  },
+  {
+    "id": 80001023,
+    "first_name": "Gaurav",
+    "last_name": "Mehta",
+    "phone": "+919000000023",
+    "email": null,
+    "tags": "family",
+    "total_spent": "2499.00",
+    "orders_count": 4,
+    "accepts_marketing": true,
+    "state": "enabled",
+    "created_at": "2026-05-31T11:00:00+05:30",
+    "note": null,
+    "default_address": {
+      "city": "Bengaluru",
+      "province_code": "KA",
+      "country_code": "IN"
+    },
+    "eluno": {
+      "dob": "1996-03-22",
+      "home_store": "KMG"
+    }
+  },
+  {
+    "id": 80001024,
+    "first_name": "Pallavi",
+    "last_name": "Kulkarni",
+    "phone": "+919000000024",
+    "email": null,
+    "tags": "",
+    "total_spent": "3899.00",
+    "orders_count": 1,
+    "accepts_marketing": true,
+    "state": "enabled",
+    "created_at": "2026-01-29T11:00:00+05:30",
+    "note": null,
+    "default_address": {
+      "city": "Bengaluru",
+      "province_code": "KA",
+      "country_code": "IN"
+    },
+    "eluno": {
+      "dob": "1978-12-31",
+      "home_store": "KMG"
+    }
+  },
+  {
+    "id": 80001025,
+    "first_name": "Harish",
+    "last_name": "Babu",
+    "phone": "+919000000025",
+    "email": null,
+    "tags": "campaign:progressive_oct26,family,priority",
+    "total_spent": "18499.00",
+    "orders_count": 1,
+    "accepts_marketing": true,
+    "state": "enabled",
+    "created_at": "2025-05-12T11:00:00+05:30",
+    "note": null,
+    "default_address": {
+      "city": "Bengaluru",
+      "province_code": "KA",
+      "country_code": "IN"
+    },
+    "eluno": {
+      "dob": "1962-09-20",
+      "home_store": "KMG"
+    }
+  },
+  {
+    "id": 80001026,
+    "first_name": "Megha",
+    "last_name": "Singh",
+    "phone": "+919000000026",
+    "email": null,
+    "tags": "campaign:progressive_oct26,family,priority",
+    "total_spent": "7299.00",
+    "orders_count": 1,
+    "accepts_marketing": true,
+    "state": "enabled",
+    "created_at": "2025-08-14T11:00:00+05:30",
+    "note": null,
+    "default_address": {
+      "city": "Bengaluru",
+      "province_code": "KA",
+      "country_code": "IN"
+    },
+    "eluno": {
+      "dob": "1984-01-21",
+      "home_store": "KMG"
+    }
+  },
+  {
+    "id": 80001027,
+    "first_name": "Vivek",
+    "last_name": "Nambiar",
+    "phone": "+919000000027",
+    "email": null,
+    "tags": "campaign:progressive_oct26",
+    "total_spent": "2499.00",
+    "orders_count": 2,
+    "accepts_marketing": true,
+    "state": "enabled",
+    "created_at": "2025-10-14T11:00:00+05:30",
+    "note": null,
+    "default_address": {
+      "city": "Bengaluru",
+      "province_code": "KA",
+      "country_code": "IN"
+    },
+    "eluno": {
+      "dob": "1999-03-24",
+      "home_store": "MM"
+    }
+  },
+  {
+    "id": 80001028,
+    "first_name": "Asha",
+    "last_name": "Thomas",
+    "phone": "+919000000028",
+    "email": null,
+    "tags": "campaign:progressive_oct26,family,priority",
+    "total_spent": "18499.00",
+    "orders_count": 1,
+    "accepts_marketing": true,
+    "state": "enabled",
+    "created_at": "2026-08-08T11:00:00+05:30",
+    "note": null,
+    "default_address": {
+      "city": "Bengaluru",
+      "province_code": "KA",
+      "country_code": "IN"
+    },
+    "eluno": {
+      "dob": "1997-07-02",
+      "home_store": "MM"
+    }
+  },
+  {
+    "id": 80001029,
+    "first_name": "Rohit",
+    "last_name": "Jain",
+    "phone": "+919000000029",
+    "email": null,
+    "tags": "campaign:progressive_oct26,family",
+    "total_spent": "0.00",
+    "orders_count": 0,
+    "accepts_marketing": false,
+    "state": "enabled",
+    "created_at": "2025-07-21T11:00:00+05:30",
+    "note": null,
+    "default_address": {
+      "city": "Bengaluru",
+      "province_code": "KA",
+      "country_code": "IN"
+    },
+    "eluno": {
+      "dob": "1978-03-25",
+      "home_store": "KMG"
+    }
+  }
+]

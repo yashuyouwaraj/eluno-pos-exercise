@@ -1,0 +1,76 @@
+[
+  {
+    "session_id": "TILL-JN-2026-10-06",
+    "location_id": 70000005,
+    "store_code": "JN",
+    "opened_at": "2026-10-06T10:02:00+05:30",
+    "opened_by": "S120",
+    "opening_float_paise": 300000,
+    "movements": [
+      {
+        "type": "cash_sale",
+        "amount_paise": 899800,
+        "ref": "ELU/JN/FY26/00001",
+        "at": "2026-10-06T12:30:00+05:30",
+        "reason": null
+      },
+      {
+        "type": "cash_sale",
+        "amount_paise": 549800,
+        "ref": "ELU/JN/FY26/00002",
+        "at": "2026-10-06T12:30:00+05:30",
+        "reason": null
+      },
+      {
+        "type": "paid_out",
+        "amount_paise": -12000,
+        "ref": "PO-JN-0017",
+        "at": "2026-10-06T13:10:00+05:30",
+        "reason": "courier"
+      },
+      {
+        "type": "paid_out",
+        "amount_paise": -8000,
+        "ref": "PO-JN-0018",
+        "at": "2026-10-06T17:45:00+05:30",
+        "reason": "tea/snacks"
+      },
+      {
+        "type": "paid_in",
+        "amount_paise": 100000,
+        "ref": "PI-JN-0003",
+        "at": "2026-10-06T15:00:00+05:30",
+        "reason": "change from HQ"
+      }
+    ],
+    "closed_at": "2026-10-06T21:40:00+05:30",
+    "closed_by": "S120",
+    "expected_cash_paise": 1829600,
+    "counted_cash_paise": 1804600,
+    "variance_paise": -25000,
+    "variance_note": "Short; manager to review."
+  },
+  {
+    "session_id": "TILL-VC-2026-10-18",
+    "location_id": 70000007,
+    "store_code": "VC",
+    "opened_at": "2026-10-18T10:02:00+05:30",
+    "opened_by": "S128",
+    "opening_float_paise": 200000,
+    "movements": [
+      {
+        "type": "cash_sale",
+        "amount_paise": 519700,
+        "ref": "ELU/VC/FY26/00001",
+        "at": "2026-10-18T12:30:00+05:30",
+        "reason": null
+      }
+    ],
+    "closed_at": "2026-10-18T21:40:00+05:30",
+    "closed_by": "S128",
+    "expected_cash_paise": 719700,
+    "counted_cash_paise": 719700,
+    "variance_paise": 0,
+    "variance_note": null
+  }
+]

@@ -1,0 +1,25 @@
+========================================================================================================
+                                                 ELUNO                                                  
+                                Eluno HSR Layout · HSR Layout, Bengaluru                                
+                                              TAX INVOICE                                               
+========================================================================================================
+Invoice no : ELU/HSR/FY26/00001             Date        : 2026-10-02
+Store      : HSR                            Staff       : S105
+Customer   : Karthik Reddy                  Phone       : +919000000005
+Rx on file : RX5007                         Channel     : whatsapp_booked
+--------------------------------------------------------------------------------------------------------
+#  Description                            HSN       Qty  MRP(incl)  Discount    Taxable         CGST         SGST      Total
+--------------------------------------------------------------------------------------------------------
+1  Eluno Atelier Rectangle 03 Tortoise    90031900    1  10,998.00      0.00   9,320.34    9% 838.83    9% 838.83  10,998.00
+2  Progressive 1.60 blue cut lens, Rx RX5 90015000    1   9,499.00  1,424.85   7,689.67  2.5% 192.24  2.5% 192.24   8,074.15
+--------------------------------------------------------------------------------------------------------
+   TOTAL                                                 20,497.00  1,424.85  17,010.01     1,031.07     1,031.07  19,072.15
+========================================================================================================
+Offers applied : PGX_CAMPAIGN15
+Payment        : UPI ₹19072.15  ref term_97000001
+Amount in words: Nineteen thousand seventy-two rupees and fifteen paise
+Shopify ref    : #1001 (order 95000001)
+--------------------------------------------------------------------------------------------------------
+Prices are inclusive of GST. Intra-state supply: CGST + SGST. Taxable value = inclusive price less tax, per line.
+Lenses are made to order against the prescription on file and are not returnable once dispensed; frames may be returned within 7 days.
+========================================================================================================

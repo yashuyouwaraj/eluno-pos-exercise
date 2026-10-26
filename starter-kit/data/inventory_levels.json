@@ -1,0 +1,1922 @@
+[
+  {
+    "inventory_item_id": 92000001,
+    "location_id": 70000001,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000002,
+    "location_id": 70000001,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000003,
+    "location_id": 70000001,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000004,
+    "location_id": 70000001,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000005,
+    "location_id": 70000001,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000006,
+    "location_id": 70000001,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000007,
+    "location_id": 70000001,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000008,
+    "location_id": 70000001,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000009,
+    "location_id": 70000001,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000010,
+    "location_id": 70000001,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000011,
+    "location_id": 70000001,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000012,
+    "location_id": 70000001,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000013,
+    "location_id": 70000001,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000014,
+    "location_id": 70000001,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000015,
+    "location_id": 70000001,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000016,
+    "location_id": 70000001,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000017,
+    "location_id": 70000001,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000018,
+    "location_id": 70000001,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000019,
+    "location_id": 70000001,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000020,
+    "location_id": 70000001,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000021,
+    "location_id": 70000001,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000022,
+    "location_id": 70000001,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000023,
+    "location_id": 70000001,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000024,
+    "location_id": 70000001,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000025,
+    "location_id": 70000001,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000026,
+    "location_id": 70000001,
+    "available": 3,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000027,
+    "location_id": 70000001,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000028,
+    "location_id": 70000001,
+    "available": 3,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000029,
+    "location_id": 70000001,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000030,
+    "location_id": 70000001,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000031,
+    "location_id": 70000001,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000032,
+    "location_id": 70000001,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000033,
+    "location_id": 70000001,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000034,
+    "location_id": 70000001,
+    "available": 3,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000035,
+    "location_id": 70000001,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000036,
+    "location_id": 70000001,
+    "available": 3,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000037,
+    "location_id": 70000001,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000038,
+    "location_id": 70000001,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000039,
+    "location_id": 70000001,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000040,
+    "location_id": 70000001,
+    "available": 3,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000001,
+    "location_id": 70000002,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000002,
+    "location_id": 70000002,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000003,
+    "location_id": 70000002,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000004,
+    "location_id": 70000002,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000005,
+    "location_id": 70000002,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000006,
+    "location_id": 70000002,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000007,
+    "location_id": 70000002,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000008,
+    "location_id": 70000002,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000009,
+    "location_id": 70000002,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000010,
+    "location_id": 70000002,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000011,
+    "location_id": 70000002,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000012,
+    "location_id": 70000002,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000013,
+    "location_id": 70000002,
+    "available": 3,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000014,
+    "location_id": 70000002,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000015,
+    "location_id": 70000002,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000016,
+    "location_id": 70000002,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000017,
+    "location_id": 70000002,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000018,
+    "location_id": 70000002,
+    "available": 3,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000019,
+    "location_id": 70000002,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000020,
+    "location_id": 70000002,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000021,
+    "location_id": 70000002,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000022,
+    "location_id": 70000002,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000023,
+    "location_id": 70000002,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000024,
+    "location_id": 70000002,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000025,
+    "location_id": 70000002,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000026,
+    "location_id": 70000002,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000027,
+    "location_id": 70000002,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000028,
+    "location_id": 70000002,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000029,
+    "location_id": 70000002,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000030,
+    "location_id": 70000002,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000031,
+    "location_id": 70000002,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000032,
+    "location_id": 70000002,
+    "available": 3,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000033,
+    "location_id": 70000002,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000034,
+    "location_id": 70000002,
+    "available": 3,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000035,
+    "location_id": 70000002,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000036,
+    "location_id": 70000002,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000037,
+    "location_id": 70000002,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000038,
+    "location_id": 70000002,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000039,
+    "location_id": 70000002,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000040,
+    "location_id": 70000002,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000001,
+    "location_id": 70000003,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000002,
+    "location_id": 70000003,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000003,
+    "location_id": 70000003,
+    "available": 3,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000004,
+    "location_id": 70000003,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000005,
+    "location_id": 70000003,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000006,
+    "location_id": 70000003,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000007,
+    "location_id": 70000003,
+    "available": 3,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000008,
+    "location_id": 70000003,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000009,
+    "location_id": 70000003,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000010,
+    "location_id": 70000003,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000011,
+    "location_id": 70000003,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000012,
+    "location_id": 70000003,
+    "available": 3,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000013,
+    "location_id": 70000003,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000014,
+    "location_id": 70000003,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000015,
+    "location_id": 70000003,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000016,
+    "location_id": 70000003,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000017,
+    "location_id": 70000003,
+    "available": 3,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000018,
+    "location_id": 70000003,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000019,
+    "location_id": 70000003,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000020,
+    "location_id": 70000003,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000021,
+    "location_id": 70000003,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000022,
+    "location_id": 70000003,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000023,
+    "location_id": 70000003,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000024,
+    "location_id": 70000003,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000025,
+    "location_id": 70000003,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000026,
+    "location_id": 70000003,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000027,
+    "location_id": 70000003,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000028,
+    "location_id": 70000003,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000029,
+    "location_id": 70000003,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000030,
+    "location_id": 70000003,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000031,
+    "location_id": 70000003,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000032,
+    "location_id": 70000003,
+    "available": 3,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000033,
+    "location_id": 70000003,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000034,
+    "location_id": 70000003,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000035,
+    "location_id": 70000003,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000036,
+    "location_id": 70000003,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000037,
+    "location_id": 70000003,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000038,
+    "location_id": 70000003,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000039,
+    "location_id": 70000003,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000040,
+    "location_id": 70000003,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000001,
+    "location_id": 70000004,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000002,
+    "location_id": 70000004,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000003,
+    "location_id": 70000004,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000004,
+    "location_id": 70000004,
+    "available": 3,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000005,
+    "location_id": 70000004,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000006,
+    "location_id": 70000004,
+    "available": 3,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000007,
+    "location_id": 70000004,
+    "available": 3,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000008,
+    "location_id": 70000004,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000009,
+    "location_id": 70000004,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000010,
+    "location_id": 70000004,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000011,
+    "location_id": 70000004,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000012,
+    "location_id": 70000004,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000013,
+    "location_id": 70000004,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000014,
+    "location_id": 70000004,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000015,
+    "location_id": 70000004,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000016,
+    "location_id": 70000004,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000017,
+    "location_id": 70000004,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000018,
+    "location_id": 70000004,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000019,
+    "location_id": 70000004,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000020,
+    "location_id": 70000004,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000021,
+    "location_id": 70000004,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000022,
+    "location_id": 70000004,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000023,
+    "location_id": 70000004,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000024,
+    "location_id": 70000004,
+    "available": 3,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000025,
+    "location_id": 70000004,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000026,
+    "location_id": 70000004,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000027,
+    "location_id": 70000004,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000028,
+    "location_id": 70000004,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000029,
+    "location_id": 70000004,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000030,
+    "location_id": 70000004,
+    "available": 3,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000031,
+    "location_id": 70000004,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000032,
+    "location_id": 70000004,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000033,
+    "location_id": 70000004,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000034,
+    "location_id": 70000004,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000035,
+    "location_id": 70000004,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000036,
+    "location_id": 70000004,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000037,
+    "location_id": 70000004,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000038,
+    "location_id": 70000004,
+    "available": 3,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000039,
+    "location_id": 70000004,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000040,
+    "location_id": 70000004,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000001,
+    "location_id": 70000005,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000002,
+    "location_id": 70000005,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000003,
+    "location_id": 70000005,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000004,
+    "location_id": 70000005,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000005,
+    "location_id": 70000005,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000006,
+    "location_id": 70000005,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000007,
+    "location_id": 70000005,
+    "available": 3,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000008,
+    "location_id": 70000005,
+    "available": 3,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000009,
+    "location_id": 70000005,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000010,
+    "location_id": 70000005,
+    "available": 3,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000011,
+    "location_id": 70000005,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000012,
+    "location_id": 70000005,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000013,
+    "location_id": 70000005,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000014,
+    "location_id": 70000005,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000015,
+    "location_id": 70000005,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000016,
+    "location_id": 70000005,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000017,
+    "location_id": 70000005,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000018,
+    "location_id": 70000005,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000019,
+    "location_id": 70000005,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000020,
+    "location_id": 70000005,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000021,
+    "location_id": 70000005,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000022,
+    "location_id": 70000005,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000023,
+    "location_id": 70000005,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000024,
+    "location_id": 70000005,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000025,
+    "location_id": 70000005,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000026,
+    "location_id": 70000005,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000027,
+    "location_id": 70000005,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000028,
+    "location_id": 70000005,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000029,
+    "location_id": 70000005,
+    "available": 3,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000030,
+    "location_id": 70000005,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000031,
+    "location_id": 70000005,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000032,
+    "location_id": 70000005,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000033,
+    "location_id": 70000005,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000034,
+    "location_id": 70000005,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000035,
+    "location_id": 70000005,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000036,
+    "location_id": 70000005,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000037,
+    "location_id": 70000005,
+    "available": 3,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000038,
+    "location_id": 70000005,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000039,
+    "location_id": 70000005,
+    "available": 3,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000040,
+    "location_id": 70000005,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000001,
+    "location_id": 70000006,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000002,
+    "location_id": 70000006,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000003,
+    "location_id": 70000006,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000004,
+    "location_id": 70000006,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000005,
+    "location_id": 70000006,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000006,
+    "location_id": 70000006,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000007,
+    "location_id": 70000006,
+    "available": 3,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000008,
+    "location_id": 70000006,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000009,
+    "location_id": 70000006,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000010,
+    "location_id": 70000006,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000011,
+    "location_id": 70000006,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000012,
+    "location_id": 70000006,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000013,
+    "location_id": 70000006,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000014,
+    "location_id": 70000006,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000015,
+    "location_id": 70000006,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000016,
+    "location_id": 70000006,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000017,
+    "location_id": 70000006,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000018,
+    "location_id": 70000006,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000019,
+    "location_id": 70000006,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000020,
+    "location_id": 70000006,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000021,
+    "location_id": 70000006,
+    "available": 3,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000022,
+    "location_id": 70000006,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000023,
+    "location_id": 70000006,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000024,
+    "location_id": 70000006,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000025,
+    "location_id": 70000006,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000026,
+    "location_id": 70000006,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000027,
+    "location_id": 70000006,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000028,
+    "location_id": 70000006,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000029,
+    "location_id": 70000006,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000030,
+    "location_id": 70000006,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000031,
+    "location_id": 70000006,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000032,
+    "location_id": 70000006,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000033,
+    "location_id": 70000006,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000034,
+    "location_id": 70000006,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000035,
+    "location_id": 70000006,
+    "available": 3,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000036,
+    "location_id": 70000006,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000037,
+    "location_id": 70000006,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000038,
+    "location_id": 70000006,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000039,
+    "location_id": 70000006,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000040,
+    "location_id": 70000006,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000001,
+    "location_id": 70000007,
+    "available": 3,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000002,
+    "location_id": 70000007,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000003,
+    "location_id": 70000007,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000004,
+    "location_id": 70000007,
+    "available": 3,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000005,
+    "location_id": 70000007,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000006,
+    "location_id": 70000007,
+    "available": 3,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000007,
+    "location_id": 70000007,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000008,
+    "location_id": 70000007,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000009,
+    "location_id": 70000007,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000010,
+    "location_id": 70000007,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000011,
+    "location_id": 70000007,
+    "available": 3,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000012,
+    "location_id": 70000007,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000013,
+    "location_id": 70000007,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000014,
+    "location_id": 70000007,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000015,
+    "location_id": 70000007,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000016,
+    "location_id": 70000007,
+    "available": 3,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000017,
+    "location_id": 70000007,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000018,
+    "location_id": 70000007,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000019,
+    "location_id": 70000007,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000020,
+    "location_id": 70000007,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000021,
+    "location_id": 70000007,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000022,
+    "location_id": 70000007,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000023,
+    "location_id": 70000007,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000024,
+    "location_id": 70000007,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000025,
+    "location_id": 70000007,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000026,
+    "location_id": 70000007,
+    "available": 3,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000027,
+    "location_id": 70000007,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000028,
+    "location_id": 70000007,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000029,
+    "location_id": 70000007,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000030,
+    "location_id": 70000007,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000031,
+    "location_id": 70000007,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000032,
+    "location_id": 70000007,
+    "available": 1,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000033,
+    "location_id": 70000007,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000034,
+    "location_id": 70000007,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000035,
+    "location_id": 70000007,
+    "available": 3,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000036,
+    "location_id": 70000007,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000037,
+    "location_id": 70000007,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000038,
+    "location_id": 70000007,
+    "available": 0,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000039,
+    "location_id": 70000007,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000040,
+    "location_id": 70000007,
+    "available": 2,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000001,
+    "location_id": 70000008,
+    "available": 12,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000002,
+    "location_id": 70000008,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000003,
+    "location_id": 70000008,
+    "available": 20,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000004,
+    "location_id": 70000008,
+    "available": 8,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000005,
+    "location_id": 70000008,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000006,
+    "location_id": 70000008,
+    "available": 12,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000007,
+    "location_id": 70000008,
+    "available": 20,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000008,
+    "location_id": 70000008,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000009,
+    "location_id": 70000008,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000010,
+    "location_id": 70000008,
+    "available": 20,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000011,
+    "location_id": 70000008,
+    "available": 20,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000012,
+    "location_id": 70000008,
+    "available": 20,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000013,
+    "location_id": 70000008,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000014,
+    "location_id": 70000008,
+    "available": 20,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000015,
+    "location_id": 70000008,
+    "available": 20,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000016,
+    "location_id": 70000008,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000017,
+    "location_id": 70000008,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000018,
+    "location_id": 70000008,
+    "available": 12,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000019,
+    "location_id": 70000008,
+    "available": 8,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000020,
+    "location_id": 70000008,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000021,
+    "location_id": 70000008,
+    "available": 8,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000022,
+    "location_id": 70000008,
+    "available": 12,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000023,
+    "location_id": 70000008,
+    "available": 12,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000024,
+    "location_id": 70000008,
+    "available": 20,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000025,
+    "location_id": 70000008,
+    "available": 12,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000026,
+    "location_id": 70000008,
+    "available": 20,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000027,
+    "location_id": 70000008,
+    "available": 20,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000028,
+    "location_id": 70000008,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000029,
+    "location_id": 70000008,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000030,
+    "location_id": 70000008,
+    "available": 8,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000031,
+    "location_id": 70000008,
+    "available": 20,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000032,
+    "location_id": 70000008,
+    "available": 20,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000033,
+    "location_id": 70000008,
+    "available": 8,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000034,
+    "location_id": 70000008,
+    "available": 20,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000035,
+    "location_id": 70000008,
+    "available": 12,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000036,
+    "location_id": 70000008,
+    "available": 20,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000037,
+    "location_id": 70000008,
+    "available": 20,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000038,
+    "location_id": 70000008,
+    "available": 20,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000039,
+    "location_id": 70000008,
+    "available": 5,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  },
+  {
+    "inventory_item_id": 92000040,
+    "location_id": 70000008,
+    "available": 12,
+    "updated_at": "2026-10-20T23:00:00+05:30"
+  }
+]

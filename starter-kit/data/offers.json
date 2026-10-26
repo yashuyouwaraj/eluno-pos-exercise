@@ -1,0 +1,154 @@
+[
+  {
+    "offer_id": "FESTIVE10",
+    "name": "Festive 10% on frames",
+    "active": true,
+    "valid_from": "2026-10-01",
+    "valid_to": "2026-11-15",
+    "stackable": false,
+    "priority": 10,
+    "rule": {
+      "applies_to": "frame",
+      "discount": {
+        "type": "percent",
+        "value_bps": 1000
+      },
+      "max_discount_paise": 200000
+    }
+  },
+  {
+    "offer_id": "SECONDPAIR50",
+    "name": "50% off second pair lenses",
+    "active": true,
+    "valid_from": "2026-01-01",
+    "valid_to": "2026-12-31",
+    "stackable": true,
+    "priority": 20,
+    "rule": {
+      "applies_to": "lens",
+      "condition": {
+        "min_pairs_in_cart": 2
+      },
+      "discount": {
+        "type": "percent",
+        "value_bps": 5000,
+        "on": "lowest_priced_lens_line"
+      }
+    }
+  },
+  {
+    "offer_id": "PRIORITY500",
+    "name": "Priority customer ₹500 off",
+    "active": true,
+    "valid_from": "2026-01-01",
+    "valid_to": "2026-12-31",
+    "stackable": true,
+    "priority": 30,
+    "rule": {
+      "applies_to": "cart",
+      "condition": {
+        "customer_tag": "priority"
+      },
+      "discount": {
+        "type": "flat",
+        "value_paise": 50000
+      }
+    }
+  },
+  {
+    "offer_id": "PGX_CAMPAIGN15",
+    "name": "Progressive campaign 15% on progressive lenses",
+    "active": true,
+    "valid_from": "2026-10-01",
+    "valid_to": "2026-10-31",
+    "stackable": false,
+    "priority": 15,
+    "rule": {
+      "applies_to": "lens",
+      "condition": {
+        "lens_type": "progressive",
+        "customer_tag": "campaign:progressive_oct26"
+      },
+      "discount": {
+        "type": "percent",
+        "value_bps": 1500
+      }
+    }
+  },
+  {
+    "offer_id": "FREE_BLUECUT_PGX",
+    "name": "Free blue-cut upgrade on progressive 1.60+",
+    "active": true,
+    "valid_from": "2026-09-01",
+    "valid_to": "2026-12-31",
+    "stackable": true,
+    "priority": 25,
+    "rule": {
+      "applies_to": "lens",
+      "condition": {
+        "lens_type": "progressive",
+        "index_min": 1.6,
+        "coating": "blue_cut"
+      },
+      "discount": {
+        "type": "flat",
+        "value_paise": 100000
+      }
+    }
+  },
+  {
+    "offer_id": "BUNDLE300",
+    "name": "₹300 off when frame and lens billed together",
+    "active": true,
+    "valid_from": "2026-01-01",
+    "valid_to": "2026-12-31",
+    "stackable": true,
+    "priority": 40,
+    "rule": {
+      "applies_to": "pair",
+      "condition": {
+        "has_frame_and_lens": true
+      },
+      "discount": {
+        "type": "flat",
+        "value_paise": 30000
+      }
+    }
+  },
+  {
+    "offer_id": "MANAGER_OVERRIDE",
+    "name": "Manager discretionary discount",
+    "active": true,
+    "valid_from": "2026-01-01",
+    "valid_to": "2026-12-31",
+    "stackable": false,
+    "priority": 99,
+    "rule": {
+      "applies_to": "cart",
+      "requires": {
+        "role": "store_manager",
+        "reason_code": true
+      },
+      "discount": {
+        "type": "percent",
+        "value_bps_max": 1000
+      }
+    }
+  },
+  {
+    "offer_id": "MONSOON20",
+    "name": "Monsoon 20% (expired)",
+    "active": false,
+    "valid_from": "2026-06-01",
+    "valid_to": "2026-08-31",
+    "stackable": false,
+    "priority": 10,
+    "rule": {
+      "applies_to": "frame",
+      "discount": {
+        "type": "percent",
+        "value_bps": 2000
+      }
+    }
+  }
+]

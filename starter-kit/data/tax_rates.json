@@ -1,0 +1,49 @@
+{
+  "about": "HSN -> GST rate in basis points, with effective dates. Rates in this kit are for the exercise. Prices are inclusive of GST; intra-state supply, so CGST = SGST = rate/2.",
+  "rates": [
+    {
+      "hsn": "90031900",
+      "description": "Spectacle frames",
+      "rate_bps": 1800,
+      "effective_from": "2025-09-22"
+    },
+    {
+      "hsn": "90015000",
+      "description": "Spectacle lenses (ophthalmic)",
+      "rate_bps": 500,
+      "effective_from": "2025-09-22"
+    },
+    {
+      "hsn": "90049000",
+      "description": "Sunglasses (non-corrective)",
+      "rate_bps": 1800,
+      "effective_from": "2025-09-22"
+    },
+    {
+      "hsn": "90041000",
+      "description": "Corrective spectacles sold as one unit",
+      "rate_bps": 500,
+      "effective_from": "2025-09-22"
+    },
+    {
+      "hsn": "998599",
+      "description": "Services: eye test / fitting",
+      "rate_bps": 1800,
+      "effective_from": "2025-09-22"
+    },
+    {
+      "hsn": "90031900",
+      "description": "Spectacle frames",
+      "rate_bps": 1800,
+      "effective_from": "2017-07-01",
+      "effective_to": "2025-09-21"
+    },
+    {
+      "hsn": "90015000",
+      "description": "Spectacle lenses (ophthalmic)",
+      "rate_bps": 1200,
+      "effective_from": "2017-07-01",
+      "effective_to": "2025-09-21"
+    }
+  ]
+}

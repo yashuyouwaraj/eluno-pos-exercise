@@ -261,10 +261,10 @@ class CashierCLI:
 
     def cashier_menu(self):
         while True:
-            choice=self._submenu("CASHIER",(("1","New Sale"),("2","Find Customer / Prescription"),("3","Find Sale / Invoice"),("4","Cash Drawer"),("5","Add Prescription")))
+            choice=self._submenu("CASHIER",(("1","New Sale"),("2","Find Customer / Prescription"),("3","Find Sale / Invoice"),("4","Cash Drawer"),("5","Add Prescription"),("6","Browse Product Catalog")))
             if choice=="0": return
-            handler={"1":self.new_sale,"2":self.find_customer,"3":lambda:self.invoice(True),"4":self.cash_drawer,"5":self.add_prescription}.get(choice)
-            if not handler:self.out("Please enter a menu number from 0 to 5.");continue
+            handler={"1":self.new_sale,"2":self.find_customer,"3":lambda:self.invoice(True),"4":self.cash_drawer,"5":self.add_prescription,"6":self.browse_catalog}.get(choice)
+            if not handler:self.out("Please enter a menu number from 0 to 6.");continue
             try: handler()
             except ApiError as exc:self.out("Unable to complete that action: "+str(exc))
             except (ValueError,KeyError) as exc:self.out("Please check the information entered: "+str(exc))
@@ -282,13 +282,34 @@ class CashierCLI:
 
     def catalog_inventory_menu(self):
         while True:
-            choice=self._submenu("CATALOG & INVENTORY",(("1","Add a Frame or Lens"),("2","Receive Frame Stock")))
+            choice=self._submenu("CATALOG & INVENTORY",(("1","Add a Frame or Lens"),("2","Receive Frame Stock"),("3","Browse Product Catalog")))
             if choice=="0":return
-            handler={"1":self.add_catalog_product,"2":self.receive_frame_stock}.get(choice)
-            if not handler:self.out("Please choose 1, 2, or 0.");continue
+            handler={"1":self.add_catalog_product,"2":self.receive_frame_stock,"3":self.browse_catalog}.get(choice)
+            if not handler:self.out("Please choose 1, 2, 3, or 0.");continue
             try:handler()
             except ApiError as exc:self.out("Unable to complete that action: "+str(exc))
             except (ValueError,KeyError) as exc:self.out("Please check the information entered: "+str(exc))
+
+    def browse_catalog(self):
+        self.out("\nACTIVE PRODUCT CATALOG")
+        for line_type in ("frame", "lens"):
+            _,result=self.api.request("GET","/api/catalog/variants?line_type="+line_type)
+            variants=result.get("variants")
+            if not isinstance(variants,list):
+                raise ApiError("Catalog returned an unexpected response; expected a variants list.")
+            self.out("{}s:".format(line_type.title()))
+            if not variants:
+                self.out("  No active {} products are available.".format(line_type))
+                continue
+            for variant in variants:
+                title=" ".join(part for part in (
+                    str(variant.get("product_title") or "").strip(),
+                    str(variant.get("variant_title") or "").strip(),
+                ) if part)
+                self.out("  {} — {} (ID {})".format(
+                    title or "Variant",rupees(variant.get("price_paise")),variant["variant_id"],
+                ))
+        self.out("To sell a product, choose Cashier > New Sale, then select its item type.")
 
     def add_catalog_product(self):
         line_type=self._choose("Product type",(("frame","Frame"),("lens","Lens")),"frame")

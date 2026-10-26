@@ -69,10 +69,11 @@ stock at HSR.
 The CLI will not start servers itself. If the application is unavailable, it
 prints the startup command rather than launching a duplicate process. The main
 menu is **Cashier**, **Admin & Management**, and **System Status**. Cashier
-contains New sale, customer/prescription and sale/invoice lookup, and drawer
-operations, plus optometrist-confirmed prescription entry for the local mock.
-Admin also includes **Catalog & Inventory**: add a frame or made-to-order lens,
-or receive tracked frame stock at an active store. New SKUs must be unique.
+contains New sale, customer/prescription and sale/invoice lookup, drawer
+operations, optometrist-confirmed prescription entry for the local mock, and
+**Browse Product Catalog**. Admin's **Catalog & Inventory** also includes
+**Browse Product Catalog**, as well as adding a frame or made-to-order lens
+and receiving tracked frame stock at an active store. New SKUs must be unique.
 Frames begin with zero available stock; record a delivery with **Receive Frame
 Stock** before checkout. Lens products are never given stock levels.
 These writes go to the Shopify mock, which the cashier reads for product,
@@ -92,8 +93,9 @@ flags are ignored. Campaign walk-ins without a Shopify customer record cannot
 be flagged: the supplied store-tool API exposes no queue/campaign-walk-in
 lookup. The POS does not infer these flags. The customer is attached to the
 sale and saved invoice snapshot. The flow offers numbered frame/lens/done
-choices and lists
-active catalog variants filtered to the selected item type. Select a variant by
+choices and lists active catalog variants filtered to the selected item type.
+Use **Browse Product Catalog** from Cashier or Admin to view active frames and
+lenses outside a sale. Select a variant by
 its displayed number or ID; this prevents choosing a lens variant when adding a
 frame. Lens specifications come from the selected catalog variant and are
 validated against the customer's latest valid prescription before the line is

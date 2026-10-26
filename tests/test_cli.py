@@ -68,6 +68,18 @@ class CliTests(unittest.TestCase):
   cli.receive_frame_stock()
   self.assertEqual({'inventory_item_id':92,'location_id':7,'quantity':4,'actor':'S1','reference':'GRN-001'},api.receipt_payload)
   self.assertTrue(any('now has 4 available' in line for line in out))
+ def test_browse_catalog_shows_active_frames_and_lenses(self):
+  api=Api();cli,out=self.make([],api)
+  cli.browse_catalog()
+  text='\n'.join(out)
+  self.assertIn('Test frame',text)
+  self.assertIn('Test lens',text)
+  self.assertIn('ID 1',text)
+  self.assertIn('ID 91000002',text)
+  self.assertEqual([
+   ('GET','/api/catalog/variants?line_type=frame',None),
+   ('GET','/api/catalog/variants?line_type=lens',None),
+  ],[call for call in api.calls if call[0]=='GET' and call[1].startswith('/api/catalog/variants?')])
  def test_server_unavailable_is_clear(self):
   class Down(Api):
    def health(self): raise ApiError('Server unavailable: connection refused. Start it with: python scripts/start_local.py')

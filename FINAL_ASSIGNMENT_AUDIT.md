@@ -127,56 +127,53 @@ environments, environment files, coverage/build output and common editor/OS
 files. It also excludes `*.log`, local `.env.*` files (except `.env.example`),
 private-key/certificate file extensions, and `secrets.*`/`credentials.*`.
 
-This workspace has no `.git` directory, so tracked/staged files, history and a
-Git diff could not be inspected. No commit or push was made. Two ignored
-SQLite database files remain in the workspace; neither was deleted or reset.
-No SQLite sidecars were present in the final filename inventory. The
-POS-owned ledger may contain customer details and should not be published.
-No local environment, key, or credential-named files were found in the final
-inventory. No candidate private-key, access-token or API-credential patterns
-were found in the scanned text/source files. Python bytecode caches are
-ignored and are not deliverables.
+The repository is a Git checkout on `main`, aligned with `origin/main`; before
+this audit-document update the worktree was clean and all project files were
+tracked. This document is the only intentional modification. No commit or
+push was made. Two ignored SQLite database files and POS SQLite WAL/SHM
+sidecars are present in the workspace; they were preserved and are excluded
+by `.gitignore`. The POS-owned ledger may contain customer details and should
+not be published. A scan of source/configuration paths found no credential
+values or tracked database, cache, environment, or key files. Python bytecode
+caches are ignored and are not deliverables.
 
-One preliminary launcher smoke ran before the isolated rerun and inherited an
-unset `ELUNO_STATE_DB`, so application startup opened/initialized the
-workspace's default POS ledger. It performed health checks and exited the CLI
-without checkout or admin actions; no database was deleted or reset. The final
-startup/shutdown verification explicitly used temporary POS and mock
-databases. No pre-smoke snapshot exists to compare schema metadata.
+The final launcher smoke used dynamically allocated ports and temporary POS
+and mock databases. It reached both health checks, displayed the cashier menu,
+accepted option `0`, and exited successfully. The workspace databases were
+not used or changed by that smoke.
 
 ## Verification from this run
 
 | Command / check | Result |
 |---|---|
-| `python -m unittest tests.test_lens_validation tests.test_checkout tests.test_anomalies tests.test_http_app` | Exit 0; 79 focused tests passed, including axis range/grid/missing/malformed cases, both eyes, checkout side-effect spies, HTTP errors, and anomaly semantics. |
-| `python -m unittest discover -s tests` with `TZ=UTC` | Exit 0; 204 tests passed. |
-| `python -m unittest discover -s tests` with `TZ=Asia/Kolkata` | Exit 0; 204 tests passed. Business dates use explicit Bengaluru timezone conversion; boundary cases are tested. |
+| `python -m unittest discover -s tests -v` with `TZ=UTC` | Exit 0; 205 tests passed. |
+| `python -m unittest discover -s tests -v` with `TZ=Asia/Kolkata` | Exit 0; 205 tests passed. Business dates use explicit Bengaluru timezone conversion; boundary cases are tested. |
+| `python -m unittest tests.test_start_local tests.test_cli tests.test_local_mock_integration -v` | Exit 0; 58 tests passed, including cashier/admin catalog navigation, product creation and stock receipt visibility, checkout eligibility, mock persistence, and startup behavior. |
 | `python starter-kit/validate_seed.py` | Exit 0; 8 locations, 28 staff, 30 customers, 47 prescriptions, 92 variants, 8 offers, 320 inventory rows, 12 sample orders and 2 sample till sessions; seed consistent. |
 | `python -m compileall -q eluno_pos scripts tests` | Exit 0. |
-| `python -m unittest tests.test_local_mock_integration` with `TZ=UTC` | Exit 0; 12 integration tests passed, including prescription entry surviving mock restart, concurrent stock-sensitive checkout, admin-created/received frame sold through cashier checkout, persistent receipt retry, close/day-end/anomaly variance alert, checkout/invoice/refund/restock/day-end, and prescription/inventory rejection. |
-| Pylance diagnostics for modified Python files | No diagnostics in `models.py`; existing unused-item warnings remain in `services.py`, `checkout.py`, and test support code. No configured project lint/type-check command was present. |
-| `git status --short`, `git diff --check`, `git diff --stat`, `git diff`, tracked generated/secret path search | Git metadata is present, but every project path is untracked. The tracked diff/stat are empty and `git diff --check` passes only on that empty diff; `git ls-files` reports no tracked database/cache/secret matches. A meaningful source diff cannot be reviewed in this checkout. |
-| Startup/health/shutdown smoke | Final smoke ran `scripts/start_local.py` on dynamically allocated unused ports with temporary POS and mock SQLite files; both `/health` endpoints returned HTTP 200, CLI option `0` exited 0, and both child services stopped. Default-port services/data were not touched. |
+| Python 3.8 grammar compatibility | Python's `ast.parse(feature_version=(3, 8))` passed for all 45 Python files. Runtime tests used Python 3.14; a Python 3.8 runtime was not available. |
+| `scripts/start_local.py` isolated smoke | Exit 0 with dynamically allocated ports and temporary databases. Both services passed launcher health checks, the CLI accepted option `0`, and the launcher stopped its child services. |
+| Git hygiene | `git status --short --branch` now reports only `M FINAL_ASSIGNMENT_AUDIT.md`; `git diff --check` passes. Tracked-path scan found no local databases, caches, environment files, or key files. |
 
 ## Remaining launch risks
 
 The local mock cannot verify production Shopify/SMT/terminal contracts,
 authentication, legal invoice/credit-note controls, email delivery, or
-high-volume pagination. Checkout serialization prevents concurrent local
-checkouts in one application process from overselling the same last unit, but
-does not coordinate separate POS processes or other inventory writers.
-Ambiguous Shopify order/refund writes require an operator to reconcile outside
-the app. The existing local SQLite file was intentionally preserved; isolated
-smoke testing used temporary POS and mock database files.
+high-volume pagination. The mock's order listing is bounded and non-paginated.
+Checkout serialization prevents concurrent local checkouts in one application
+process from overselling the same last unit, but does not coordinate separate
+POS processes or other inventory writers. Ambiguous Shopify order/refund
+writes require an operator to reconcile outside the app. Existing ignored
+workspace databases and their sidecars were preserved; isolated startup
+verification used temporary databases.
 
 ## Submission verdict
 
-The assignment workflows and required local verification pass in this
-workspace, including both timezone runs and the mandatory 5-degree axis
-validation. An unconditional submission-ready verdict is withheld because,
-although `.git` metadata exists, all project files appear untracked: staged
-changes, tracked modifications and a meaningful source diff cannot be
-established here. `git diff --check` returned successfully against an empty
-tracked diff. Review the intended files in a correctly initialized Git
-checkout before submission. The sub-10-second performance target and
-production integrations remain unverified as stated above.
+The assignment's local workflows and verification pass in this checkout,
+including both timezone runs, the mandatory 5-degree axis validation, catalog
+creation-to-checkout coverage, and isolated startup/shutdown. No source defect
+requiring a fix was confirmed during this audit. **Ready to submit as an
+exercise implementation**, with the mock/production limitations above
+disclosed. This is not a production-readiness approval: the sub-10-second
+performance target, real external integrations, and production controls
+remain unverified.

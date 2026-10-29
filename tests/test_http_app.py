@@ -227,7 +227,16 @@ class RefundLookupShopify:
 
     def create_refund(self, order_id, payload):
         self.calls.append(("CREATE_REFUND", order_id, payload))
-        return {"id": 199}
+        return {
+            "id": 199,
+            "order_id": order_id,
+            "refund_line_items": payload["refund_line_items"],
+            "transactions": [
+                dict(transaction, id=299, status="success")
+                for transaction in payload["transactions"]
+            ],
+            "note_attributes": payload["note_attributes"],
+        }
 
 
 class ProbeSmt:
@@ -250,9 +259,10 @@ class ProbeTerminal:
 
 
 class MockRefundTerminal:
-    def __init__(self): self.calls = []
+    def __init__(self): self.calls = []; self.error = None
     def refund(self, charge_id, amount_paise, reason, idempotency_key):
         self.calls.append((charge_id, amount_paise, reason, idempotency_key))
+        if self.error: raise self.error
         return {
             "refund_id": "terminal-refund-1",
             "charge_id": charge_id,
@@ -1118,6 +1128,30 @@ class HttpApiTests(unittest.TestCase):
         self.assertEqual("ELU/HSR/FY26/00001",second["invoice_no"])
         refund_calls=[call for call in self.refund_shopify.calls if call[0]=="CREATE_REFUND"]
         self.assertEqual(1,len(refund_calls))
+
+    def test_refund_recovery_endpoint_retries_terminal_idempotently_and_verifies_shopify(self):
+        body=json.dumps({
+            "order_id":"99","invoice_no":"ELU/HSR/FY26/00001","store_code":"HSR",
+            "operator":"S1","reason":"CHANGED_MIND","idempotency_key":"refund-recovery-api",
+        }).encode()
+        self.refund_terminal.error=HttpRequestError(None,"terminal response lost")
+        status,pending=self.request_json("POST","/api/refunds",body,role="cashier")
+        self.assertEqual(202,status)
+        self.assertEqual("REFUND_UNKNOWN",pending["status"])
+        self.refund_terminal.error=None
+        status,recovered=self.request_json(
+            "POST","/api/refunds/{}/recover".format(pending["refund_id"]),b"{}",role="cashier",
+        )
+        self.assertEqual(202,status)
+        self.assertEqual("COMPLETED",recovered["status"])
+        self.assertEqual(2,len(self.refund_terminal.calls))
+        self.assertEqual(
+            self.refund_terminal.calls[0][3],
+            self.refund_terminal.calls[1][3],
+        )
+        self.assertEqual(1,len([
+            call for call in self.refund_shopify.calls if call[0]=="CREATE_REFUND"
+        ]))
 
     def test_refund_endpoint_rejects_invoice_as_order_id_without_numeric_conversion(self):
         status,payload=self.request_json("POST","/api/refunds",json.dumps({

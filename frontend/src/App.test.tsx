@@ -322,7 +322,9 @@ function installApi(overrides: Record<string, unknown> = {}) {
         restockable: true,
       }],
     };
-    else if (url === "/api/refunds") data = { refund_id: "refund-44", order_id: "981237650001", invoice_no: "ELU/HSR/FY26/00012", status: "COMPLETED" };
+    else if (url === "/api/refunds") data = overrides.refundSubmission || { refund_id: "refund-44", order_id: "981237650001", invoice_no: "ELU/HSR/FY26/00012", status: "COMPLETED" };
+    else if (url.startsWith("/api/refunds/") && url.endsWith("/recover")) data = overrides.refundRecovery || { refund_id: "refund-44", order_id: "981237650001", invoice_no: "ELU/HSR/FY26/00012", status: "COMPLETED" };
+    else if (url.startsWith("/api/refunds/")) data = { refund_id: "refund-44", order_id: "981237650001", invoice_no: "ELU/HSR/FY26/00012", status: "REFUND_UNKNOWN" };
     else if (url.startsWith("/api/reports/day-end")) data = {
       store_id: "7",
       store_code: "HSR",
@@ -1036,6 +1038,28 @@ describe("browser POS workflows", () => {
       invoice_no: "ELU/HSR/FY26/00012",
       store_code: "HSR",
     });
+  });
+
+  it("offers reconciliation for an unknown refund without submitting another refund", async () => {
+    const user = userEvent.setup();
+    const calls = installApi({
+      userRole: "cashier",
+      refundSubmission: { refund_id: "refund-44", order_id: "981237650001", invoice_no: "ELU/HSR/FY26/00012", status: "REFUND_UNKNOWN" },
+      refundRecovery: { refund_id: "refund-44", order_id: "981237650001", invoice_no: "ELU/HSR/FY26/00012", status: "COMPLETED" },
+    });
+    render(<App />);
+    await screen.findByRole("option", { name: /HSR Store/ });
+    await user.click(screen.getByRole("button", { name: "Returns & Refunds" }));
+    await user.type(screen.getByLabelText("Invoice number or Shopify order ID"), "ELU/HSR/FY26/00012");
+    await user.click(screen.getByRole("button", { name: "Find transaction" }));
+    await user.selectOptions(screen.getByLabelText("Refund reason"), "CUSTOMER_RETURN");
+    await user.click(screen.getByLabelText(/I confirm transaction ELU\/HSR\/FY26\/00012/));
+    await user.click(screen.getByRole("button", { name: "Confirm full refund" }));
+    expect(await screen.findByText("Refund refund_unknown")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Reconcile refund" }));
+    expect(await screen.findByText("Refund completed")).toBeInTheDocument();
+    expect(calls.filter((call) => call.url === "/api/refunds")).toHaveLength(1);
+    expect(calls.some((call) => call.url === "/api/refunds/refund-44/recover")).toBe(true);
   });
 
   it("clears a resolved refund order as soon as the lookup identifier changes", async () => {

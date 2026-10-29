@@ -11,7 +11,13 @@ def order(refunds=None):
 class Shopify:
  def __init__(self, outcome=None): self.o=order();self.calls=[];self.outcome=outcome
  def get_order(self,x): return self.o
- def create_refund(self,x,p): self.calls.append(p); 
+ def create_refund(self,x,p):
+  self.calls.append(p)
+  refund={'id':99+len(self.calls),'order_id':x,'refund_line_items':p['refund_line_items'],
+   'transactions':[dict(tx,id=100+len(self.calls),status='success') for tx in p['transactions']],
+   'note_attributes':p['note_attributes']}
+  self.o['refunds'].append(refund)
+  return refund
  def list_locations(self): return [{'id':7,'eluno':{'store_code':'HSR'}}]
 
 class Terminal:
@@ -67,7 +73,7 @@ class OpsTests(unittest.TestCase):
    self.store.movement(till['session_id'],'paid_in',100,'cashier','change','after-close')
   self.assertEqual('TILL_REVIEWED',self.store.audit_events(till['session_id'])[-1]['action'])
  def test_refund_payload_reverses_tax_restocks_frame_not_lens_and_is_idempotent(self):
-  shop=Shopify();shop.create_refund=lambda x,p: shop.calls.append(p) or {'id':99}
+  shop=Shopify()
   terminal=Terminal();svc=RefundService(shop,self.store,terminal=terminal);r=svc.refund(1,'HSR','A','CHANGED',return_item_ids=['10']);again=svc.refund(1,'HSR','A','CHANGED',return_item_ids=['10'])
   self.assertEqual('COMPLETED',r['status']);self.assertEqual(r['refund_id'],again['refund_id']);self.assertEqual(1,len(shop.calls));self.assertEqual('return',shop.calls[0]['refund_line_items'][0]['restock_type']);self.assertEqual('no_restock',shop.calls[0]['refund_line_items'][1]['restock_type']);self.assertEqual(1500,r['tax_paise'])
   self.assertEqual('terminal-refund-1',r['terminal_refund_id']);self.assertEqual(1,len(terminal.calls))
@@ -91,16 +97,14 @@ class OpsTests(unittest.TestCase):
   row=migrated.refund_get('r1')
   self.assertEqual('99',row['order_id']);self.assertIsNone(row['invoice_no'])
  def test_partial_refunds_track_quantities_and_restock_by_line_type(self):
-  shop=Shopify();shop.o['line_items'][0]['quantity']=2;shop.o['line_items'][0]['price']='100.00';shop.o['line_items'][0]['tax_lines']=[{'price':'18.00'}];shop.o['line_items'][1]['price']='50.00';shop.o['line_items'][1]['tax_lines']=[{'price':'2.50'}];shop.o['total_price']='250.00';shop.o['transactions'][0]['amount']='250.00';shop.create_refund=lambda x,p: shop.calls.append(p) or {'id':99}
+  shop=Shopify();shop.o['line_items'][0]['quantity']=2;shop.o['line_items'][0]['price']='100.00';shop.o['line_items'][0]['tax_lines']=[{'price':'18.00'}];shop.o['line_items'][1]['price']='50.00';shop.o['line_items'][1]['tax_lines']=[{'price':'2.50'}];shop.o['total_price']='250.00';shop.o['transactions'][0]['amount']='250.00'
   terminal=Terminal();svc=RefundService(shop,self.store,terminal=terminal);one=svc.refund(1,'HSR','A','x',items=[{'line_item_id':10,'quantity':1}],idempotency_key='one',return_item_ids=['10'])
   self.assertEqual(900,one['tax_paise']);self.assertEqual('return',shop.calls[0]['refund_line_items'][0]['restock_type'])
-  shop.o['refunds']=[{'refund_line_items':shop.calls[0]['refund_line_items'],'transactions':[]}]
   two=svc.refund(1,'HSR','A','x',items=[{'line_item_id':11,'quantity':1}],idempotency_key='two')
   self.assertEqual('no_restock',shop.calls[1]['refund_line_items'][0]['restock_type']);self.assertNotEqual(one['refund_id'],two['refund_id'])
-  shop.o['refunds'].append({'refund_line_items':shop.calls[1]['refund_line_items'],'transactions':[]})
   with self.assertRaises(OperationsError):svc.refund(1,'HSR','A','x',items=[{'line_item_id':11,'quantity':1}],idempotency_key='three')
  def test_partial_refund_idempotency_returns_same_record(self):
-  shop=Shopify();shop.create_refund=lambda x,p: shop.calls.append(p) or {'id':99};svc=RefundService(shop,self.store,terminal=Terminal())
+  shop=Shopify();svc=RefundService(shop,self.store,terminal=Terminal())
   first=svc.refund(1,'HSR','A','x',items=[{'line_item_id':10,'quantity':1}],idempotency_key='same',return_item_ids=['10'])
   second=svc.refund(1,'HSR','A','x',items=[{'line_item_id':10,'quantity':1}],idempotency_key='same',return_item_ids=['10'])
   self.assertEqual(first['refund_id'],second['refund_id']);self.assertEqual(1,len(shop.calls))
@@ -134,6 +138,64 @@ class OpsTests(unittest.TestCase):
   self.assertEqual(first['refund_id'],replay['refund_id'])
   self.assertEqual(1,len(terminal.calls))
   self.assertEqual(1,len(shop.calls))
+ def test_unknown_refund_blocks_a_new_idempotency_key_for_the_order(self):
+  shop=Shopify();terminal=Terminal()
+  def fail_create(order_id,payload):
+   shop.calls.append(payload)
+   raise HttpRequestError(503,'Shopify unavailable')
+  shop.create_refund=fail_create
+  svc=RefundService(shop,self.store,terminal=terminal)
+  result=svc.refund(1,'HSR','A','x',idempotency_key='first-attempt')
+  self.assertEqual('REFUND_UNKNOWN',result['status'])
+  with self.assertRaisesRegex(OperationsError,'must be reconciled'):
+   svc.refund(1,'HSR','A','x',idempotency_key='different-attempt')
+  self.assertEqual(1,len(shop.calls))
+  self.assertEqual(1,len(terminal.calls))
+ def test_terminal_timeout_can_be_reconciled_with_the_same_idempotency_key(self):
+  shop=Shopify();terminal=Terminal(HttpRequestError(None,'response lost'))
+  svc=RefundService(shop,self.store,terminal=terminal)
+  first=svc.refund(1,'HSR','A','x',idempotency_key='terminal-recovery')
+  self.assertEqual('REFUND_UNKNOWN',first['status'])
+  terminal.outcome=None
+  recovered=svc.recover(first['refund_id'])
+  self.assertEqual('COMPLETED',recovered['status'])
+  self.assertEqual(2,len(terminal.calls))
+  self.assertEqual(1,len({call[3] for call in terminal.calls}))
+  self.assertEqual(1,len(shop.calls))
+ def test_shopify_write_response_loss_is_reconciled_without_replaying_write(self):
+  shop=Shopify();terminal=Terminal()
+  def save_then_lose_response(order_id,payload):
+   Shopify.create_refund(shop,order_id,payload)
+   raise HttpRequestError(None,'response lost')
+  shop.create_refund=save_then_lose_response
+  svc=RefundService(shop,self.store,terminal=terminal)
+  first=svc.refund(1,'HSR','A','x',idempotency_key='shopify-response-loss')
+  self.assertEqual('REFUND_UNKNOWN',first['status'])
+  recovered=svc.recover(first['refund_id'])
+  self.assertEqual('COMPLETED',recovered['status'])
+  self.assertEqual('100',recovered['shopify_refund_id'])
+  self.assertEqual(1,len(terminal.calls))
+  self.assertEqual(1,len(shop.calls))
+ def test_shopify_refund_response_must_match_order_amount_and_credit_note(self):
+  shop=Shopify()
+  shop.create_refund=lambda order_id,payload: {
+   'id':99,'order_id':999,'refund_line_items':payload['refund_line_items'],
+   'transactions':[dict(tx,id=100,status='success') for tx in payload['transactions']],
+   'note_attributes':payload['note_attributes'],
+  }
+  svc=RefundService(shop,self.store,terminal=Terminal())
+  result=svc.refund(1,'HSR','A','x',idempotency_key='mismatched-shopify-response')
+  self.assertEqual('REFUND_UNKNOWN',result['status'])
+  self.assertIn('different order',result['error'])
+  self.assertIsNone(result['shopify_refund_id'])
+ def test_recovery_claim_prevents_parallel_reconciliation(self):
+  row,_=self.store.refund_create('1','HSR','A','x',100,0,'claim-test')
+  claim,token=self.store.refund_claim_recovery(row['refund_id'])
+  duplicate,duplicate_row=self.store.refund_claim_recovery(row['refund_id'])
+  self.assertEqual('REFUND_RECONCILING',claim['status'])
+  self.assertIsNone(duplicate)
+  self.assertEqual('REFUND_RECONCILING',duplicate_row['status'])
+  self.store.refund_release_recovery(row['refund_id'],token)
  def test_cash_refund_requires_an_open_store_till(self):
   shop=Shopify();shop.o['transactions'][0]['gateway']='cash'
   svc=RefundService(shop,self.store)
@@ -178,7 +240,7 @@ class OpsTests(unittest.TestCase):
   self.assertEqual([till['session_id']],[alert['session_id'] for alert in alerts])
   self.assertEqual([],self.store.cash_variance_alerts('8',business_date))
  def test_pending_refund_and_cash_post_recovery_never_repeat_shopify(self):
-  shop=Shopify();shop.o['transactions'][0]['gateway']='cash';shop.create_refund=lambda x,p: shop.calls.append(p) or {'id':99}; svc=RefundService(shop,self.store)
+  shop=Shopify();shop.o['transactions'][0]['gateway']='cash'; svc=RefundService(shop,self.store)
   till=self.store.open_till('HSR','7','A',0); r=svc.refund(1,'HSR','A','x',till['session_id'])
   self.assertEqual('POSTED',r['cash_post_status']);self.assertEqual(1,len(shop.calls))
   self.store.refund_update(r['refund_id'],'COMPLETED',cash_post_status='PENDING')

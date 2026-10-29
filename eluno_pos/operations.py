@@ -1,6 +1,6 @@
 """Durable, conservative refunds and cash-till operations."""
 from contextlib import contextmanager
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 import json, sqlite3, threading
 import hashlib
 from pathlib import Path
@@ -38,6 +38,7 @@ class OperationsStore:
                 try: c.execute("ALTER TABLE refunds ADD COLUMN " + column)
                 except sqlite3.OperationalError: pass
             c.execute("CREATE TABLE IF NOT EXISTS credit_series(store_code TEXT PRIMARY KEY,next_number INTEGER NOT NULL)")
+            c.execute("CREATE TABLE IF NOT EXISTS refund_recovery_leases(refund_id TEXT PRIMARY KEY,lease_token TEXT NOT NULL,expires_at TEXT NOT NULL)")
             c.execute("""CREATE TABLE IF NOT EXISTS till_sessions(
                 session_id TEXT PRIMARY KEY,
                 store_code TEXT NOT NULL,
@@ -83,7 +84,7 @@ class OperationsStore:
         c.execute("PRAGMA foreign_keys=ON")
         try: yield c
         finally: c.close()
-    def refund_create(self, order_id, store, operator, reason, amount, tax, request_key=None, lines=None, request_hash=None, invoice_no=None):
+    def refund_create(self, order_id, store, operator, reason, amount, tax, request_key=None, lines=None, request_hash=None, invoice_no=None, cash_till_id=None):
         request_key=request_key or 'full:'+str(order_id); lines=lines or []
         with self.lock, self.session() as c:
             c.execute("BEGIN IMMEDIATE"); row=c.execute("SELECT * FROM refunds WHERE request_key=?",(request_key,)).fetchone()
@@ -92,13 +93,59 @@ class OperationsStore:
                     c.execute("ROLLBACK")
                     raise OperationsError('idempotency key was already used for a different or unknown refund request')
                 c.execute("COMMIT"); return dict(row),False
+            active=c.execute(
+                "SELECT refund_id FROM refunds WHERE order_id=? AND status IN ('PENDING','REFUND_UNKNOWN','REFUND_RECONCILING') LIMIT 1",
+                (str(order_id),),
+            ).fetchone()
+            if active:
+                c.execute("ROLLBACK")
+                raise OperationsError(
+                    'refund {} for this order must be reconciled before another refund can be submitted'.format(active["refund_id"])
+                )
             seq=c.execute("SELECT next_number FROM credit_series WHERE store_code=?",(store,)).fetchone(); n=int(seq[0]) if seq else 1
             c.execute("INSERT INTO credit_series(store_code,next_number) VALUES (?,?) ON CONFLICT(store_code) DO UPDATE SET next_number=excluded.next_number",(store,n+1))
             rid='refund_'+uuid4().hex; t=now(); credit='ELU/{}/FY26/CN/{:05d}'.format(store,n)
-            c.execute("INSERT INTO refunds(refund_id,request_key,order_id,status,store_code,operator,reason,credit_note,amount_paise,tax_paise,lines_json,created_at,updated_at,request_hash,invoice_no) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",(rid,request_key,str(order_id),'PENDING',store,operator,reason,credit,amount,tax,json.dumps(lines,separators=(',',':')),t,t,request_hash,invoice_no))
+            c.execute("INSERT INTO refunds(refund_id,request_key,order_id,status,store_code,operator,reason,credit_note,amount_paise,tax_paise,lines_json,created_at,updated_at,request_hash,invoice_no,cash_till_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",(rid,request_key,str(order_id),'PENDING',store,operator,reason,credit,amount,tax,json.dumps(lines,separators=(',',':')),t,t,request_hash,invoice_no,cash_till_id))
             self._audit_in_session(c,operator,'REFUND_SUBMITTED','refund',rid,reason=reason,metadata={'order_id':str(order_id),'amount_paise':amount})
             c.execute("COMMIT")
             return self.refund_get(rid),True
+    def refund_claim_recovery(self, refund_id):
+        lease_token=uuid4().hex
+        with self.lock,self.session() as c:
+            c.execute("BEGIN IMMEDIATE")
+            row=c.execute("SELECT * FROM refunds WHERE refund_id=?",(refund_id,)).fetchone()
+            if not row:
+                c.execute("ROLLBACK")
+                raise OperationsError('refund was not found')
+            lease=c.execute(
+                "SELECT lease_token,expires_at FROM refund_recovery_leases WHERE refund_id=?",
+                (refund_id,),
+            ).fetchone()
+            current=datetime.now(timezone.utc)
+            if lease and datetime.fromisoformat(lease["expires_at"]) > current:
+                c.execute("COMMIT")
+                return None,dict(row)
+            if row["status"] not in ("PENDING","REFUND_UNKNOWN","REFUND_RECONCILING"):
+                c.execute("COMMIT")
+                return None,dict(row)
+            expires=(current+timedelta(seconds=60)).isoformat()
+            c.execute(
+                """INSERT INTO refund_recovery_leases(refund_id,lease_token,expires_at) VALUES (?,?,?)
+                   ON CONFLICT(refund_id) DO UPDATE SET lease_token=excluded.lease_token,expires_at=excluded.expires_at""",
+                (refund_id,lease_token,expires),
+            )
+            c.execute(
+                "UPDATE refunds SET status='REFUND_RECONCILING',updated_at=? WHERE refund_id=?",
+                (current.isoformat(),refund_id),
+            )
+            c.execute("COMMIT")
+        return (self.refund_get(refund_id),lease_token)
+    def refund_release_recovery(self, refund_id, lease_token):
+        with self.lock,self.session() as c:
+            c.execute(
+                "DELETE FROM refund_recovery_leases WHERE refund_id=? AND lease_token=?",
+                (refund_id,lease_token),
+            )
     def refund_by_request_key(self, request_key):
         with self.session() as c:
             row=c.execute("SELECT * FROM refunds WHERE request_key=?",(request_key,)).fetchone()
@@ -506,7 +553,7 @@ class RefundService:
         elif payment_gateway == "razorpay_terminal":
             if self.terminal is None or len(sales) != 1 or not sales[0].get("authorization"):
                 reasons.append('the captured terminal transaction cannot be safely refunded by the configured payment adapter')
-            capability = 'A simulated terminal refund is requested before the Shopify refund record; this is not real money movement.'
+            capability = 'A local simulated terminal refund and Shopify refund record are coordinated; this is not real money movement.'
         else:
             reasons.append('no supported payment-provider refund operation is configured for this order')
             capability = 'No supported payment-provider refund operation is configured.'
@@ -684,62 +731,245 @@ class RefundService:
             amount=remaining_refundable
         if amount <= 0 or amount > remaining_refundable:
             raise OperationsError('refund amount exceeds the remaining captured payment balance')
-        row,created=self.store.refund_create(order_id,store_code,operator,reason,amount,tax,request_key,lines,request_hash,verified_invoice)
+        row,created=self.store.refund_create(order_id,store_code,operator,reason,amount,tax,request_key,lines,request_hash,verified_invoice,till_session_id)
         if not created: return row
         tx=sales[0]
-        if gateway == "razorpay_terminal":
-            try:
-                provider_result = self.terminal.refund(
-                    str(tx["authorization"]), amount, reason, request_key,
-                )
-            except HttpRequestError as exc:
-                status = "REFUND_UNKNOWN" if exc.status is None or exc.status >= 500 else "REFUND_FAILED"
-                return self.store.refund_update(
-                    row["refund_id"], status,
-                    error="payment-provider refund outcome requires reconciliation: {}".format(exc),
-                    audit_action="PAYMENT_REFUND_RESULT_UNKNOWN" if status == "REFUND_UNKNOWN" else "PAYMENT_REFUND_FAILED",
-                    audit_actor=operator,
-                    audit_reason=reason,
-                )
-            provider_refund_id = provider_result.get("refund_id")
-            if (
-                provider_result.get("status") != "processed"
-                or not isinstance(provider_refund_id, str)
-                or not provider_refund_id
-                or provider_result.get("charge_id") != tx["authorization"]
-                or isinstance(provider_result.get("amount_paise"), bool)
-                or provider_result.get("amount_paise") != amount
-            ):
-                return self.store.refund_update(
-                    row["refund_id"], "REFUND_UNKNOWN",
-                    error="payment-provider refund response was incomplete; Shopify refund was not created",
-                    audit_action="PAYMENT_REFUND_RESULT_UNKNOWN",
-                    audit_actor=operator,
-                    audit_reason=reason,
-                )
-            row = self.store.refund_update(
-                row["refund_id"], "PENDING", terminal_refund_id=provider_refund_id,
-                error=None, audit_action="PAYMENT_REFUND_PROCESSED",
-                audit_actor=operator, audit_reason=reason,
-            )
-        payload={'refund_line_items':lines,'transactions':[{'kind':'refund','amount':decimal_string_from_paise(amount),'gateway':tx.get('gateway'),'parent_id':tx.get('id')}],'note':('Full refund: ' if full_request else 'Partial refund: ')+reason,'note_attributes':[{'name':'credit_note_no','value':row['credit_note']},{'name':'reason_code','value':reason}]}
-        try: remote=self.shopify.create_refund(int(order_id),payload)
-        except HttpRequestError:
-            error = 'Shopify refund outcome unknown'
-            if row.get("terminal_refund_id"):
-                error = 'Payment-provider refund {} succeeded; Shopify refund record requires reconciliation'.format(row["terminal_refund_id"])
-            return self.store.refund_update(row['refund_id'],'REFUND_UNKNOWN',error=error,audit_action='REFUND_OUTCOME_UNKNOWN',audit_actor=operator,audit_reason=reason)
-        row=self.store.refund_update(row['refund_id'],'COMPLETED',shopify_refund_id=str(remote.get('id')), cash_till_id=till_session_id, cash_post_status=('PENDING' if till_session_id and tx.get('gateway')=='cash' else 'NOT_REQUIRED'))
-        if row['cash_post_status']=='PENDING': row=self._post_cash_refund(row)
-        return self.store.refund_update(row['refund_id'],row['status'],audit_action='REFUND_COMPLETED',audit_actor=operator,audit_reason=reason)
+        return self._submit_shopify_refund(row,tx,gateway,till_session_id)
     def status(self,rid): return self.store.refund_get(rid)
     def recover(self,rid):
         r=self.store.refund_get(rid)
-        if r['status']=='PENDING':
-            return self.store.refund_update(rid,'REFUND_UNKNOWN',error='restart during Shopify refund request',audit_action='REFUND_RECOVERED_UNKNOWN',audit_actor=r['operator'],audit_reason=r['reason'])
         if r['status']=='COMPLETED' and r['cash_post_status']=='PENDING': return self._post_cash_refund(r)
-        if r['status']!='REFUND_UNKNOWN': raise OperationsError('refund is not awaiting reconciliation')
-        return r
+        if r['status'] not in ('PENDING','REFUND_UNKNOWN','REFUND_RECONCILING'):
+            raise OperationsError('refund is not awaiting reconciliation')
+        claim=self.store.refund_claim_recovery(rid)
+        if claim[0] is None:
+            return claim[1]
+        r,lease_token=claim
+        try:
+            return self._recover_external_refund(r)
+        finally:
+            self.store.refund_release_recovery(rid,lease_token)
+    def _recover_external_refund(self,row):
+        try:
+            order=self.shopify.get_order(int(row['order_id']))
+        except HttpRequestError as exc:
+            return self._refund_unknown(row,'Shopify order could not be checked during refund reconciliation: {}'.format(exc))
+        if not isinstance(order,dict) or str(order.get('id'))!=str(row['order_id']):
+            return self._refund_unknown(row,'Shopify returned an invalid order during refund reconciliation')
+        refunds=order.get('refunds')
+        if not isinstance(refunds,list) or any(not isinstance(item,dict) for item in refunds):
+            return self._refund_unknown(row,'Shopify returned invalid refund records during reconciliation')
+        matching=[]
+        for refund in refunds:
+            attributes=refund.get('note_attributes',[])
+            if not isinstance(attributes,list):
+                return self._refund_unknown(row,'Shopify returned invalid refund attributes during reconciliation')
+            notes=[item.get('value') for item in attributes if isinstance(item,dict) and item.get('name')=='credit_note_no']
+            if row['credit_note'] in notes:
+                matching.append(refund)
+        if len(matching)>1:
+            return self._refund_unknown(row,'multiple Shopify refund records match this credit note')
+
+        sale_transactions=[
+            item for item in order.get('transactions',[])
+            if isinstance(item,dict) and item.get('kind')=='sale' and item.get('status')=='success'
+        ]
+        if not sale_transactions:
+            return self._refund_unknown(row,'Shopify order has no captured sale transaction to reconcile')
+        gateway=sale_transactions[0].get('gateway')
+        if gateway not in ('cash','razorpay_terminal'):
+            return self._refund_unknown(row,'Shopify order has an unsupported payment gateway for refund reconciliation')
+        if gateway=='razorpay_terminal' and len(sale_transactions)!=1:
+            return self._refund_unknown(row,'Shopify order has multiple captured terminal transactions')
+        if gateway=='cash' and not row.get('cash_till_id'):
+            return self._refund_unknown(row,'cash refund has no persisted till reference for reconciliation')
+        provider_was_known=bool(row.get('terminal_refund_id'))
+        if provider_was_known:
+            provider_refund_id=row['terminal_refund_id']
+        elif gateway=='razorpay_terminal':
+            if len(sale_transactions)!=1 or not sale_transactions[0].get('authorization') or self.terminal is None:
+                return self._refund_unknown(row,'the terminal refund cannot be reconciled with the captured payment')
+            try:
+                provider_result=self.terminal.refund(
+                    str(sale_transactions[0]['authorization']),int(row['amount_paise']),
+                    row['reason'],row['request_key'],
+                )
+            except HttpRequestError as exc:
+                status='REFUND_UNKNOWN' if exc.status is None or exc.status>=500 else 'REFUND_FAILED'
+                return self.store.refund_update(
+                    row['refund_id'],status,
+                    error='payment-provider refund outcome requires reconciliation: {}'.format(exc),
+                    audit_action='PAYMENT_REFUND_RESULT_UNKNOWN' if status=='REFUND_UNKNOWN' else 'PAYMENT_REFUND_FAILED',
+                    audit_actor=row['operator'],audit_reason=row['reason'],
+                )
+            provider_refund_id=self._verified_terminal_refund_id(
+                provider_result,str(sale_transactions[0]['authorization']),int(row['amount_paise']),
+            )
+            if provider_refund_id is None:
+                return self._refund_unknown(row,'payment-provider refund response was incomplete; Shopify refund was not submitted')
+            row=self.store.refund_update(
+                row['refund_id'],'REFUND_RECONCILING',terminal_refund_id=provider_refund_id,
+                error=None,audit_action='PAYMENT_REFUND_RECONCILED',
+                audit_actor=row['operator'],audit_reason=row['reason'],
+            )
+        else:
+            provider_refund_id=None
+
+        if matching:
+            try:
+                self._verify_shopify_refund(matching[0],row['order_id'],row,sale_transactions[0])
+            except (OperationsError,TypeError,ValueError) as exc:
+                return self._refund_unknown(row,'Shopify refund record did not match the pending refund: {}'.format(exc))
+            if gateway=='razorpay_terminal' and not provider_refund_id:
+                return self._refund_unknown(row,'the Shopify refund exists but the terminal refund is not verified')
+            return self._complete_refund(row,matching[0],row.get('cash_till_id'))
+
+        if provider_refund_id:
+            if not provider_was_known:
+                return self._submit_shopify_refund(
+                    row,sale_transactions[0],'razorpay_terminal',row.get('cash_till_id'),
+                    terminal_already_confirmed=True,
+                )
+            # The terminal result is durable, but a prior Shopify write may have
+            # succeeded despite a lost response. Never replay that write.
+            return self._refund_unknown(
+                row,'payment-provider refund {} succeeded; no matching Shopify record was found. Shopify was not retried.'.format(provider_refund_id),
+            )
+        return self._refund_unknown(row,'no matching Shopify refund record was found; external cash refunds are not initiated during recovery')
+    @staticmethod
+    def _verified_terminal_refund_id(result,charge_id,amount):
+        if not isinstance(result,dict):
+            return None
+        refund_id=result.get('refund_id')
+        if (
+            result.get('status')!='processed'
+            or not isinstance(refund_id,str) or not refund_id
+            or result.get('charge_id')!=charge_id
+            or isinstance(result.get('amount_paise'),bool)
+            or result.get('amount_paise')!=amount
+        ):
+            return None
+        return refund_id
+    @staticmethod
+    def _verify_shopify_refund(remote,order_id,row,sale_transaction=None):
+        if not isinstance(remote,dict):
+            raise OperationsError('Shopify returned an invalid refund record')
+        remote_id=remote.get('id')
+        if isinstance(remote_id,bool) or not (
+            isinstance(remote_id,int) and remote_id>0
+            or isinstance(remote_id,str) and remote_id.isascii() and remote_id.isdecimal()
+        ):
+            raise OperationsError('Shopify refund record has an invalid ID')
+        if str(remote.get('order_id'))!=str(order_id):
+            raise OperationsError('Shopify refund record belongs to a different order')
+        attributes=remote.get('note_attributes')
+        if not isinstance(attributes,list):
+            raise OperationsError('Shopify refund record is missing credit-note attributes')
+        credit_notes=[
+            item.get('value') for item in attributes
+            if isinstance(item,dict) and item.get('name')=='credit_note_no'
+        ]
+        if credit_notes!=[row['credit_note']]:
+            raise OperationsError('Shopify refund record does not match the intended credit note')
+        transactions=remote.get('transactions')
+        if not isinstance(transactions,list) or any(not isinstance(item,dict) for item in transactions):
+            raise OperationsError('Shopify refund record has invalid transactions')
+        successful=[
+            item for item in transactions
+            if item.get('kind')=='refund' and item.get('status')=='success'
+        ]
+        if not successful or sum(paise_from_decimal(item.get('amount','0')) for item in successful)!=int(row['amount_paise']):
+            raise OperationsError('Shopify refund transaction amount does not match the intended refund')
+        if sale_transaction and any(
+            item.get('gateway')!=sale_transaction.get('gateway')
+            or str(item.get('parent_id'))!=str(sale_transaction.get('id'))
+            for item in successful
+        ):
+            raise OperationsError('Shopify refund transaction does not match the captured payment')
+        expected=[
+            (str(item['line_item_id']),int(item['quantity']),item['restock_type'])
+            for item in json.loads(row['lines_json'])
+        ]
+        actual=[
+            (str(item.get('line_item_id')),int(item.get('quantity',0)),item.get('restock_type'))
+            for item in remote.get('refund_line_items',[])
+            if isinstance(item,dict)
+        ]
+        if sorted(actual)!=sorted(expected):
+            raise OperationsError('Shopify refund line items do not match the intended refund')
+        return str(remote_id)
+    def _submit_shopify_refund(self,row,transaction,gateway,till_session_id=None,terminal_already_confirmed=False):
+        if gateway=='razorpay_terminal' and not terminal_already_confirmed:
+            try:
+                provider_result=self.terminal.refund(
+                    str(transaction['authorization']),int(row['amount_paise']),
+                    row['reason'],row['request_key'],
+                )
+            except HttpRequestError as exc:
+                status='REFUND_UNKNOWN' if exc.status is None or exc.status>=500 else 'REFUND_FAILED'
+                return self.store.refund_update(
+                    row['refund_id'],status,
+                    error='payment-provider refund outcome requires reconciliation: {}'.format(exc),
+                    audit_action='PAYMENT_REFUND_RESULT_UNKNOWN' if status=='REFUND_UNKNOWN' else 'PAYMENT_REFUND_FAILED',
+                    audit_actor=row['operator'],audit_reason=row['reason'],
+                )
+            provider_refund_id=self._verified_terminal_refund_id(
+                provider_result,str(transaction['authorization']),int(row['amount_paise']),
+            )
+            if provider_refund_id is None:
+                return self._refund_unknown(row,'payment-provider refund response was incomplete; Shopify refund was not created')
+            row=self.store.refund_update(
+                row['refund_id'],'PENDING',terminal_refund_id=provider_refund_id,
+                error=None,audit_action='PAYMENT_REFUND_PROCESSED',
+                audit_actor=row['operator'],audit_reason=row['reason'],
+            )
+        elif gateway=='razorpay_terminal':
+            provider_refund_id=row.get('terminal_refund_id')
+            if not provider_refund_id:
+                return self._refund_unknown(row,'the terminal refund must be verified before Shopify submission')
+        payload={
+            'refund_line_items':json.loads(row['lines_json']),
+            'transactions':[{
+                'kind':'refund','amount':decimal_string_from_paise(int(row['amount_paise'])),
+                'gateway':transaction.get('gateway'),'parent_id':transaction.get('id'),
+            }],
+            'note':'Refund: '+row['reason'],
+            'note_attributes':[
+                {'name':'credit_note_no','value':row['credit_note']},
+                {'name':'reason_code','value':row['reason']},
+            ],
+        }
+        try:
+            remote=self.shopify.create_refund(int(row['order_id']),payload)
+            shopify_refund_id=self._verify_shopify_refund(remote,row['order_id'],row,transaction)
+        except HttpRequestError as exc:
+            error='Shopify refund outcome unknown: {}'.format(exc)
+            if row.get('terminal_refund_id'):
+                error='Payment-provider refund {} succeeded; Shopify refund record requires reconciliation: {}'.format(row['terminal_refund_id'],exc)
+            return self._refund_unknown(row,error)
+        except (OperationsError,TypeError,ValueError) as exc:
+            return self._refund_unknown(row,'Shopify refund response could not be verified: {}'.format(exc))
+        return self._complete_refund(row,remote,till_session_id,shopify_refund_id)
+    def _complete_refund(self,row,remote,till_session_id=None,shopify_refund_id=None):
+        if shopify_refund_id is None:
+            shopify_refund_id=self._verify_shopify_refund(remote,row['order_id'],row)
+        row=self.store.refund_update(
+            row['refund_id'],'COMPLETED',shopify_refund_id=shopify_refund_id,
+            cash_till_id=till_session_id,
+            cash_post_status=('PENDING' if till_session_id else 'NOT_REQUIRED'),
+            error=None,
+        )
+        if row['cash_post_status']=='PENDING': row=self._post_cash_refund(row)
+        return self.store.refund_update(
+            row['refund_id'],row['status'],audit_action='REFUND_COMPLETED',
+            audit_actor=row['operator'],audit_reason=row['reason'],
+        )
+    def _refund_unknown(self,row,error):
+        return self.store.refund_update(
+            row['refund_id'],'REFUND_UNKNOWN',error=error,
+            audit_action='REFUND_OUTCOME_UNKNOWN',audit_actor=row['operator'],
+            audit_reason=row['reason'],
+        )
     def _post_cash_refund(self,row):
         if self.tills.movement_exists(row['refund_id']):
             return self.store.refund_update(row['refund_id'],'COMPLETED',cash_post_status='POSTED',error=None)

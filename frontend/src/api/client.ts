@@ -259,6 +259,8 @@ export const api = {
   }) => request<RefundResult>("/api/refunds", json(payload)),
   refundStatus: (refundId: string) =>
     request<RefundResult>(`/api/refunds/${encodeURIComponent(refundId)}`),
+  recoverRefund: (refundId: string) =>
+    request<RefundResult>(`/api/refunds/${encodeURIComponent(refundId)}/recover`, json({})),
   dayEnd: (storeId: string, date: string) =>
     request<DayEndReport>(`/api/reports/day-end?store_id=${encodeURIComponent(storeId)}&date=${encodeURIComponent(date)}`),
   overallReport: (date: string) =>

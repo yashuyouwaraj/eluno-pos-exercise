@@ -26,9 +26,11 @@ class AnomalyTests(unittest.TestCase):
  def test_payment_discount_and_repeated_refund_flags(self):
   business_date=bengaluru_today()
   self.shop.orders=[{'id':1,'location_id':7,'processed_at':business_date.isoformat()+'T10:00:00+05:30','financial_status':'paid','total_price':'10.00','total_line_items_price':'5.00','total_discounts':'6.00','transactions':[{'kind':'sale','status':'success','amount':'9.00'}]}]
-  for key in ('one','two'):
-   row,_=self.ops.refund_create('1','HSR','staff','reason',100,0,key)
-   self.ops.refund_update(row['refund_id'],'REFUND_UNKNOWN')
+  first,_=self.ops.refund_create('1','HSR','staff','reason',100,0,'one')
+  self.ops.refund_update(first['refund_id'],'REFUND_FAILED')
+  second,_=self.ops.refund_create('1','HSR','staff','reason',100,0,'two')
+  self.ops.refund_update(first['refund_id'],'REFUND_UNKNOWN')
+  self.ops.refund_update(second['refund_id'],'REFUND_UNKNOWN')
   rules={f['rule'] for f in self.svc.report('7',business_date)['flags']}
   self.assertTrue({'ORDER_PAYMENT_TOTAL_MISMATCH','INVALID_RECORDED_DISCOUNT','UNRESOLVED_REFUND','REPEATED_UNRESOLVED_REFUND'} <= rules)
  def test_invalid_store_is_rejected(self):

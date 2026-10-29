@@ -1803,6 +1803,17 @@ function Workspace({
     const result = await api.refundStatus(refundResult.refund_id);
     setRefundResult(result);
   });
+  const reconcileRefund = () => run("refund-reconcile", async () => {
+    if (!refundResult) return;
+    const result = await api.recoverRefund(refundResult.refund_id);
+    setRefundResult(result);
+    setNotice({
+      text: result.status === "COMPLETED"
+        ? `Refund ${result.refund_id} was reconciled with Shopify. Verify provider settlement separately; this integration is a local simulation.`
+        : `Refund remains ${result.status}. Do not submit a new refund until this outcome is resolved.`,
+      tone: result.status === "COMPLETED" ? "success" : "warning",
+    });
+  });
 
   const selectedPartialRefund = refundPreview?.lines.reduce((total, line) => {
     const quantity = Math.min(line.remaining_quantity, Math.max(0, refundQuantities[line.line_item_id] || 0));
@@ -2693,7 +2704,10 @@ function Workspace({
           {refundResult && <div className={`sale-result ${refundResult.status === "COMPLETED" ? "success" : "warning"}`} role="status">
             <strong>Refund {refundResult.status.toLowerCase()}</strong><p>Refund {refundResult.refund_id} · order {refundResult.order_id}</p>
             {refundResult.terminal_refund_id && <p>Simulated terminal refund reference: {refundResult.terminal_refund_id}</p>}
-            {refundResult.status !== "COMPLETED" && <button className="button secondary" onClick={loadRefundStatus} disabled={busy !== null}>Check refund status</button>}
+            {refundResult.status !== "COMPLETED" && <div className="dialog-actions">
+              <button className="button secondary" onClick={loadRefundStatus} disabled={busy !== null}>Check refund status</button>
+              {["PENDING", "REFUND_UNKNOWN", "REFUND_RECONCILING"].includes(refundResult.status) && <button className="button secondary" onClick={reconcileRefund} disabled={busy !== null || refundResult.status === "REFUND_RECONCILING"}>Reconcile refund</button>}
+            </div>}
           </div>}
         </section>}
         {view === "till" && user.role !== "optometrist" && <section className="panel focused-view" aria-labelledby="till-title">

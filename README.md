@@ -94,7 +94,9 @@ For frontend development with the local API running, use
 
 The failure-injection regression test deliberately runs the local mock with
 429/503 failures enabled, verifies `Retry-After` handling, and checks that the
-retried writes do not duplicate mock-side effects:
+retried writes do not duplicate mock-side effects. It starts the CLI mock on an
+isolated loopback port without `--no-flake`; a second HTTP-level test forces
+specific responses to verify bounded adapter retries:
 
 ```powershell
 python -m unittest tests.test_terminal_mock -v
@@ -628,10 +630,18 @@ optional `till_session_id`, optional `items` (`line_item_id` and positive
 `quantity`), and an optional `idempotency_key`; amount and tax are always
 derived from the recorded Shopify order. Omitting `items` retains the full
 refund workflow. Partial refunds track quantities already present in Shopify
-refund records and reject requests above the remaining line quantity. `GET /api/refunds/{refund_id}` returns local status and
-`POST /api/refunds/{refund_id}/recover` exposes unresolved outcomes without
-replaying a refund. Frames are returned at the original order location in the
-same supported Shopify refund request; lenses use `no_restock`.
+refund records and reject requests above the remaining line quantity. A durable
+pending refund is saved before external work, and another refund for that order
+is blocked while the first is pending or unresolved. `GET /api/refunds/{refund_id}`
+returns local status. `POST /api/refunds/{refund_id}/recover` reuses the same
+terminal idempotency key when the terminal outcome was not recorded, then checks
+the Shopify order's embedded refund list for the matching credit-note reference.
+A found record is validated against the intended order, transaction amount,
+payment reference, and line quantities before the local refund is completed. An
+ambiguous Shopify write is never replayed; if no matching record can be verified,
+the refund remains unresolved for operator reconciliation. Frames are returned
+at the original order location in the same supported Shopify refund request;
+lenses use `no_restock`.
 For bundled local UPI/card orders, the POS first invokes the mock terminal's
 idempotent refund operation using the captured charge reference and the same
 refund idempotency key, then creates the Shopify refund record. This proves only
@@ -659,11 +669,13 @@ python scripts/load_till_fixture.py --database .\eluno-till-fixture.sqlite3 --co
 Imports are idempotent and never overwrite an existing session with a matching
 fixture ID. Do not point this command at a live or user-data database.
 
-The Shopify mock does not offer idempotent refund creation or search-by-POS-refund.
-If the terminal refund succeeds but the Shopify write has an ambiguous result,
-the local record remains `REFUND_UNKNOWN` with its terminal refund reference.
-Recovery does not replay either external write; an operator must reconcile the
-provider and Shopify records before another refund attempt.
+The Shopify mock does not offer idempotent refund creation. Recovery can search
+only the order's embedded refund list by the POS credit-note reference; if that
+read is unavailable or no matching record is returned after an ambiguous write,
+the local record remains `REFUND_UNKNOWN` and another refund is blocked. The
+terminal and Shopify services in bundled local mode are simulators. This
+reconciliation behavior is not a real payment-provider integration and does not
+prove real-world money movement or settlement.
 
 ## Day-end reporting
 

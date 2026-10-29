@@ -642,6 +642,36 @@ class CheckoutTests(unittest.TestCase):
             set(invoices),
         )
 
+    def test_invoice_series_are_store_scoped_and_survive_restart(self):
+        allocated = {}
+        for store_code, prefix in (
+            ("HSR", "ELU/HSR/FY26/"),
+            ("MM", "ELU/MM/FY26/"),
+        ):
+            sale, created = self.store.create_or_get(
+                "hash-" + store_code, "invoice-series-" + store_code,
+                store_code, prefix,
+                {"note_attributes": [{"name": "invoice_no", "value": "placeholder"}]},
+                "upi", 500,
+            )
+            self.assertTrue(created)
+            allocated[store_code] = sale["invoice_no"]
+        self.assertEqual("ELU/HSR/FY26/00001", allocated["HSR"])
+        self.assertEqual("ELU/MM/FY26/00001", allocated["MM"])
+        restarted = SaleStore(Path(self.tmp.name) / "sales.sqlite3")
+        for store_code, prefix in (
+            ("HSR", "ELU/HSR/FY26/"),
+            ("MM", "ELU/MM/FY26/"),
+        ):
+            sale, created = restarted.create_or_get(
+                "hash-next-" + store_code, "invoice-next-" + store_code,
+                store_code, prefix,
+                {"note_attributes": [{"name": "invoice_no", "value": "placeholder"}]},
+                "upi", 500,
+            )
+            self.assertTrue(created)
+            self.assertEqual("ELU/{}/FY26/00002".format(store_code), sale["invoice_no"])
+
     def test_invalid_request_never_initiates_payment(self):
         with self.assertRaises(CheckoutError):
             self.service.checkout(self.request(staff_id=""))

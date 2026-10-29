@@ -42,6 +42,8 @@ htmlcov/
 # Build and packaging artifacts
 build/
 dist/
+node_modules/
+*.tsbuildinfo
 .eggs/
 *.egg-info/
 *.whl

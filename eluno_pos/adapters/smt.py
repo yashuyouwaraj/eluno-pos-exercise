@@ -19,6 +19,13 @@ class SmtClient:
             raise ValueError("SMT response has invalid prescriptions envelope")
         return prescriptions
 
+    def prescriptions_by_customer(self, customer_id: str) -> List[Dict[str, Any]]:
+        payload = self._http.get("prescriptions", {"customer_id": str(customer_id)})
+        prescriptions = payload.get("prescriptions")
+        if not isinstance(prescriptions, list) or not all(isinstance(item, dict) for item in prescriptions):
+            raise ValueError("SMT response has invalid prescriptions envelope")
+        return prescriptions
+
     def list_staff(self, store: Optional[str] = None) -> List[Dict[str, Any]]:
         """Return staff using the SMT's read-only staff endpoint."""
         query = {"store": store} if store else None

@@ -13,6 +13,39 @@ class ShopifyReports(Protocol):
 
 class DayEndReportService:
  def __init__(self,shopify:ShopifyReports, operations:OperationsStore, sales=None): self.shopify,self.operations,self.sales=shopify,operations,sales
+ def overall_report(self,business_date:date):
+  locations=[
+   location for location in self.shopify.list_locations()
+   if location.get('active',True) and (location.get('eluno') or {}).get('store_code')
+  ]
+  if not locations: raise ReportError('no active Eluno stores are available for reporting')
+  reports=[self.report(str(location['id']),business_date) for location in locations]
+  metrics={}
+  payment_methods={}
+  channels={}
+  exceptions=[]
+  tills=[]
+  cash_variance_alerts=[]
+  for report in reports:
+   for key,value in report['metrics'].items(): metrics[key]=metrics.get(key,0)+value
+   for method,value in report['payment_methods_paise'].items():
+    payment_methods[method]=payment_methods.get(method,0)+value
+   for channel,values in report['channels'].items():
+    bucket=channels.setdefault(channel,{key:0 for key in values})
+    for key,value in values.items(): bucket[key]=bucket.get(key,0)+value
+   exceptions.extend(dict(item,store_code=report['store_code']) for item in report['exceptions'])
+   tills.extend(report['tills'])
+   cash_variance_alerts.extend(report['cash_variance_alerts'])
+  return {
+   'store_id':'all','store_code':'Overall operations','business_date':business_date.isoformat(),
+   'completed_bill_count':sum(report['completed_bill_count'] for report in reports),
+   'metrics':metrics,'payment_methods_paise':payment_methods,'channels':channels,
+   'refund_count':sum(report['refund_count'] for report in reports),
+   'tills':tills,'cash_variance_alerts':cash_variance_alerts,
+   'cash_sales_association':'Aggregated across all active Eluno stores.',
+   'report_completeness':'bounded: mock order list has no pagination cursor',
+   'exceptions':exceptions,'stores':reports,
+  }
  def report(self,store_id,business_date:date):
   locations=[x for x in self.shopify.list_locations() if str(x.get('id'))==str(store_id)]
   if len(locations)!=1 or not locations[0].get('active',True): raise ReportError('store_id is not an active store')
@@ -31,8 +64,10 @@ class DayEndReportService:
    captured=sum(paise_from_decimal(tx['amount']) for tx in order.get('transactions',[]) if tx.get('kind')=='sale' and tx.get('status')=='success')
    if captured != paise_from_decimal(order.get('total_price','0.00')):
     exceptions.append({'type':'payment_reconciliation','order_id':order.get('id'),'manual_investigation_required':True})
-    continue
-   orders.append(order)
+   if captured <= 0: continue
+   reported_order = dict(order)
+   reported_order['_captured_sales_paise'] = captured
+   orders.append(reported_order)
   def channel_for(o):
    value={x.get('name'):x.get('value') for x in o.get('note_attributes',[])}.get('channel')
    if value not in ('walk_in','whatsapp_booked','online_pickup'):
@@ -42,8 +77,9 @@ class DayEndReportService:
    return channels.setdefault(channel,{'completed_bill_count':0,'gross_sales_paise':0,'discounts_paise':0,'net_sales_before_refunds_paise':0,'refund_amount_paise':0})
   for o in orders:
    channel=channel_for(o); b=bucket(channel); b['completed_bill_count']+=1
-   m['gross_sales_paise']+=paise_from_decimal(o['total_line_items_price']);m['discounts_paise']+=paise_from_decimal(o['total_discounts']);m['net_sales_before_refunds_paise']+=paise_from_decimal(o['total_price'])
-   b['gross_sales_paise']+=paise_from_decimal(o['total_line_items_price']);b['discounts_paise']+=paise_from_decimal(o['total_discounts']);b['net_sales_before_refunds_paise']+=paise_from_decimal(o['total_price'])
+   captured=o['_captured_sales_paise']
+   m['gross_sales_paise']+=paise_from_decimal(o['total_line_items_price']);m['discounts_paise']+=paise_from_decimal(o['total_discounts']);m['net_sales_before_refunds_paise']+=captured
+   b['gross_sales_paise']+=paise_from_decimal(o['total_line_items_price']);b['discounts_paise']+=paise_from_decimal(o['total_discounts']);b['net_sales_before_refunds_paise']+=captured
    for li in o.get('line_items',[]):
     tax=sum(paise_from_decimal(t['price']) for t in li.get('tax_lines',[])); payable=paise_from_decimal(li['price'])*int(li.get('quantity',1))-paise_from_decimal(li.get('total_discount','0.00'));m['tax_sales_paise']+=tax;m['taxable_sales_paise']+=payable-tax
     for t in li.get('tax_lines',[]):

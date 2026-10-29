@@ -14,9 +14,13 @@ from http.server import ThreadingHTTPServer
 from pathlib import Path
 from unittest.mock import patch
 from urllib.error import HTTPError
-from urllib.request import Request, urlopen
+from urllib.parse import urlencode
+from urllib.request import (
+    HTTPCookieProcessor, Request, build_opener, install_opener, urlopen,
+)
 from uuid import uuid4
 
+from eluno_pos.auth import AuthManager
 from eluno_pos.business_time import bengaluru_today
 from eluno_pos.adapters.http import HttpRequestError, JsonHttpClient
 from eluno_pos.adapters.shopify import ShopifyAdminClient
@@ -26,6 +30,50 @@ from eluno_pos.http_app import default_application, make_handler
 from eluno_pos.adapters.terminal import PaymentTerminalClient
 
 ROOT = Path(__file__).resolve().parents[1]
+AUTH_USERS = json.dumps({
+    "admin": {"password": "Test-Integration-Admin-Password-2026!", "role": "admin", "staff_id": "S119"},
+    "cashier": {"password": "Test-Integration-Cashier-Password-2026!", "role": "cashier", "staff_id": "S105"},
+})
+OPTOMETRIST_PASSWORD = "Test-Integration-Optometrist-Password-2026!"
+install_opener(build_opener(HTTPCookieProcessor()))
+
+
+def login_pos(base, username="admin"):
+    passwords = {
+        "admin": "Test-Integration-Admin-Password-2026!",
+        "cashier": "Test-Integration-Cashier-Password-2026!",
+        "optometrist": OPTOMETRIST_PASSWORD,
+    }
+    request = Request(
+        base + "/api/auth/login",
+        data=json.dumps({
+            "username": username,
+            "password": passwords[username],
+        }).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    with urlopen(request) as response:
+        if response.status != 200:
+            raise RuntimeError("test POS authentication failed")
+        response.read()
+
+
+def start_authenticated_pos(application, username="admin"):
+    with patch.dict(os.environ, {"ELUNO_AUTH_USERS": AUTH_USERS}):
+        auth_path = Path(application.checkout_service._sales._path).with_name("auth.sqlite3")
+        application.auth_manager = AuthManager.from_env(auth_path)
+    if username == "optometrist":
+        application.auth_manager.create_staff(
+            "optometrist", OPTOMETRIST_PASSWORD, "optometrist", "Riya R.",
+            "integration-admin", "MM", "S103",
+        )
+    server = ThreadingHTTPServer(("127.0.0.1", 0), make_handler(application))
+    thread = threading.Thread(target=server.serve_forever)
+    thread.start()
+    base = "http://127.0.0.1:{}".format(server.server_port)
+    login_pos(base, username)
+    return server, thread, base
 
 class LocalMockIntegrationTests(unittest.TestCase):
     @classmethod
@@ -99,6 +147,15 @@ class LocalMockIntegrationTests(unittest.TestCase):
         charge=terminal.charge(100,'upi','integration-order-ref')
         self.assertEqual('captured',charge['status'])
         self.assertEqual(charge['charge_id'],terminal.get_charge(charge['charge_id'])['charge_id'])
+    def test_shopify_order_history_supports_since_id_cursor_pages(self):
+        shopify = ShopifyAdminClient(base_url="http://127.0.0.1:{}/admin/api/2026-10".format(self.port))
+        first = shopify.list_orders(status="any", limit="1", since_id="0", order="created_at asc")
+        self.assertEqual(1, len(first))
+        second = shopify.list_orders(
+            status="any", limit="1", since_id=str(first[0]["id"]), order="created_at asc",
+        )
+        self.assertEqual(1, len(second))
+        self.assertGreater(int(second[0]["id"]), int(first[0]["id"]))
     def test_prescription_entry_requires_store_optometrist_and_round_trips_to_store_tool(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             mock_url="http://127.0.0.1:{}".format(self.port)
@@ -112,10 +169,8 @@ class LocalMockIntegrationTests(unittest.TestCase):
             }
             with patch.dict(os.environ,environment):
                 application=default_application()
-            server=ThreadingHTTPServer(("127.0.0.1",0),make_handler(application))
-            thread=threading.Thread(target=server.serve_forever)
-            thread.start()
-            base="http://127.0.0.1:{}".format(server.server_port)
+            server,thread,base=start_authenticated_pos(application, "optometrist")
+            application.auth_manager.update_staff("S105", {"store_code": "MM"}, "integration-admin")
             shopify=ShopifyAdminClient(base_url=mock_url+"/admin/api/2026-10")
             customer=shopify.search_customers_by_phone("+919000000001")[0]
             payload={
@@ -126,20 +181,48 @@ class LocalMockIntegrationTests(unittest.TestCase):
                 "os":{"sph":"-1.00","cyl":"-0.50","axis":90,"add":None},
             }
             try:
-                unauthorized=dict(payload,optometrist_id="S101")
+                login_pos(base, "cashier")
+                request=Request(base+"/api/prescription-approvers?store_code=MM",method="GET")
+                with urlopen(request) as response:
+                    self.assertEqual(200,response.status)
+                    approvers=json.loads(response.read())["approvers"]
+                self.assertIn("S103",[item["staff_id"] for item in approvers])
+                request=Request(base+"/api/prescription-approvers?store_code=JN",method="GET")
+                with self.assertRaises(HTTPError) as raised:urlopen(request)
+                self.assertEqual(403,raised.exception.code);raised.exception.close()
+
+                unauthorized=dict(payload,optometrist_id="S101",idempotency_key="rx-invalid-verifier")
                 request=Request(base+"/api/prescriptions",data=json.dumps(unauthorized).encode(),headers={"Content-Type":"application/json"},method="POST")
                 with self.assertRaises(HTTPError) as raised:urlopen(request)
                 self.assertEqual(422,raised.exception.code);raised.exception.close()
+
+                cashier_payload=dict(payload,idempotency_key="rx-local-integration-cashier")
+                request=Request(base+"/api/prescriptions",data=json.dumps(cashier_payload).encode(),headers={"Content-Type":"application/json"},method="POST")
+                with urlopen(request) as response:
+                    self.assertEqual(201,response.status)
+                    cashier_created=json.loads(response.read())["prescription"]
+                self.assertEqual("S103",cashier_created["optometrist_id"])
+                login_pos(base, "optometrist")
 
                 unconfirmed=dict(payload,optometrist_confirmed="true")
                 request=Request(base+"/api/prescriptions",data=json.dumps(unconfirmed).encode(),headers={"Content-Type":"application/json"},method="POST")
                 with self.assertRaises(HTTPError) as raised:urlopen(request)
                 self.assertEqual(400,raised.exception.code);raised.exception.close()
 
-                invalid=dict(payload,od=dict(payload["od"],axis=87))
+                off_grid=dict(payload, idempotency_key="rx-local-integration-off-grid")
+                off_grid["od"] = dict(payload["od"], axis=87)
+                request=Request(base+"/api/prescriptions",data=json.dumps(off_grid).encode(),headers={"Content-Type":"application/json"},method="POST")
+                with urlopen(request) as response:
+                    self.assertEqual(201,response.status)
+                    off_grid_result=json.loads(response.read())
+                self.assertTrue(any("OD axis 87" in warning and "optometrist review" in warning for warning in off_grid_result["warnings"]))
+
+                invalid=dict(payload,od=dict(payload["od"],axis=181))
                 request=Request(base+"/api/prescriptions",data=json.dumps(invalid).encode(),headers={"Content-Type":"application/json"},method="POST")
-                with self.assertRaises(HTTPError) as raised:urlopen(request)
-                self.assertEqual(400,raised.exception.code);raised.exception.close()
+                with self.assertRaises(HTTPError) as raised:
+                    urlopen(request)
+                self.assertEqual(400,raised.exception.code)
+                raised.exception.close()
 
                 request=Request(base+"/api/prescriptions",data=json.dumps(payload).encode(),headers={"Content-Type":"application/json"},method="POST")
                 with urlopen(request) as response:
@@ -174,10 +257,7 @@ class LocalMockIntegrationTests(unittest.TestCase):
             }
             with patch.dict(os.environ,environment):
                 application=default_application()
-            server=ThreadingHTTPServer(("127.0.0.1",0),make_handler(application))
-            thread=threading.Thread(target=server.serve_forever)
-            thread.start()
-            base="http://127.0.0.1:{}".format(server.server_port)
+            server,thread,base=start_authenticated_pos(application)
             sku="ADMIN-FRAME-"+uuid4().hex[:10]
             try:
                 frame_request={
@@ -238,14 +318,53 @@ class LocalMockIntegrationTests(unittest.TestCase):
                     if event["reason"]=="GRN-ELU-0001"
                 ]))
 
-                status,catalog=self._request_json(base,"GET","/api/catalog/variants?line_type=frame")
-                visible=next(variant for variant in catalog["variants"] if variant["variant_id"]==str(frame_variant["id"]))
-                self.assertEqual("Admin Test Frame",visible["product_title"])
-                self.assertEqual(499900,visible["price_paise"])
-                stock=ShopifyAdminClient(base_url=mock_url+"/admin/api/2026-10").list_inventory_levels(
+                status,catalog_admin=self._request_json(
+                    base,"GET","/api/admin/catalog/products?q=Admin%20Test%20Frame",
+                )
+                self.assertEqual(200,status)
+                editable=next(item for item in catalog_admin["products"] if item["variant_id"]==str(frame_variant["id"]))
+                self.assertEqual(499900,editable["price_paise"])
+                status,invalid_edit=self._request_json(
+                    base,"PATCH","/api/admin/catalog/products/{}".format(created["product"]["id"]),
+                    {"variant_id":str(frame_variant["id"]),"price_paise":4999.5},
+                )
+                self.assertEqual(400,status)
+                self.assertEqual("invalid_product_update",invalid_edit["error"])
+                status,updated=self._request_json(
+                    base,"PATCH","/api/admin/catalog/products/{}".format(created["product"]["id"]),
+                    {
+                        "variant_id":str(frame_variant["id"]),"title":"Updated Admin Test Frame",
+                        "description":"A tested optical catalog description.","price_paise":529900,
+                        "material":"Acetate","size":"54-18-140","category":"sunglasses",
+                        "rx_able":False,"status":"active",
+                    },
+                )
+                self.assertEqual(200,status)
+                self.assertEqual("Updated Admin Test Frame",updated["product"]["title"])
+                self.assertEqual("Acetate",updated["product"]["variants"][0]["eluno"]["material"])
+                levels=ShopifyAdminClient(base_url=mock_url+"/admin/api/2026-10").list_inventory_levels(
                     [frame_variant["inventory_item_id"]],jayanagar["id"],
                 )
-                self.assertEqual(4,stock[0]["available"])
+                self.assertEqual(4,levels[0]["available"],"catalog metadata edits must not alter stock")
+                status,admin_frames=self._request_json(
+                    base,"GET","/api/admin/catalog/frames?location_id={}".format(jayanagar["id"]),
+                )
+                self.assertEqual(200,status)
+                reflected=next(
+                    frame for frame in admin_frames["variants"]
+                    if frame["variant_id"]==frame_variant["id"]
+                )
+                self.assertEqual(4,reflected["available"])
+                self.assertEqual(529900,reflected["price_paise"])
+                self.assertEqual("sunglasses",reflected["category"])
+                self.assertEqual("Acetate",reflected["material"])
+                self.assertEqual("54-18-140",reflected["size"])
+                login_pos(base, "admin")
+                status,assigned=self._request_json(
+                    base,"PATCH","/api/admin/staff/S105",{"store_code":"JN"},
+                )
+                self.assertEqual(200,status,assigned)
+                login_pos(base, "cashier")
                 status,sale=self._request_json(base,"POST","/api/checkouts",{
                     "idempotency_key":"admin-stock-sale-"+uuid4().hex,
                     "business_date":bengaluru_today().isoformat(),
@@ -261,7 +380,21 @@ class LocalMockIntegrationTests(unittest.TestCase):
                     [frame_variant["inventory_item_id"]],jayanagar["id"],
                 )
                 self.assertEqual(3,stock[0]["available"])
+                login_pos(base, "admin")
+                status,archived=self._request_json(
+                    base,"PATCH","/api/admin/catalog/products/{}".format(created["product"]["id"]),
+                    {"variant_id":str(frame_variant["id"]),"status":"archived"},
+                )
+                self.assertEqual(200,status)
+                self.assertEqual("archived",archived["product"]["status"])
+                status,catalog=self._request_json(base,"GET","/api/catalog/variants?line_type=frame")
+                self.assertNotIn(str(frame_variant["id"]),[variant["variant_id"] for variant in catalog["variants"]])
+                stock=ShopifyAdminClient(base_url=mock_url+"/admin/api/2026-10").list_inventory_levels(
+                    [frame_variant["inventory_item_id"]],jayanagar["id"],
+                )
+                self.assertEqual(3,stock[0]["available"],"archiving must retain current inventory")
 
+                login_pos(base, "admin")
                 lens_request={
                     "line_type":"lens","title":"Admin Test Lens","sku":"ADMIN-LENS-"+uuid4().hex[:10],
                     "variant_title":"Bifocal 1.74 Standard","price_paise":1799900,
@@ -293,6 +426,41 @@ class LocalMockIntegrationTests(unittest.TestCase):
                 server.server_close()
                 thread.join()
 
+    def test_staff_customer_search_matches_full_name_and_email(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            mock_url="http://127.0.0.1:{}".format(self.port)
+            environment={
+                "ELUNO_SHOPIFY_BASE_URL":mock_url+"/admin/api/2026-10",
+                "ELUNO_SMT_BASE_URL":mock_url+"/smt",
+                "ELUNO_TERMINAL_BASE_URL":mock_url+"/terminal",
+                "ELUNO_STATE_DB":str(Path(temp_dir)/"customer-search.sqlite3"),
+                "ELUNO_LOCAL_MOCK_MODE":"1",
+                "ELUNO_LOCAL_MOCK_PORT":str(self.port),
+            }
+            with patch.dict(os.environ,environment):
+                application=default_application()
+            server,thread,base=start_authenticated_pos(application)
+            phone="+9197{:08d}".format(uuid4().int % 100000000)
+            email="yashu.{}@example.test".format(uuid4().hex[:8])
+            try:
+                shopify=ShopifyAdminClient(base_url=mock_url+"/admin/api/2026-10")
+                created,_=shopify.register_customer("Yashu","Youwaraj",phone)
+                shopify.update_customer(str(created["id"]),{"email":email})
+                for term in ("Yashu Youwaraj",email,phone):
+                    request=Request(base+"/api/customers/search?"+urlencode({"q":term,"page":"1"}))
+                    with urlopen(request) as response:
+                        self.assertEqual(200,response.status)
+                        payload=json.loads(response.read())
+                    result=next((item for item in payload["customers"] if item["id"] == str(created["id"])),None)
+                    self.assertIsNotNone(result,term)
+                    self.assertEqual(0,result["total_spent_paise"])
+                    self.assertEqual(0,result["order_count"])
+                    self.assertEqual(0,result["total_refunded_paise"])
+            finally:
+                server.shutdown()
+                server.server_close()
+                thread.join()
+
     def test_mock_sqlite_persists_customers_products_and_inventory_after_restart(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             state_db=str(Path(temp_dir)/"mock-state.sqlite3")
@@ -310,6 +478,11 @@ class LocalMockIntegrationTests(unittest.TestCase):
                 else:self.fail("persistent mock did not start")
                 shopify=ShopifyAdminClient(base_url=mock_url+"/admin/api/2026-10")
                 customer,_=shopify.register_customer("Persistent","Customer","+919123456789")
+                repeated,created_again=shopify.register_customer("Persistent","Customer","+919123456789")
+                self.assertEqual(customer["id"],repeated["id"])
+                self.assertFalse(created_again)
+                with self.assertRaisesRegex(ValueError,"already belongs"):
+                    shopify.register_customer("Different","Customer","+919123456789")
                 created=shopify.create_product({
                     "title":"Persistent Frame","vendor":"Eluno","product_type":"Frame",
                     "status":"active","tags":"frame,optical","variants":[{
@@ -376,10 +549,7 @@ class LocalMockIntegrationTests(unittest.TestCase):
                 }
                 with patch.dict(os.environ,environment):
                     application=default_application()
-                application_server=ThreadingHTTPServer(("127.0.0.1",0),make_handler(application))
-                app_thread=threading.Thread(target=application_server.serve_forever)
-                app_thread.start()
-                base="http://127.0.0.1:{}".format(application_server.server_port)
+                application_server,app_thread,base=start_authenticated_pos(application,username="optometrist")
                 payload={
                     "phone":"+919000000001","store_code":"MM","date":"2026-10-27",
                     "valid_until":"2027-10-27","optometrist_id":"S103",
@@ -429,10 +599,7 @@ class LocalMockIntegrationTests(unittest.TestCase):
             }
             with patch.dict(os.environ,environment):
                 application=default_application()
-            server=ThreadingHTTPServer(("127.0.0.1",0),make_handler(application))
-            thread=threading.Thread(target=server.serve_forever)
-            thread.start()
-            base="http://127.0.0.1:{}".format(server.server_port)
+            server,thread,base=start_authenticated_pos(application)
             before_orders=application.shopify_adapter.list_orders(
                 location_id="70000005",status="any",limit="250",
             )
@@ -455,6 +622,10 @@ class LocalMockIntegrationTests(unittest.TestCase):
                     "reference":"GRN-CONCURRENT-"+uuid4().hex[:8],
                 })
                 self.assertEqual(200,status)
+                status,assigned=self._request_json(
+                    base,"PATCH","/api/admin/staff/S105",{"store_code":"JN"},
+                )
+                self.assertEqual(200,status,assigned)
 
                 class CountingTerminal:
                     def __init__(self,delegate):self.delegate,self.calls=delegate,0
@@ -463,6 +634,7 @@ class LocalMockIntegrationTests(unittest.TestCase):
                         return self.delegate.charge(*args)
                 terminal=CountingTerminal(application.checkout_service._terminal)
                 application.checkout_service._terminal=terminal
+                login_pos(base, "cashier")
 
                 def checkout(key):
                     payload={
@@ -515,10 +687,7 @@ class LocalMockIntegrationTests(unittest.TestCase):
             }
             with patch.dict(os.environ,environment):
                 application=default_application()
-            server=ThreadingHTTPServer(("127.0.0.1",0),make_handler(application))
-            thread=threading.Thread(target=server.serve_forever)
-            thread.start()
-            base="http://127.0.0.1:{}".format(server.server_port)
+            server,thread,base=start_authenticated_pos(application)
             try:
                 status,till=self._request_json(base,"POST","/api/tills",{
                     "store_code":"JN","location_id":"70000005",
@@ -585,10 +754,7 @@ class LocalMockIntegrationTests(unittest.TestCase):
             }
             with patch.dict(os.environ,environment):
                 application=default_application()
-            server=ThreadingHTTPServer(("127.0.0.1",0),make_handler(application))
-            thread=threading.Thread(target=server.serve_forever)
-            thread.start()
-            base="http://127.0.0.1:{}".format(server.server_port)
+            server,thread,base=start_authenticated_pos(application, "cashier")
             try:
                 answers=iter([
                     "HSR","70000002","2026-10-26","walk_in","Asha Rao",
@@ -653,10 +819,7 @@ class LocalMockIntegrationTests(unittest.TestCase):
             }
             with patch.dict(os.environ,environment):
                 application=default_application()
-            server=ThreadingHTTPServer(("127.0.0.1",0),make_handler(application))
-            thread=threading.Thread(target=server.serve_forever)
-            thread.start()
-            base="http://127.0.0.1:{}".format(server.server_port)
+            server,thread,base=start_authenticated_pos(application, "cashier")
             shopify=ShopifyAdminClient(base_url=mock_url+"/admin/api/2026-10")
             try:
                 variants=shopify.list_catalog_variants()
@@ -695,6 +858,7 @@ class LocalMockIntegrationTests(unittest.TestCase):
                     sale=json.loads(response.read())
                 self.assertEqual("COMPLETED",sale["status"])
                 self.assertTrue(sale["invoice_no"])
+                self.assertEqual("ELU/HSR/FY26/00003", sale["invoice_no"])
                 with urlopen(Request(base+"/api/invoices/"+sale["sale_id"])) as response:
                     invoice=response.read().decode("utf-8")
                 self.assertIn(sale["invoice_no"],invoice)
@@ -712,6 +876,7 @@ class LocalMockIntegrationTests(unittest.TestCase):
                     data=json.dumps({
                         "order_id":sale["order_id"],"store_code":"HSR",
                         "operator":"S101","reason":"integration test return",
+                        "return_item_ids":[str(order["line_items"][0]["id"])],
                     }).encode("utf-8"),
                     headers={"Content-Type":"application/json"},method="POST",
                 )
@@ -719,8 +884,17 @@ class LocalMockIntegrationTests(unittest.TestCase):
                     self.assertEqual(201,response.status)
                     refund=json.loads(response.read())
                 self.assertEqual("COMPLETED",refund["status"])
+                self.assertTrue(refund["terminal_refund_id"])
 
                 refunded_order=shopify.get_order(int(sale["order_id"]))
+                charge_id = next(
+                    transaction["authorization"]
+                    for transaction in refunded_order["transactions"]
+                    if transaction.get("kind") == "sale"
+                )
+                terminal = PaymentTerminalClient(base_url=mock_url+"/terminal")
+                provider_refund = terminal.get_charge(charge_id)
+                self.assertEqual(refund["amount_paise"], provider_refund["refunded_paise"])
                 self.assertEqual(1,len(refunded_order["refunds"]))
                 restock=refunded_order["refunds"][0]["refund_line_items"][0]
                 self.assertEqual("return",restock["restock_type"])
@@ -729,6 +903,7 @@ class LocalMockIntegrationTests(unittest.TestCase):
                     initial_stock,
                     shopify.list_inventory_levels([item_id],70000002)[0]["available"],
                 )
+                login_pos(base, "admin")
                 report_request=Request(
                     base+"/api/reports/day-end?store_id=70000002&date="+business_day,
                 )
@@ -757,10 +932,7 @@ class LocalMockIntegrationTests(unittest.TestCase):
             }
             with patch.dict(os.environ,environment):
                 application=default_application()
-            server=ThreadingHTTPServer(("127.0.0.1",0),make_handler(application))
-            thread=threading.Thread(target=server.serve_forever)
-            thread.start()
-            base="http://127.0.0.1:{}".format(server.server_port)
+            server,thread,base=start_authenticated_pos(application, "cashier")
             shopify=ShopifyAdminClient(base_url=mock_url+"/admin/api/2026-10")
             variant=shopify.get_variant(91000001)
             item_id=int(variant["inventory_item_id"])
@@ -841,10 +1013,7 @@ class LocalMockIntegrationTests(unittest.TestCase):
             orders=MustNotCreateOrder()
             application.checkout_service._terminal=terminal
             application.checkout_service._orders=orders
-            server=ThreadingHTTPServer(("127.0.0.1",0),make_handler(application))
-            thread=threading.Thread(target=server.serve_forever)
-            thread.start()
-            base="http://127.0.0.1:{}".format(server.server_port)
+            server,thread,base=start_authenticated_pos(application, "cashier")
             shopify=ShopifyAdminClient(base_url=mock_url+"/admin/api/2026-10")
             before_orders=shopify.list_orders(status="any",limit="250")
             payload={

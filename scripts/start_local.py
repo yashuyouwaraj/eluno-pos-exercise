@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Start the mock, POS API, and interactive cashier in one terminal."""
+"""Start the local mock and browser POS, optionally with the cashier CLI."""
 
 import argparse
 import os
@@ -7,6 +7,7 @@ import socket
 import subprocess
 import sys
 import time
+import webbrowser
 from pathlib import Path
 from typing import List
 from urllib.error import URLError
@@ -63,9 +64,21 @@ def start_process(command: List[str], env=None) -> subprocess.Popen:
     return subprocess.Popen(command, **options)
 
 
+def open_browser(url: str) -> None:
+    try:
+        opened = webbrowser.open(url)
+    except (OSError, webbrowser.Error) as exc:
+        print("Could not open the browser: {}. Open {} manually.".format(exc, url), flush=True)
+        return
+    if not opened:
+        print("Could not open the browser automatically. Open {} manually.".format(url), flush=True)
+
+
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Start the complete local cashier environment")
-    parser.add_argument("--no-cli", action="store_true", help="start only mock and API (developer use)")
+    parser = argparse.ArgumentParser(description="Start the complete local browser POS environment")
+    modes = parser.add_mutually_exclusive_group()
+    modes.add_argument("--cli", action="store_true", help="start the optional interactive cashier CLI")
+    modes.add_argument("--no-cli", action="store_true", help="run the browser POS without the optional CLI")
     parser.add_argument("--mock-port", type=int, default=MOCK_PORT, help=argparse.SUPPRESS)
     parser.add_argument("--app-port", type=int, default=APP_PORT, help=argparse.SUPPRESS)
     parser.add_argument(
@@ -96,14 +109,16 @@ def main() -> int:
             [sys.executable, "-u", "-m", "eluno_pos", "--port", str(args.app_port)], env=app_env,
         )
         processes.append(app)
-        wait_for_health("http://127.0.0.1:{}/health".format(args.app_port), app, "Eluno POS application")
-        print("Local environment ready: mock=http://127.0.0.1:{} app=http://127.0.0.1:{}".format(args.mock_port, args.app_port), flush=True)
-        if args.no_cli:
-            print("API-only mode. Press Ctrl+C to stop both services.")
-            while True:
-                time.sleep(1)
-        print("Starting cashier CLI. Exit it (option 0) to stop all local services.", flush=True)
-        return subprocess.call([sys.executable, "-m", "eluno_pos.cli", "--base-url", "http://127.0.0.1:{}".format(args.app_port), "--mock-url", "http://127.0.0.1:{}/admin/api/2026-10".format(args.mock_port)], cwd=str(ROOT))
+        wait_for_health("http://127.0.0.1:{}/health".format(args.app_port), app, "Eluno Studio application")
+        app_url = "http://127.0.0.1:{}/".format(args.app_port)
+        print("Local environment ready: mock=http://127.0.0.1:{} app={}".format(args.mock_port, app_url), flush=True)
+        open_browser(app_url)
+        if args.cli:
+            print("Starting optional cashier CLI. Exit it (option 0), or press Ctrl+C, to stop all local services.", flush=True)
+            return subprocess.call([sys.executable, "-m", "eluno_pos.cli", "--base-url", "http://127.0.0.1:{}".format(args.app_port), "--mock-url", "http://127.0.0.1:{}/admin/api/2026-10".format(args.mock_port)], cwd=str(ROOT))
+        print("Browser POS is ready. Press Ctrl+C to stop both services.", flush=True)
+        while True:
+            time.sleep(1)
     except KeyboardInterrupt:
         print("\nStopping local environment...")
         return 0

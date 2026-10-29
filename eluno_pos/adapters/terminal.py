@@ -24,3 +24,17 @@ class PaymentTerminalClient:
 
     def get_charge(self, charge_id: str) -> Dict[str, Any]:
         return self._http.get("charges/{}".format(charge_id))
+
+    def refund(
+        self, charge_id: str, amount_paise: int, reason: str, idempotency_key: str,
+    ) -> Dict[str, Any]:
+        return self._http.post(
+            "refunds",
+            {
+                "charge_id": charge_id,
+                "amount_paise": amount_paise,
+                "reason": reason,
+                "idempotency_key": idempotency_key,
+            },
+            retry_statuses=(429,),
+        )

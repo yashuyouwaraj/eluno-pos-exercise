@@ -16,7 +16,7 @@
    POST inventory_levels/set.json    {location_id, inventory_item_id, available}
    POST orders.json {"order": {...}}                            -> 201 with id, order_number, name, line_item ids
         stock is decremented only if order.inventory_behaviour is decrement_obeying_policy / decrement_ignoring_policy (default bypass)
-   GET  orders.json?created_at_min=&created_at_max=&location_id=&status=any&financial_status=&limit=
+   GET  orders.json?created_at_min=&created_at_max=&location_id=&status=any&financial_status=&limit=&since_id=
    GET  orders/{id}.json
    POST orders/{id}/transactions.json {"transaction": {kind, amount, gateway, ...}}
    POST orders/{id}/refunds/calculate.json {"refund": {refund_line_items:[{line_item_id, quantity, restock_type}]}}
@@ -52,7 +52,7 @@ S = {
     "customers": L("customers.json"), "locations": L("locations.json"), "products": L("products.json"),
     "inventory": {(r["inventory_item_id"], r["location_id"]): r for r in L("inventory_levels.json")},
     "orders": {o["id"]: o for o in L("orders_sample.json")}, "rx": L("prescriptions.json"), "staff": L("staff.json"),
-    "charges": {}, "prescription_requests": {}, "inventory_adjustments": {},
+    "charges": {}, "terminal_refunds": {}, "prescription_requests": {}, "inventory_adjustments": {},
     "seq": {"order": max(o["order_number"] for o in L("orders_sample.json")), "id": 99000000, "calls": 0},
 }
 CUSTOMER_LOCK = threading.Lock()
@@ -67,7 +67,7 @@ def paise(s): return int(round(float(s) * 100))
 def money(p): return f"{'-' if p < 0 else ''}{abs(p) // 100}.{abs(p) % 100:02d}"
 
 def _state_payload():
-    payload = {key: S[key] for key in ("customers", "locations", "products", "rx", "staff", "charges", "prescription_requests", "inventory_adjustments", "seq")}
+    payload = {key: S[key] for key in ("customers", "locations", "products", "rx", "staff", "charges", "terminal_refunds", "prescription_requests", "inventory_adjustments", "seq")}
     payload["inventory"] = [
         {"inventory_item_id": item_id, "location_id": location_id, "row": row}
         for (item_id, location_id), row in S["inventory"].items()
@@ -96,7 +96,8 @@ def _load_state(path):
             return
     payload = json.loads(row[0])
     payload.setdefault("inventory_adjustments", {})
-    for key in ("customers", "locations", "products", "rx", "staff", "charges", "prescription_requests", "inventory_adjustments", "seq"):
+    payload.setdefault("terminal_refunds", {})
+    for key in ("customers", "locations", "products", "rx", "staff", "charges", "terminal_refunds", "prescription_requests", "inventory_adjustments", "seq"):
         if key not in payload:
             raise ValueError("mock state database is missing {}".format(key))
         S[key] = payload[key]
@@ -130,7 +131,13 @@ class H(BaseHTTPRequestHandler):
         if p.startswith("/smt/"):
             if p == "/smt/prescriptions":
                 ph = q.get("phone", "").replace(" ", "+")
-                return self._send(200, {"prescriptions": sorted([r for r in S["rx"] if r["phone"] == ph], key=lambda r: r["date"], reverse=True)})
+                customer_id = q.get("customer_id")
+                rows = [
+                    r for r in S["rx"]
+                    if (not ph or r.get("phone") == ph)
+                    and (not customer_id or str(r.get("customer_id")) == customer_id)
+                ]
+                return self._send(200, {"prescriptions": sorted(rows, key=lambda r: r["date"], reverse=True)})
             if p == "/smt/staff": return self._send(200, {"staff": [s for s in S["staff"] if not q.get("store") or s["store_code"] == q["store"]]})
             return self._err(404, "Not Found")
         if p.startswith("/terminal/charges/"):
@@ -138,8 +145,40 @@ class H(BaseHTTPRequestHandler):
         if not p.startswith(API): return self._err(404, "Not Found")
         r = p[len(API):]
         if r == "customers/search.json":
-            m = re.search(r"phone:(\S+)", q.get("query", "")); ph = (m.group(1) if m else "").replace(" ", "+")
-            return self._send(200, {"customers": [c for c in S["customers"] if ph and c["phone"] == ph]})
+            query = q.get("query", "").strip()
+            phone_match = re.fullmatch(r"phone:(\S+)", query)
+            term = (phone_match.group(1) if phone_match else query).casefold()
+            try:
+                page = int(q.get("page", "1"))
+                limit = int(q.get("limit", "20"))
+            except ValueError:
+                return self._err(422, "customer search page and limit must be integers")
+            if page < 1 or limit < 1 or limit > 50:
+                return self._err(422, "customer search page or limit is out of range")
+            if phone_match:
+                matches = [c for c in S["customers"] if str(c.get("phone") or "").casefold() == term]
+            else:
+                matches = [
+                    c for c in S["customers"]
+                    if term and (
+                        str(c.get("id")) == term
+                        or term in " ".join((
+                            str(c.get("first_name") or ""),
+                            str(c.get("last_name") or ""),
+                        )).casefold()
+                        or term in str(c.get("email") or "").casefold()
+                        or term in str(c.get("phone") or "").casefold()
+                    )
+                ]
+            start = (page - 1) * limit
+            return self._send(200, {
+                "customers": matches[start:start + limit],
+                "has_more": len(matches) > start + limit,
+            })
+        m = re.match(r"customers/(\d+)\.json$", r)
+        if m:
+            customer = next((item for item in S["customers"] if str(item["id"]) == m.group(1)), None)
+            return self._send(200, {"customer": customer}) if customer else self._err(404, "Not Found")
         if r == "locations.json": return self._send(200, {"locations": S["locations"]})
         if r == "products.json":
             ps = [x for x in S["products"] if not q.get("product_type") or x["product_type"] == q["product_type"]]
@@ -155,12 +194,24 @@ class H(BaseHTTPRequestHandler):
             return self._send(200, {"inventory_levels": rows})
         if r == "orders.json":
             os_ = list(S["orders"].values())
+            if q.get("since_id"):
+                try:
+                    since_id = int(q["since_id"])
+                except ValueError:
+                    return self._err(422, "since_id must be an integer")
+                os_ = [o for o in os_ if int(o["id"]) > since_id]
             if q.get("status", "open") != "any": os_ = [o for o in os_ if o.get("cancelled_at") is None]
             for k in ("created_at_min", "created_at_max"):
                 if q.get(k): os_ = [o for o in os_ if (o["created_at"] >= q[k]) == (k == "created_at_min") or o["created_at"] == q[k]]
             if q.get("location_id"): os_ = [o for o in os_ if o["location_id"] == int(q["location_id"])]
             if q.get("financial_status"): os_ = [o for o in os_ if o["financial_status"] == q["financial_status"]]
-            return self._send(200, {"orders": sorted(os_, key=lambda o: o["created_at"])[: int(q.get("limit", 50))]})
+            try:
+                limit = int(q.get("limit", 50))
+            except ValueError:
+                return self._err(422, "limit must be an integer")
+            if limit < 1 or limit > 250:
+                return self._err(422, "limit must be between 1 and 250")
+            return self._send(200, {"orders": sorted(os_, key=lambda o: int(o["id"]))[:limit]})
         m = re.match(r"orders/(\d+)\.json$", r)
         if m: o = S["orders"].get(int(m.group(1))); return self._send(200, {"order": o}) if o else self._err(404, "Not Found")
         self._err(404, "Not Found")
@@ -202,12 +253,18 @@ class H(BaseHTTPRequestHandler):
                     cyl = float(eye["cyl"])
                     add = None if eye.get("add") is None else float(eye["add"])
                     axis = eye.get("axis")
+                    if axis is not None and (
+                        isinstance(axis, bool)
+                        or isinstance(axis, float) and not axis.is_integer()
+                        or isinstance(axis, str) and not re.fullmatch(r"[+-]?\d+", axis)
+                    ):
+                        raise ValueError
                     axis = None if axis is None else int(axis)
                     if not (-30 <= sph <= 30 and -10 <= cyl <= 0):
                         raise ValueError
                     if add is not None and not (0 <= add <= 5):
                         raise ValueError
-                    if axis is not None and (axis < 0 or axis > 180 or axis % 5):
+                    if axis is not None and (axis < 0 or axis > 180):
                         raise ValueError
                     if cyl != 0 and axis is None:
                         raise ValueError
@@ -241,11 +298,26 @@ class H(BaseHTTPRequestHandler):
             cid = "chg_" + str(nid()); c = {"charge_id": cid, "status": "captured", "amount_paise": amt, "method": b.get("method", "upi"), "order_ref": key, "refunded_paise": 0, "captured_at": now()}
             S["charges"][cid] = c; return self._send(201, c)
         if p == "/terminal/refunds":
+            key = b.get("idempotency_key")
+            if not isinstance(key, str) or not key:
+                return self._err(422, "idempotency_key required")
+            prior = S["terminal_refunds"].get(key)
+            if prior:
+                if prior["request"] != {k: b.get(k) for k in ("charge_id", "amount_paise", "reason")}:
+                    return self._err(409, "idempotency key used for a different refund")
+                return self._send(200, prior["result"])
             c = S["charges"].get(b.get("charge_id")); amt = int(b.get("amount_paise", 0))
             if not c: return self._err(404, "unknown charge")
             if amt <= 0 or c["refunded_paise"] + amt > c["amount_paise"]: return self._send(422, {"error": "exceeds refundable amount", "refundable_paise": c["amount_paise"] - c["refunded_paise"]})
             if not b.get("reason"): return self._err(422, "reason required")
-            c["refunded_paise"] += amt; return self._send(201, {"refund_id": "trf_" + str(nid()), "charge_id": c["charge_id"], "amount_paise": amt, "status": "processed"})
+            c["refunded_paise"] += amt
+            result = {"refund_id": "trf_" + str(nid()), "charge_id": c["charge_id"], "amount_paise": amt, "status": "processed"}
+            S["terminal_refunds"][key] = {
+                "request": {k: b.get(k) for k in ("charge_id", "amount_paise", "reason")},
+                "result": result,
+            }
+            _save_state()
+            return self._send(201, result)
         if not p.startswith(API): return self._err(404, "Not Found")
         if FLAKE and random.random() < 0.1: return self._send(429, {"errors": "Exceeded 2 calls per second for api client. Reduce request rates to resume uninterrupted service."}, {"Retry-After": "1.0"})
         r = p[len(API):]
@@ -255,10 +327,16 @@ class H(BaseHTTPRequestHandler):
             first = customer.get("first_name")
             last = customer.get("last_name", "")
             phone = customer.get("phone")
+            email = customer.get("email")
             if not isinstance(first, str) or not first.strip() or not isinstance(last, str):
                 return self._err(422, "first_name and last_name must be text")
             if not isinstance(phone, str) or not re.fullmatch(r"\+91[6-9]\d{9}", phone):
                 return self._err(422, "phone must be a valid +91 mobile number")
+            if email is not None and (
+                not isinstance(email, str) or len(email) > 254
+                or not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email)
+            ):
+                return self._err(422, "email must be a valid email address")
             with CUSTOMER_LOCK:
                 matches = [item for item in S["customers"] if item.get("phone") == phone]
                 if matches:
@@ -268,7 +346,7 @@ class H(BaseHTTPRequestHandler):
                     return self._send(200, {"customer": existing})
                 created = {
                     "id": nid(), "first_name": first, "last_name": last, "phone": phone,
-                    "tags": "", "email": None, "created_at": now(),
+                    "tags": "", "email": email, "created_at": now(),
                 }
                 S["customers"].append(created)
             return self._send(201, {"customer": created})
@@ -465,6 +543,93 @@ class H(BaseHTTPRequestHandler):
             o["financial_status"] = "refunded" if refunded + rsum >= captured and captured else "partially_refunded"
             return self._send(201, {"refund": refund})
         self._err(404, "Not Found")
+
+    def do_PUT(self):
+        p = urlparse(self.path).path
+        b = self._body()
+        if b is None: return self._err(400, "invalid JSON")
+        if not p.startswith(API): return self._err(404, "Not Found")
+        m = re.match(re.escape(API) + r"customers/(\d+)\.json$", p)
+        if m:
+            customer = next((item for item in S["customers"] if str(item["id"]) == m.group(1)), None)
+            changes = b.get("customer")
+            if customer is None: return self._err(404, "Not Found")
+            if not isinstance(changes, dict): return self._err(422, "customer is required")
+            allowed = {"first_name", "last_name", "email", "phone", "note", "anonymized"}
+            if any(key not in allowed for key in changes):
+                return self._err(422, "unsupported customer field")
+            phone = changes.get("phone", customer.get("phone"))
+            if phone and any(item is not customer and item.get("phone") == phone for item in S["customers"]):
+                return self._err(422, "phone is already used by another customer")
+            customer.update(changes)
+            _save_state()
+            return self._send(200, {"customer": customer})
+        m = re.match(re.escape(API) + r"products/(\d+)\.json$", p)
+        if not m: return self._err(404, "Not Found")
+        product = next((item for item in S["products"] if str(item["id"]) == m.group(1)), None)
+        changes = b.get("product")
+        if product is None: return self._err(404, "Not Found")
+        if not isinstance(changes, dict): return self._err(422, "product is required")
+        if set(changes) - {"title", "body_html", "status", "tags", "variants"}:
+            return self._err(422, "unsupported product field")
+        if "title" in changes and (
+            not isinstance(changes["title"], str) or not changes["title"].strip()
+            or len(changes["title"]) > 120
+        ):
+            return self._err(422, "product title is invalid")
+        if "body_html" in changes and (
+            not isinstance(changes["body_html"], str) or len(changes["body_html"]) > 5000
+        ):
+            return self._err(422, "product description is invalid")
+        if "status" in changes and changes["status"] not in ("active", "archived"):
+            return self._err(422, "product status must be active or archived")
+        variants = changes.get("variants", [])
+        if not isinstance(variants, list):
+            return self._err(422, "variants must be a list")
+        for variant_changes in variants:
+            if not isinstance(variant_changes, dict):
+                return self._err(422, "variant updates must be objects")
+            target = next(
+                (item for item in product.get("variants", [])
+                 if str(item.get("id")) == str(variant_changes.get("id"))),
+                None,
+            )
+            if target is None:
+                return self._err(422, "variant does not belong to this product")
+            if set(variant_changes) - {"id", "sku", "title", "option1", "price", "eluno"}:
+                return self._err(422, "unsupported variant field")
+            if "sku" in variant_changes:
+                sku = variant_changes["sku"]
+                if not isinstance(sku, str) or not sku.strip():
+                    return self._err(422, "SKU is required")
+                if any(
+                    other is not target and str(other.get("sku", "")).casefold() == sku.strip().casefold()
+                    for item in S["products"] for other in item.get("variants", [])
+                ):
+                    return self._err(409, "SKU already exists")
+            if "price" in variant_changes and (
+                not isinstance(variant_changes["price"], str)
+                or not MONEY.fullmatch(variant_changes["price"])
+            ):
+                return self._err(422, "variant price is invalid")
+            if "eluno" in variant_changes and (
+                not isinstance(variant_changes["eluno"], dict)
+                or variant_changes["eluno"].get("line_type") not in ("frame", "lens")
+                or variant_changes["eluno"].get("line_type") != (
+                    "frame" if product.get("product_type") == "Frame" else "lens"
+                )
+            ):
+                return self._err(422, "variant optical metadata does not match product type")
+        product.update({key: value for key, value in changes.items() if key != "variants"})
+        for variant_changes in variants:
+            target = next(
+                item for item in product["variants"]
+                if str(item.get("id")) == str(variant_changes["id"])
+            )
+            target.update({key: value for key, value in variant_changes.items() if key != "id"})
+            VARIANTS[int(target["id"])] = target
+        _save_state()
+        return self._send(200, {"product": product})
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(); ap.add_argument("--port", type=int, default=8787); ap.add_argument("--no-flake", action="store_true"); ap.add_argument("--state-db")

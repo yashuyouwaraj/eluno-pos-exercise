@@ -169,6 +169,9 @@ class OfferEngine:
             and not offer.rule.get("condition", {}).get("customer_tag")
         )
 
+    def offer_catalog(self) -> Tuple[OfferDefinition, ...]:
+        return tuple(sorted(self._offers, key=lambda item: item.offer_id))
+
     @staticmethod
     def _compatible_sets(offers: Sequence[OfferDefinition]) -> List[Tuple[OfferDefinition, ...]]:
         stackable = [offer for offer in offers if offer.stackable]
@@ -221,15 +224,64 @@ class OfferEngine:
             target = targets
             if discount.get("on") == "lowest_priced_lens_line":
                 target = (min(target, key=lambda index: (self._gross(cart, variants, index), variants[index].variant_id, index)),)
-            self._apply_discount(discount, target, cart, variants, existing, result)
+            if offer.rule.get("applies_to") == "cart" and discount["type"] == "flat":
+                available = {
+                    index: max(0, self._gross(cart, variants, index) - existing[index])
+                    for index in target
+                }
+                amount = min(int(discount["value_paise"]), sum(available.values()))
+                self._allocate_proportionally(amount, target, available, cart, variants, result)
+            else:
+                self._apply_discount(discount, target, cart, variants, existing, result)
         cap = offer.rule.get("max_discount_paise")
         if cap is not None:
-            remaining_cap = int(cap)
-            for index, allocation in enumerate(result):
-                kept = min(allocation, remaining_cap)
-                result[index] = kept
-                remaining_cap -= kept
+            cap_amount = min(int(cap), sum(result))
+            self._allocate_proportionally(
+                cap_amount,
+                tuple(index for index, allocation in enumerate(result) if allocation),
+                {index: result[index] for index in range(len(result))},
+                cart,
+                variants,
+                result,
+                replace=True,
+            )
         return result
+
+    def _allocate_proportionally(
+        self,
+        amount: int,
+        targets: Sequence[int],
+        weights: Dict[int, int],
+        cart: Cart,
+        variants: Sequence[CatalogVariant],
+        result: List[int],
+        replace: bool = False,
+    ) -> None:
+        denominator = sum(weights[index] for index in targets)
+        if amount <= 0 or denominator <= 0:
+            return
+        allocations: Dict[int, int] = {}
+        remainders: List[Tuple[int, Tuple[str, str, str, int], int]] = []
+        allocated = 0
+        for index in targets:
+            share, remainder = divmod(amount * weights[index], denominator)
+            allocations[index] = share
+            allocated += share
+            line = cart.lines[index]
+            key = (
+                str(variants[index].variant_id),
+                str(line.pair_ref or ""),
+                str(line.prescription_id or ""),
+                line.quantity,
+            )
+            remainders.append((remainder, key, index))
+        for _, _, index in sorted(remainders, key=lambda entry: (-entry[0], entry[1]))[:amount - allocated]:
+            allocations[index] += 1
+        for index in targets:
+            if replace:
+                result[index] = allocations[index]
+            else:
+                result[index] += allocations[index]
 
     def _apply_discount(
         self, discount: Dict[str, Any], targets: Sequence[int], cart: Cart, variants: Sequence[CatalogVariant],

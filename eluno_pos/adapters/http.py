@@ -47,6 +47,10 @@ class JsonHttpClient:
         """
         return self._request("POST", path, payload=payload, retry_statuses=retry_statuses)
 
+    def put(self, path: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """Send a non-retried JSON update; a lost response may be ambiguous."""
+        return self._request("PUT", path, payload=payload, retry_statuses=())
+
     def _request(
         self,
         method: str,

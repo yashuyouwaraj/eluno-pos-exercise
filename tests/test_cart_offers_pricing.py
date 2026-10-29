@@ -102,6 +102,83 @@ class CartOfferPricingTests(unittest.TestCase):
                 paired_cart,(frame,lens),date(2026,10,10),
                 selected_offer_ids=("FESTIVE10","BUNDLE300"),
             )
+        with self.assertRaisesRegex(ValueError,"cannot be selected more than once"):
+            self.engine.evaluate(
+                cart,(frame,),date(2026,10,10),
+                selected_offer_ids=("FESTIVE10","FESTIVE10"),
+            )
+
+    def test_flat_cart_discount_allocation_and_tax_are_invariant_to_line_order(self):
+        frame = next(item for item in self.frames if item.hsn == "90031900")
+        lens = next(item for item in self.lenses if item.hsn == "90015000")
+        offer = OfferDefinition(
+            "FLAT-CART",
+            True,
+            date(2026, 1, 1),
+            date(2027, 1, 1),
+            True,
+            1,
+            {"applies_to": "cart", "discount": {"type": "flat", "value_paise": 12345}},
+        )
+        service = CartService(
+            self.catalog,
+            OfferEngine(OfferBook((offer,))),
+            TaxRateTable.from_file(DATA / "tax_rates.json"),
+        )
+        frame_line = CartLine(frame.variant_id, 1)
+        lens_line = CartLine(lens.variant_id, 1, "pair", "RX1")
+        forward = service.price(
+            self.cart([frame_line, lens_line]), date(2026, 10, 10), selected_offer_ids=("FLAT-CART",)
+        )
+        reverse = service.price(
+            self.cart([lens_line, frame_line]), date(2026, 10, 10), selected_offer_ids=("FLAT-CART",)
+        )
+        self.assertNotEqual(forward.lines[0].rate_bps, forward.lines[1].rate_bps)
+        self.assertEqual(12345, forward.discount_paise)
+        self.assertEqual(forward.discount_paise, reverse.discount_paise)
+        self.assertEqual(forward.tax_paise, reverse.tax_paise)
+        self.assertEqual(forward.payable_paise, reverse.payable_paise)
+        self.assertEqual(
+            {
+                line.cart_line.variant_id: (line.discount_paise, line.tax_paise, line.payable_paise)
+                for line in forward.lines
+            },
+            {
+                line.cart_line.variant_id: (line.discount_paise, line.tax_paise, line.payable_paise)
+                for line in reverse.lines
+            },
+        )
+
+    def test_flat_cart_discount_residual_paisee_is_deterministic(self):
+        variants = sorted(
+            [next(item for item in self.frames if item.hsn == "90031900"),
+             next(item for item in self.lenses if item.hsn == "90015000")],
+            key=lambda item: item.variant_id,
+        )
+        cart_lines = [CartLine(item.variant_id, 1) for item in variants]
+        offer = OfferDefinition(
+            "FLAT-RESIDUAL",
+            True,
+            date(2026, 1, 1),
+            date(2027, 1, 1),
+            True,
+            1,
+            {"applies_to": "cart", "discount": {"type": "flat", "value_paise": 7}},
+        )
+        evaluation = OfferEngine(OfferBook((offer,))).evaluate(
+            self.cart(cart_lines), tuple(variants), date(2026, 10, 10), selected_offer_ids=("FLAT-RESIDUAL",)
+        )
+        self.assertEqual(7, sum(evaluation.line_discounts_paise))
+        reversed_evaluation = OfferEngine(OfferBook((offer,))).evaluate(
+            self.cart(list(reversed(cart_lines))),
+            tuple(reversed(variants)),
+            date(2026, 10, 10),
+            selected_offer_ids=("FLAT-RESIDUAL",),
+        )
+        self.assertEqual(
+            dict(zip((item.variant_id for item in variants), evaluation.line_discounts_paise)),
+            dict(zip((item.variant_id for item in reversed(variants)), reversed_evaluation.line_discounts_paise)),
+        )
 
     def test_cohort_and_distinct_complete_pair_conditions(self):
         priority_cart = self.cart([CartLine(self.frames[0].variant_id, 1)])
@@ -162,8 +239,9 @@ class CartOfferPricingTests(unittest.TestCase):
         self.assertEqual({"BUNDLE300", "PRIORITY500"}, self.decision_ids(result.applied))
         self.assertIn("FESTIVE10", self.decision_ids(result.rejected))
         self.assertEqual(80000, result.total_discount_paise)
-        self.assertEqual(80000, result.line_discounts_paise[0])
-        self.assertEqual(0, result.line_discounts_paise[1])
+        self.assertGreater(result.line_discounts_paise[0], 0)
+        self.assertGreater(result.line_discounts_paise[1], 0)
+        self.assertEqual(80000, sum(result.line_discounts_paise))
 
     def test_priority_breaks_discount_ties_and_result_is_fixture_order_independent(self):
         common_rule = {"applies_to": "cart", "discount": {"type": "flat", "value_paise": 100}}

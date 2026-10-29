@@ -83,7 +83,7 @@ class LensValidationTests(unittest.TestCase):
         )
         self.assertTrue(result.is_valid, result.errors)
 
-    def test_off_grid_axis_is_rejected_for_each_eye(self):
+    def test_off_grid_axis_is_allowed_for_optometrist_review_for_each_eye(self):
         configuration = LensConfiguration.from_data(
             {"lens_type": "progressive", "index": "1.60", "coating": "standard"}
         )
@@ -96,8 +96,7 @@ class LensValidationTests(unittest.TestCase):
                     )},
                 )
                 result = self.validator.validate(configuration, rx, self.options)
-                self.assertFalse(result.is_valid)
-                self.assertTrue(any(eye_name in error and "5-degree increments" in error for error in result.errors))
+                self.assertTrue(result.is_valid, result.errors)
 
     def test_axis_range_missing_and_non_applicable_axis_rules(self):
         configuration = LensConfiguration.from_data(

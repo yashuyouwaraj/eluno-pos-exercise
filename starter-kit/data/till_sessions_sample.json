@@ -9,14 +9,14 @@
     "movements": [
       {
         "type": "cash_sale",
-        "amount_paise": 899800,
+        "amount_paise": 8998000,
         "ref": "ELU/JN/FY26/00001",
         "at": "2026-10-06T12:30:00+05:30",
         "reason": null
       },
       {
         "type": "cash_sale",
-        "amount_paise": 549800,
+        "amount_paise": 5498000,
         "ref": "ELU/JN/FY26/00002",
         "at": "2026-10-06T12:30:00+05:30",
         "reason": null
@@ -45,8 +45,8 @@
     ],
     "closed_at": "2026-10-06T21:40:00+05:30",
     "closed_by": "S120",
-    "expected_cash_paise": 1829600,
-    "counted_cash_paise": 1804600,
+    "expected_cash_paise": 14876000,
+    "counted_cash_paise": 14851000,
     "variance_paise": -25000,
     "variance_note": "Short; manager to review."
   },

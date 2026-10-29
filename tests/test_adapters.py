@@ -65,6 +65,26 @@ class AdapterTests(unittest.TestCase):
         self.assertEqual(503, raised.exception.status)
         self.assertEqual(2, RetryHandler.calls)
 
+    def test_list_all_orders_advances_since_id_until_history_is_complete(self):
+        class Http:
+            def __init__(self):
+                self.queries = []
+
+            def get(self, path, query):
+                self.queries.append((path, query))
+                if query["since_id"] == "0":
+                    return {"orders": [{"id": index} for index in range(1, 251)]}
+                if query["since_id"] == "250":
+                    return {"orders": [{"id": 251}]}
+                return {"orders": []}
+
+        http = Http()
+        orders = ShopifyAdminClient(http=http).list_all_orders()
+
+        self.assertEqual(251, len(orders))
+        self.assertEqual(["0", "250"], [query["since_id"] for _, query in http.queries])
+        self.assertTrue(all(query["status"] == "any" and query["limit"] == "250" for _, query in http.queries))
+
     def test_upstream_errors_do_not_expose_query_values_or_response_bodies(self):
         from urllib.error import HTTPError
         from io import BytesIO

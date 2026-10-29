@@ -161,12 +161,6 @@ class LensValidator:
                         eye_name, eye.axis
                     )
                 )
-            elif eye.axis % 5:
-                errors.append(
-                    "{} axis {} is invalid; enter the prescribed axis in 5-degree increments.".format(
-                        eye_name, eye.axis
-                    )
-                )
             # The brief makes ADD mandatory for these lens families. Honor a
             # catalog-required ADD too, so a future lens family can declare
             # the same constraint without changing this validator.
@@ -193,7 +187,7 @@ class LensValidator:
 class PosApplication:
     """Thin composition root used by the HTTP API."""
 
-    def __init__(self, lookup_service: CustomerPrescriptionService, catalog: LensCatalogSource, checkout_service=None, refund_service=None, till_store=None, report_service=None, document_service=None, anomaly_service=None, shopify_adapter=None, smt_adapter=None, terminal_adapter=None, local_mock_configured=False) -> None:
+    def __init__(self, lookup_service: CustomerPrescriptionService, catalog: LensCatalogSource, checkout_service=None, refund_service=None, till_store=None, report_service=None, document_service=None, anomaly_service=None, shopify_adapter=None, smt_adapter=None, terminal_adapter=None, local_mock_configured=False, pricing_service=None, auth_manager=None, customer_accounts=None, customer_orders=None) -> None:
         self.lookup_service = lookup_service
         self.catalog = catalog
         self.lens_validator = LensValidator()
@@ -208,6 +202,11 @@ class PosApplication:
         self.shopify_adapter = shopify_adapter
         self.smt_adapter = smt_adapter
         self.terminal_adapter = terminal_adapter
+        self.pricing_service = pricing_service
+        self.auth_manager = auth_manager
+        self.customer_accounts = customer_accounts
+        self.customer_orders = customer_orders
+        self.customer_registration_lock = threading.Lock()
         self.local_mock_configured = local_mock_configured
         self.mock_payment_readiness = None
         self.mock_payment_readiness_lock = threading.Lock()

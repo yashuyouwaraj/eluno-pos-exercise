@@ -1,9 +1,11 @@
 """Printable documents assembled from confirmed POS and Shopify records."""
 from decimal import Decimal
+from datetime import date
 from html import escape
 import json
 import logging
 import textwrap
+from .business_time import bengaluru_business_date
 
 from .adapters.http import HttpRequestError
 from .money import paise_from_decimal
@@ -144,8 +146,8 @@ def _format_table(rows, totals):
 
 
 class DocumentService:
-    def __init__(self, sales, refunds, shopify):
-        self.sales, self.refunds, self.shopify = sales, refunds, shopify
+    def __init__(self, sales, refunds, shopify, prescriptions=None):
+        self.sales, self.refunds, self.shopify, self.prescriptions = sales, refunds, shopify, prescriptions
 
     def invoice_html(self, sale_id):
         sale = self.sales.get(sale_id)
@@ -351,8 +353,8 @@ class DocumentService:
             for item in line.get("properties", [])
             if isinstance(item, dict)
         )
-        rx_value = ", ".join(prescription_ids) if prescription_ids else (
-            "Unavailable (not recorded)" if has_lens else "None"
+        rx_value = self._prescription_status(
+            order, sale, customer_id, customer_phone, prescription_ids,
         )
         metadata = (
             "Invoice no : {:<31} Date        : {}".format(invoice_no, invoice_date),
@@ -426,6 +428,72 @@ class DocumentService:
         ]
         return self._page("Invoice " + _e(invoice_no), "\n".join(lines), width)
 
+    def _prescription_status(self, order, sale, customer_id, phone, prescription_ids):
+        if not customer_id or not phone or self.prescriptions is None:
+            return "Not on file" if not customer_id and not prescription_ids else "Unable to verify"
+        try:
+            records = self.prescriptions.prescriptions_by_customer(str(customer_id))
+        except AttributeError:
+            try:
+                records = self.prescriptions.prescriptions_by_phone(str(phone))
+            except (HttpRequestError, ValueError, AttributeError) as exc:
+                LOG.warning("prescription status for sale %s could not be verified: %s", sale.get("sale_id"), exc)
+                return "Unable to verify"
+        except (HttpRequestError, ValueError, AttributeError) as exc:
+            LOG.warning("prescription status for sale %s could not be verified: %s", sale.get("sale_id"), exc)
+            return "Unable to verify"
+        records = [
+            item for item in records
+            if str(item.get("customer_id")) == str(customer_id) and item.get("phone") == phone
+        ]
+        if prescription_ids:
+            records = [item for item in records if str(item.get("rx_id")) in prescription_ids]
+        if not records:
+            return "Not on file"
+        try:
+            sale_date = (
+                date.fromisoformat(str(sale["business_date"]))
+                if sale.get("business_date")
+                else bengaluru_business_date(order.get("processed_at") or order.get("created_at"))
+            )
+        except (KeyError, TypeError, ValueError, OverflowError):
+            return "Unable to verify"
+        complete = []
+        expired = []
+        future = []
+        for record in records:
+            try:
+                prescribed_on = date.fromisoformat(str(record["date"]))
+                valid_until = date.fromisoformat(str(record["valid_until"]))
+                if not record.get("rx_id") or not all(
+                    isinstance(record.get(side), dict)
+                    and record[side].get("sph") is not None
+                    and record[side].get("cyl") is not None
+                    for side in ("od", "os")
+                ):
+                    continue
+            except (KeyError, TypeError, ValueError):
+                continue
+            item = (prescribed_on, valid_until, str(record["rx_id"]))
+            if valid_until < prescribed_on:
+                continue
+            if prescribed_on > sale_date:
+                future.append(item)
+            elif valid_until < sale_date:
+                expired.append(item)
+            else:
+                complete.append(item)
+        if complete:
+            _, _, rx_id = max(complete)
+            return rx_id
+        if expired:
+            _, _, rx_id = max(expired)
+            return "Expired: " + rx_id
+        if future:
+            _, _, rx_id = min(future)
+            return "Not valid on sale date: " + rx_id
+        return "Incomplete"
+
     @staticmethod
     def _line_amount(line, quantity):
         line_quantity = int(line.get("quantity", 1))
@@ -444,7 +512,10 @@ class DocumentService:
             ".invoice{{font-family:Consolas,'Courier New',monospace;font-size:{};line-height:1.35;"
             "white-space:pre;overflow:visible;margin:0 auto;width:max-content;max-width:none}}"
             "table{{border-collapse:collapse;width:100%}}th,td{{border:1px solid #777;padding:6px;text-align:left}}"
+            ".print-control{{display:block;margin:0 auto 16px;padding:8px 14px}}"
             "@page{{size:A4 landscape;margin:10mm}}@media print{{html,body{{margin:0;padding:0}}"
+            ".print-control{{display:none}}"
             ".invoice{{font-size:6.5pt;line-height:1.3;width:max-content;page-break-inside:avoid}}"
-            "tr{{break-inside:avoid;page-break-inside:avoid}}}}</style></head><body>{}</body></html>"
+            "tr{{break-inside:avoid;page-break-inside:avoid}}}}</style></head><body>"
+            "<button type='button' class='print-control' onclick='window.print()'>Print</button>{}</body></html>"
         ).format(title, font_size, content)

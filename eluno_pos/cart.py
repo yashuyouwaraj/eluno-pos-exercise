@@ -97,3 +97,6 @@ class CartService:
 
     def selectable_offers(self, business_date: date) -> Tuple[OfferDefinition, ...]:
         return self._offers.selectable_offers(business_date)
+
+    def offer_catalog(self) -> Tuple[OfferDefinition, ...]:
+        return self._offers.offer_catalog()

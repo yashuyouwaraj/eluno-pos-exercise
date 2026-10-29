@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#450920">
+  <title>| Premium Eyeglasses, Sunglasses &amp; Clip-On</title>
+  <link rel="stylesheet" href="/pos/app.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">E</span><span>| Premium Eyeglasses, Sunglasses &amp; Clip-On</span></div>
+    <div class="session-context">
+      <label>Store <select id="storeSelect"><option value="">Loading…</option></select></label>
+      <label>Operator <input id="operator" value="S105" maxlength="100"></label>
+      <label>Date <input id="businessDate" type="date"></label>
+    </div>
+    <button class="icon-button" id="helpButton" aria-label="Keyboard help" title="Keyboard help">?</button>
+  </header>
+  <nav class="workspace-nav" aria-label="Studio workspace">
+    <button class="nav-button active" data-view="checkout">Sales</button>
+    <button class="nav-button" data-view="refund">Returns &amp; Refunds</button>
+    <button class="nav-button" data-view="report">Reports</button>
+  </nav>
+  <main>
+    <section id="checkoutView" class="view active">
+      <div id="status" class="status-message" role="status" aria-live="polite"></div>
+      <div class="checkout-grid">
+        <div class="work-area">
+          <section class="panel customer-panel" aria-labelledby="customerHeading">
+            <div class="section-heading"><h1 id="customerHeading">Customer</h1><span id="customerState" class="badge">Not selected</span></div>
+            <div class="customer-actions">
+              <label class="field grow">Mobile number<input id="phone" inputmode="tel" autocomplete="tel" placeholder="98765 43210"></label>
+              <button id="lookupCustomer" class="secondary-button">Find customer</button>
+              <button id="walkInCustomer" class="secondary-button">Walk-in sale</button>
+            </div>
+            <div id="customerDetails" class="customer-details muted">Lookup a customer or continue as a walk-in.</div>
+            <div id="prescriptionSummary" class="prescription-summary"></div>
+          </section>
+
+          <section class="panel catalog-panel" aria-labelledby="catalogHeading">
+            <div class="section-heading"><h1 id="catalogHeading">Add items</h1></div>
+            <div class="item-type-tabs" role="tablist" aria-label="Catalog type">
+              <button class="type-tab active" data-line-type="frame">Frames</button>
+              <button class="type-tab" data-line-type="lens">Lenses</button>
+            </div>
+            <div class="catalog-actions">
+              <label class="field grow">Search<input id="catalogSearch" type="search" placeholder="Search catalog"></label>
+              <button id="loadCatalog" class="secondary-button">Refresh</button>
+            </div>
+            <div id="catalogList" class="catalog-list"><div class="empty-state">Select a store to load the catalog.</div></div>
+          </section>
+
+          <section class="panel cart-panel" aria-labelledby="cartHeading">
+            <div class="section-heading"><h1 id="cartHeading">Cart</h1><span id="cartCount" class="badge">0 items</span></div>
+            <div id="cartLines" class="cart-lines"><div class="empty-state">No items added.</div></div>
+            <div id="validationMessages" class="validation-stack"></div>
+          </section>
+        </div>
+
+        <aside class="totals-panel" aria-labelledby="totalsHeading">
+          <div class="section-heading"><h1 id="totalsHeading">Order total</h1></div>
+          <dl class="totals">
+            <div><dt>Gross</dt><dd id="gross">₹0.00</dd></div>
+            <div><dt>Discount</dt><dd id="discount">₹0.00</dd></div>
+            <div><dt>Taxable</dt><dd id="taxable">₹0.00</dd></div>
+            <div><dt>CGST</dt><dd id="cgst">₹0.00</dd></div>
+            <div><dt>SGST</dt><dd id="sgst">₹0.00</dd></div>
+          </dl>
+          <div class="payable"><span>Payable</span><strong id="payable">₹0.00</strong></div>
+          <section class="offer-panel" aria-labelledby="offersHeading">
+            <div class="offer-heading"><strong id="offersHeading">Offers</strong><button id="refreshOffers" class="text-button" type="button">Refresh</button></div>
+            <div id="offersList" class="offer-list"><div class="muted">Pricing offers will appear here.</div></div>
+          </section>
+          <label class="field">Payment method<select id="paymentMethod"><option value="upi">UPI</option><option value="card">Card</option><option value="cash">Cash</option></select></label>
+          <label class="field">Sales channel<select id="channel"><option value="walk_in">Walk-in</option><option value="whatsapp_booked">WhatsApp booked</option><option value="online_pickup">Online pickup</option></select></label>
+          <button id="reviewAndPay" class="primary-button" disabled>Review &amp; charge</button>
+          <button id="recoveryAction" class="secondary-button hidden">Check uncertain sale</button>
+          <div id="checkoutResult" class="result-panel"></div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="refundView" class="view">
+      <div class="wide-panel panel">
+        <div class="section-heading"><h1>Refund</h1></div>
+        <div class="form-grid">
+          <label class="field">Invoice number or Shopify order ID<input id="refundIdentifier" autocomplete="off" placeholder="ELU/HSR/FY26/00003 or Shopify order ID"></label>
+          <label class="field">Store code<input id="refundStore" placeholder="HSR"></label>
+          <label class="field">Operator<input id="refundOperator"></label>
+          <label class="field">Reason<input id="refundReason" placeholder="CHANGED_MIND"></label>
+          <label class="field">Refund idempotency key<input id="refundKey"></label>
+          <div class="refund-actions"><button id="lookupRefundOrder" class="secondary-button" type="button">Look up order and eligibility</button></div>
+        </div>
+        <div id="refundPreview" class="result-panel" aria-live="polite">Look up an invoice or Shopify order before starting a refund.</div>
+        <div class="refund-confirmation">
+          <label id="refundConfirmLabel" class="review-ack hidden"><input id="refundConfirm" type="checkbox"> I confirm the displayed order is the order to refund.</label>
+          <p class="dialog-note">This integration records a Shopify refund in the configured system; it does not call a payment-provider refund operation.</p>
+          <button id="submitRefund" class="danger-button" disabled>Confirm full refund</button>
+          <button id="lookupRefundOrderStatus" class="secondary-button hidden" type="button">Check submitted refund status</button>
+        </div>
+        <div id="refundResult" class="result-panel"></div>
+      </div>
+    </section>
+
+    <section id="reportView" class="view">
+      <div class="wide-panel panel">
+        <div class="section-heading"><h1>Reports</h1></div>
+        <div class="report-controls">
+          <label class="field">Store<input id="reportStore" placeholder="Location ID"></label>
+          <label class="field">Date<input id="reportDate" type="date"></label>
+          <button id="loadReport" class="primary-button">Load report</button>
+        </div>
+        <div id="reportResult" class="result-panel"></div>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="paymentDialog" aria-labelledby="paymentTitle">
+    <form method="dialog" id="paymentForm">
+      <div class="dialog-heading"><h1 id="paymentTitle">Confirm payment</h1><button value="cancel" class="icon-button" aria-label="Close">×</button></div>
+      <p>Charge <strong id="dialogPayable">₹0.00</strong> using <strong id="dialogMethod"></strong>.</p>
+      <p class="dialog-note">Only confirm when the customer has approved the sale.</p>
+      <div class="dialog-actions"><button value="cancel" class="secondary-button">Cancel</button><button id="confirmCharge" value="default" class="primary-button">Confirm charge</button></div>
+    </form>
+  </dialog>
+  <script src="/pos/app.js"></script>
+</body>
+</html>

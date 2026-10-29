@@ -1,0 +1,22 @@
+:root {
+  --berry-cream: #f9dbbd;
+  --berry-blush: #ffa5ab;
+  --berry-rose: #da627d;
+  --berry-wine: #a53860;
+  --berry-ink: #450920;
+  --page: #fffaf6;
+  --surface: #ffffff;
+  --surface-muted: #fff4ea;
+  --text: #351321;
+  --muted: #715b63;
+  --border: #e7d6d4;
+  --primary: var(--berry-wine);
+  --primary-hover: var(--berry-ink);
+  --focus: var(--berry-rose);
+  --warning: #744700;
+  --warning-bg: #fff3d8;
+  --error: #8c2034;
+  --error-bg: #fdebed;
+  --success: #21613d;
+  --success-bg: #e9f4ed;
+}

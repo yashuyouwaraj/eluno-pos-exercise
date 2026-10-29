@@ -1,15 +1,17 @@
-# Eluno POS
+# Eluno Studio
 
 Foundation for the Eluno store till. This increment contains the local
 application shell, integer-paise money and inclusive-GST utilities, customer
 and prescription lookup, catalog lens access, prescription/lens validation,
 cart construction, data-driven offers, final inclusive-GST cart pricing, and a
 durable checkout path, full- and partial-refund handling, persistent cash-till
-sessions, store-specific day-end reporting, and an interactive cashier CLI.
+sessions, store-specific day-end reporting, a browser-first cashier workspace, and an
+optional interactive cashier CLI.
 
 ## Requirements
 
-Python 3.8+; no packages need to be installed.
+Python 3.8+; no Python packages need to be installed. Node.js 22.12+ (or 24+)
+is required only when rebuilding or testing the browser client.
 
 ## Quick start
 
@@ -20,43 +22,220 @@ python scripts/start_local.py
 ```
 
 This command starts the supplied mock in deterministic `--no-flake` mode,
-waits for mock and POS health checks, and opens the cashier CLI in the same
-terminal. Exit the CLI with option `0`, or press Ctrl+C, to stop both services.
-It refuses occupied ports (`8787`, `8790`) and cleans up partial startup.
+waits for the mock and Studio health checks, serves the Eluno Studio workspace at
+`http://127.0.0.1:8790/`, and opens it in the default browser. If automatic
+browser opening is unavailable, the URL is printed for manual use. The browser
+Eluno Studio is the default interface; press Ctrl+C in the terminal to stop both services.
+Use `python scripts/start_local.py --cli` to also start the optional interactive
+CLI after opening the browser; it prompts for an assigned username and password.
+`--no-cli` remains available as an
+explicit browser-only mode. The script refuses occupied ports (`8787`, `8790`)
+and cleans up partial startup.
+
+The first local startup creates persistent demo accounts in the POS SQLite
+database; no authentication environment variable is required:
+
+- **Admin:** username `admin`, password `ElunoAdmin@2026`
+- **Cashier:** username `cashier`, password `ElunoCashier@2026`
+
+These are temporary development-only credentials. Change both passwords and
+replace the demo accounts before any public deployment. Passwords are stored
+as salted scrypt hashes. `ELUNO_AUTH_USERS` remains an optional first-run
+bootstrap for trusted accounts; it only creates usernames that are not already
+in the database and never resets an existing account, password, role, or
+disabled status. Manage staff through the Admin **Team** tab.
+Usernames are normalized and unique, passwords need at least 12 characters
+with uppercase and lowercase letters, a number, and a symbol. The server
+derives roles and audit identity from the persistent account and an HttpOnly,
+SameSite=Strict session; sessions expire after eight hours and are revoked when
+an account is disabled or its password/role changes.
+Set `ELUNO_COOKIE_SECURE=1` when serving behind a trusted HTTPS terminator so
+the session cookie also receives the `Secure` attribute. Local loopback HTTP
+uses the cookie without `Secure` for development.
+
+Admin catalog, inventory, staff management, reporting, audit, system-status,
+customer profile edits, customer anonymization, and historical till review are
+server-authorized as Admin-only. Admins may also inspect invoices, but cannot
+execute checkout or refund actions. Cashiers may perform assigned-store till
+operations as well as day-to-day sales and refund workflows. Checkout and
+refund APIs are Cashier-only, including recovery and refund lookup.
+Prescription entry is restricted to authenticated Optometrist accounts linked
+to a store-matched clinical directory record; the server validates the link
+and prescription.
+Authenticated Admins may still retrieve invoice documents for administrative
+review; invoice retrieval does not execute a sale or refund.
 The local Shopify/SMT/terminal mock persists its state in
 `eluno_pos_mock_state.sqlite3`; the POS sale ledger remains in its separate
-`eluno_pos_state.sqlite3` database.
+`eluno_pos_state.sqlite3` database. Staff accounts and hashed sessions persist
+in that same POS state database; `ELUNO_STATE_DB` changes the location for all
+POS-side SQLite state.
+Invoice allocation checks the complete Shopify order history using bounded
+`since_id` pages before payment and reserves invoice numbers under a SQLite
+write transaction with a unique local constraint. If Shopify history cannot
+be verified within the configured scan limit, checkout fails before charging.
+The uniqueness guarantee assumes POS instances share the same durable sale
+ledger; separate databases on multiple hosts do not provide a global atomic
+invoice reservation.
+
+The browser client is implemented in React and TypeScript and built with Vite.
+The checked-in production bundle is served by the Python API at `/` and `/pos`,
+so the existing one-command local startup remains unchanged. To rebuild or test
+the frontend after editing it:
+
+```powershell
+npm ci --prefix frontend
+npm test --prefix frontend
+npm run build --prefix frontend
+```
+
+For frontend development with the local API running, use
+`npm run dev --prefix frontend`; Vite proxies `/api` requests to
+`http://127.0.0.1:8790`.
+
+The failure-injection regression test deliberately runs the local mock with
+429/503 failures enabled, verifies `Retry-After` handling, and checks that the
+retried writes do not duplicate mock-side effects:
+
+```powershell
+python -m unittest tests.test_terminal_mock -v
+```
+
+The documented local launcher uses `--no-flake` for predictable day-to-day
+cashier sessions; that mode is not evidence of resilience.
+
+## Deployment constraints
+
+The bundled application is for local demonstration, not a public retail service.
+The launcher binds the API and mock services to loopback, uses local SQLite
+files, starts the mock terminal, and assumes a single supervised process. The
+local demo accounts and server authorization are not a production identity
+service. There is no production identity provider or credential provisioning
+workflow; rate limiting is local and keyed to the client address. Public
+deployment must replace demo passwords, configure HTTPS and trusted proxy
+handling, and review identity lifecycle, secrets, and operational controls.
+Do not expose the app, its mock terminal, or demo credentials on a public host.
+A future hosted deployment needs production identity management, Shopify and
+payment-provider integrations, a persistent database or durable volume,
+secret management, and host-provided port/bind configuration. No free-tier
+provider has been verified as meeting those requirements; an ephemeral
+filesystem or sleeping service is not safe for invoice, sale, or refund state.
+
+## AI tool-use note
+
+This note must be completed from the developer's own experience before
+submission. Do not present these prompts as completed claims:
+
+- AI tools helped with: **[name the actual tasks and tools]**
+- A specific AI suggestion that was misleading or wrong: **[describe what
+  happened, or state truthfully that there was no such example]**
+- How the code and behavior were independently checked: **[list the actual
+  tests, manual checks, or references used]**
 
 ### Optional developer modes
 
 `python -m eluno_pos` is API-only. Developers with an existing API can run
-`python -m eluno_pos.cli`; `python scripts/start_local.py --no-cli` starts only
-the mock and API.
+`python -m eluno_pos.cli`; `python scripts/start_local.py --no-cli` starts
+Eluno Studio without the optional CLI.
 
 The application defaults to the supplied mock URLs; set `ELUNO_SHOPIFY_BASE_URL`
 and `ELUNO_SMT_BASE_URL` to point the two adapters at another local environment.
 `ELUNO_TERMINAL_BASE_URL` and `ELUNO_STATE_DB` override the payment-terminal URL
 and SQLite sale-ledger path.
-Store business dates use the fixed `Asia/Kolkata` offset (UTC+05:30), not the
-computer's local timezone.
+Store business dates default to `Asia/Kolkata` (UTC+05:30), not the computer's
+local timezone. `ELUNO_BUSINESS_TIMEZONE` can select another IANA timezone when
+that timezone database is available to the Python runtime; invalid settings are
+reported at application startup.
+
+### Business date, stores, and operator identity
+
+The header displays the server's current Bengaluru business date as read-only
+and refreshes it on focus and periodically for midnight rollover. Checkout,
+pricing, prescription resolution, and current-day operations use that server
+date; the browser cannot override it. Reports retain an explicit historical
+date selector. Admins can choose among active Eluno stores, and the selected
+store persists while navigating. Cashiers are restricted server-side to their
+assigned store. Existing cashier accounts are assigned to HSR by the one-time
+staff-store migration if they had no assignment; Admins can change assignments.
+
+An operator ID is the stable, database-assigned `staff_id` already attached to
+the account and authenticated session. It is not editable in the browser or
+chosen by the account-creation request. New IDs use the existing persistent
+UUID-like staff identifier convention, rather than a username-derived value or
+a client-generated sequence. Checkout and supported audit records use the
+authenticated staff ID.
+
+### Customer accounts and online order requests
+
+The sign-in screen separates Staff Login, Customer Login, and Create Customer
+Account. Customer credentials are stored in separate SQLite tables and use
+salted scrypt password hashes and a separate HttpOnly, SameSite=Strict session
+cookie. Customer sessions cannot authorize staff APIs. Customer profile and
+order endpoints derive ownership from that session; clients cannot choose a
+customer ID for an order-history request.
+
+Self-registration creates a new Shopify customer record and a local account
+linked by that Shopify customer ID. An existing Shopify customer is not linked
+by phone/name alone because no email/SMS ownership-verification provider is
+configured. Such registrations must be verified and linked by staff; the
+public response does not say whether a customer account exists. Name, phone,
+and optional email edits are sent to the configured Shopify customer adapter.
+The delivery address is stored in the POS SQLite customer account; the current
+Shopify mock's customer update contract does not support address updates.
+
+The customer shop reuses the server catalog, offer evaluator, integer-paise
+pricing, inclusive GST, and current store inventory reads. Online lens orders
+are accepted only with an optometrist-assistance request until a customer
+prescription-selection workflow is available. Placing an order creates a
+durable, customer-owned local request with an idempotency key and server-
+calculated amounts. Customers may record a UPI or card preference, but this
+does **not** create a paid Shopify order or invoice, charge a payment method,
+reserve stock, or submit fulfilment. Payment status remains **awaiting
+payment** and fulfilment status remains **not submitted**; tracking is
+unavailable until a real order and carrier integration are added.
+
+Cashiers can open **Store Orders** to review pending requests for their
+assigned store. Confirm/deny decisions are store-scoped, persisted, and
+audited against the signed-in staff account; denial requires a reason. The
+queue shows the customer's payment preference as uncollected. Confirming is
+not a payment capture or a fulfilment submission. Optometrist assistance is
+flagged on the request; after a store confirms it, the assigned Optometrist
+can see a separate assistance inbox and open the existing customer lookup and
+prescription workflow. The inbox does not itself record a clinical decision.
+This customer ordering path is a local request/confirmation workflow, not an
+online sales or payment integration.
 
 ## Scope and a practical sale
 
-This version covers customer and prescription lookup, catalog-based frame/lens
-sales, offer evaluation, inclusive GST, inventory checks before payment,
-Shopify order creation, refunds, per-store invoices, till sessions, and
-store/day reporting. The formal stretch feature is advisory billing-time
-anomaly flags. Family billing, remakes, daily email, offer authoring, and
-production authentication/integrations are not included. The CLI's manual
-prescription-entry action is a local-mock utility requested during development;
-it is not the brief's photo/free-text assist and is not a production SMT write
+This version covers customer and prescription lookup, customer purchase
+history, Admin customer-profile editing and contact anonymization,
+catalog-based frame/lens sales, tracked frame stock, offer evaluation,
+inclusive GST, inventory checks before payment, Shopify order creation,
+refunds, per-store invoices, till sessions, and store/day reporting. Offer
+authoring and production authentication/integrations are not included. The
+prescription-entry workflow is an optometrist-confirmed local-mock utility; it
+is not the brief's photo/free-text assist and is not a production SMT write
 workflow.
+
+Customer anonymization removes contact details from the customer profile but
+does not delete the customer record or erase financial, invoice, order,
+prescription, or audit history. Access to this action is Admin-only and
+requires a recorded reason.
+
+Report amounts are displayed in INR from integer-paise API values. Gross Sales
+are line-item prices before discounts; Discounts are the saved line discounts;
+Net Sales Before Refunds are sales after discounts and include GST; Taxable
+Sales exclude GST; CGST and SGST are the recorded components of Total Tax.
+Refund Amount and Refund Tax use the refund date; Net Sales After Refunds and
+Net Tax After Refunds subtract those refunds from their corresponding sales
+and tax totals. Payment-method totals are captured sales before refunds.
 
 For a first sale against a freshly started mock, use the seeded customer
 Rahul Menon (`+919000000001`), whose valid prescription is `RX5002`. At the
 cashier menu choose **1 New Sale** and enter store `HSR`, location `70000002`,
 the default business date, channel `1`, Rahul's name and number, then sales
-operator `S105`. Add a frame (choose variant `91000001`, which has one unit at
+operator `S105` when the signed-in account is configured with that staff ID.
+The API uses the staff ID from the authenticated account for audit identity.
+Add a frame (choose variant `91000001`, which has one unit at
 HSR in the fresh seed) and choose **1 Start a new pair**. Add a lens, choose
 **1 Single Vision 1.50 standard** (`91000041`), then choose **2 Add to pair 1**.
 Choose **0 Done**, accept the offer/pricing review, continue to payment, choose
@@ -69,11 +248,13 @@ stock at HSR.
 The CLI will not start servers itself. If the application is unavailable, it
 prints the startup command rather than launching a duplicate process. The main
 menu is **Cashier**, **Admin & Management**, and **System Status**. Cashier
-contains New sale, customer/prescription and sale/invoice lookup, drawer
+contains New sale, customer/prescription and sale/invoice lookup, refunds, drawer
 operations, optometrist-confirmed prescription entry for the local mock, and
 **Browse Product Catalog**. Admin's **Catalog & Inventory** also includes
 **Browse Product Catalog**, as well as adding a frame or made-to-order lens
-and receiving tracked frame stock at an active store. New SKUs must be unique.
+and receiving tracked frame stock at an active store. Admin menu operations
+require an Admin account; the server rejects them for Cashier accounts. New
+SKUs must be unique.
 Frames begin with zero available stock; record a delivery with **Receive Frame
 Stock** before checkout. Lens products are never given stock levels.
 These writes go to the Shopify mock, which the cashier reads for product,
@@ -81,7 +262,7 @@ pricing, and availability; customers, orders, prescriptions, and mock payment
 records share the mock's SQLite persistence. This local mock database is
 distinct from the POS-owned SQLite sales/till/audit ledger.
 Sales channel and payment method have numbered choices while still accepting
-their text values. Admin contains refunds, day-end and channel reporting, anomaly and
+their text values. Admin contains day-end and channel reporting, anomaly and
 unresolved-operation views, read-only audit history, and lens diagnostics.
 New sale is one guided flow: enter a customer's name and mobile number, or leave
 both blank for a walk-in. The POS first searches Shopify by the normalized
@@ -122,10 +303,12 @@ open till without requiring its session ID. Use **Cash Drawer > open** at the
 start of a shift when you want to open the till before the first sale.
 
 Prescription entry is only enabled against the bundled local mock because the
-provided real store-tool contract is read-only. The cashier enters the values
-from the patient's prescription and an optometrist assigned to the selected
-store must confirm the entry. The CLI matches an existing customer by mobile
-number or registers a new named customer before accepting the prescription.
+provided real store-tool contract is read-only. In the browser POS, a Cashier or
+Optometrist can enter values from the patient's prescription and select the
+Optometrist assigned to the selected store who verified it. The server validates
+that verifier's clinical role and store assignment before saving the record; a
+Cashier cannot assign an arbitrary identity. The customer is matched by mobile
+number or can be registered before accepting the prescription.
 Enter a store code such as `MM` or `JN`, not the numeric Shopify location ID;
 the optometrist must belong to that store. Sphere, cylinder, axis, ADD, and validity dates
 are checked before the mock store-tool records it; a saved prescription is
@@ -196,6 +379,9 @@ serve the cashier interface.
   business date, including customer tags read from Shopify for cashier flags.
   Caller-provided tags are not used. It returns clear `404`, `409`, or `422`
   results for no customer, ambiguous customers, or no valid prescription.
+  In the browser, a not-found phone lookup exposes customer creation; the new
+  record is persisted through `POST /api/customers` and selected using its
+  returned Shopify ID before pricing or checkout.
 - `GET /api/catalog/variants?line_type=frame` or `line_type=lens` lists active
   variants of that type for cashier selection, including catalog price and lens
   configuration metadata.
@@ -204,29 +390,43 @@ serve the cashier interface.
 - `POST /api/admin/catalog/products` creates one validated frame or made-to-order
   lens variant in the Shopify source. It requires a unique SKU, price and
   product-type metadata; lens configurations already in the catalog are rejected.
+- `GET /api/admin/catalog/products` lists editable optical products;
+  `PATCH /api/admin/catalog/products/{product_id}` updates supported product,
+  variant, and optical metadata or archives the product. Catalog edits do not
+  change stock, and audit identity comes from the authenticated Admin session.
 - `POST /api/admin/inventory/receipts` connects a tracked frame to an active store
-  if needed, increases available units, and records the caller-supplied operator
-  ID and goods-received reference in POS audit history. Repeating the same
+  if needed, increases available units, and records the authenticated Admin
+  identity and goods-received reference in audit history. Repeating the same
   reference for the same item/store is idempotent; reusing it with a different
-  quantity is rejected. Lens stock is rejected. As with the other local CLI
-  operator fields, the ID is not authenticated.
-- `GET /api/offers?business_date=2026-10-27` lists date-valid offers that can be
-  chosen manually. Cart eligibility is verified by the offer engine before
-  payment.
+  quantity is rejected. Lens stock is rejected. The request body cannot override
+  the authenticated audit identity.
+- `GET /api/offers?business_date=2026-10-27` lists date-valid offers available
+  for manual selection in the CLI. `POST /api/pricing-preview` evaluates the actual
+  cart and customer against those rules and returns eligible, automatically
+  applied, and rejected offers with reasons and server-calculated discounts.
+  Its evaluation includes conditional and manager-only definitions; manager
+  approval remains unsupported and such offers are reported as rejected.
+  Omitting `offer_ids` applies the best compatible eligible set according to
+  the offer engine; explicitly supplying IDs requests manual selection. Checkout
+  revalidates the final applied IDs and recalculates all discount and GST values.
 - `GET /api/invoices/lookup?invoice_no=ELU%2FMM%2FFY26%2F00001` resolves a saved
   invoice number to its sale ID and status so the invoice can be reopened.
 - `GET /api/tills?store_code=MM` lists live open till sessions for a store;
-  historical sample till IDs are not loaded into the POS database.
+  Cashiers are limited to their assigned store. Admins can inspect historical
+  sessions through `GET /api/admin/tills`. The till operator is derived from the
+  authenticated session, not a caller-supplied operator field.
 - `POST /api/customers` registers a customer in Shopify using `name` and `phone`.
   It accepts a 10-digit Indian mobile or `+91` number, returns the persisted
   customer ID and contact details, and safely resolves a repeat registration
   with the same name and mobile to that existing record. A mobile already
   associated with a different name returns `409`.
-- `POST /api/prescriptions` records an optometrist-confirmed prescription in the
-  bundled local mock only. It requires an existing Shopify customer, store code,
-  prescription and validity dates, OD/OS values, an optometrist ID assigned to
-  that store, explicit confirmation, and an idempotency key. It returns `503`
-  against a non-local or unsupported real store-tool configuration.
+- `POST /api/prescriptions` records a prescription in the bundled local mock
+  only. It requires an existing Shopify customer, store code, prescription and
+  validity dates, OD/OS values, the ID of an Optometrist assigned to that store,
+  explicit confirmation that the selected Optometrist verified the details,
+  and an idempotency key. Cashiers and Optometrists may submit it; the server
+  validates the selected clinician against the store directory. It returns
+  `503` against a non-local or unsupported real store-tool configuration.
 - `POST /api/lens-validation` validates a lens configuration against the fetched
   lens matrix. The request body is:
 
@@ -311,11 +511,17 @@ timeout or 5xx becomes `ORDER_UNKNOWN` and is not retried automatically because
 the mock has no order idempotency key or POS-reference search endpoint.
 
 Invoice numbers are allocated per store before payment and never reused in the
-local ledger. They are returned only after Shopify creation succeeds and the
-invoice becomes `ISSUED`; declined payments retain a `VOID` allocation. The mock
-cannot reconcile historical invoice numbers or define legal void handling, so
-production needs the finance-approved reconciliation policy from the stakeholder
-reply.
+local ledger. Before allocating, checkout reads the Shopify order list and skips
+invoice numbers already present in its response, including the bundled seed
+orders. The mock list has a 250-order cap; checkout fails before payment when
+that cap is reached or the response is invalid. The POS ledger serializes local
+concurrent allocations across threads/processes sharing its SQLite file.
+However, the available API has no complete paginated history or atomic
+Shopify-side invoice reservation. This is not a global uniqueness guarantee
+across separate POS databases or a history exceeding the API cap; production
+requires a shared sequence/lock and finance-approved historical reconciliation.
+Invoices are returned only after Shopify creation succeeds and the invoice
+becomes `ISSUED`; declined payments retain a `VOID` allocation.
 
 Operators can retrieve the persisted status with `GET /api/checkouts/{sale_id}`
 and request conservative recovery with `POST /api/checkouts/{sale_id}/recover`.
@@ -408,7 +614,16 @@ recovered from Shopify by their saved order ID when available; if the order is
 gone, the renderer uses only the saved checkout payload and shows unavailable
 historical fields honestly.
 
-`POST /api/refunds` accepts only `order_id`, `store_code`, `operator`, `reason`,
+`GET /api/refunds/lookup?identifier=ELU%2FHSR%2FFY26%2F00003&store_code=HSR`
+resolves a formatted invoice through the POS sale ledger, then verifies that its
+recorded Shopify order has the exact same `invoice_no` and belongs to that
+store. It returns the actual Shopify `order_id`, order details, prior refunds,
+and full-refund eligibility. A numeric identifier is treated as an explicit
+Shopify order ID for backward compatibility. If the local invoice-to-order
+record is missing or disagrees with Shopify, lookup fails rather than guessing.
+
+`POST /api/refunds` accepts a numeric Shopify `order_id` separately from an
+optional `invoice_no`, plus `store_code`, `operator`, `reason`,
 optional `till_session_id`, optional `items` (`line_item_id` and positive
 `quantity`), and an optional `idempotency_key`; amount and tax are always
 derived from the recorded Shopify order. Omitting `items` retains the full
@@ -417,17 +632,38 @@ refund records and reject requests above the remaining line quantity. `GET /api/
 `POST /api/refunds/{refund_id}/recover` exposes unresolved outcomes without
 replaying a refund. Frames are returned at the original order location in the
 same supported Shopify refund request; lenses use `no_restock`.
+For bundled local UPI/card orders, the POS first invokes the mock terminal's
+idempotent refund operation using the captured charge reference and the same
+refund idempotency key, then creates the Shopify refund record. This proves only
+mock-state behavior; it is not real money movement. Terminal refunds are not
+enabled for non-local adapter configurations without a verified provider
+contract. Cash refunds require an open till at the order's store/location and
+are recorded as local till reconciliation; no external cash payout can be
+verified by this application.
 
-`POST /api/tills` opens a store session with `store_code`, `location_id`,
-`operator`, and `opening_float_paise`. Use `POST /api/tills/{id}/movements` for
-positive `amount_paise` paid-ins or paid-outs only; both require a reason. Cash
-sales and cash refunds are system-recorded only and are rejected from HTTP, and
-`POST /api/tills/{id}/close` with `counted_cash_paise`. Expected cash is opening
+`POST /api/tills` opens a store session with `store_code`, `location_id`, and
+`opening_float_paise`. Use `POST /api/tills/{id}/movements` for positive
+`amount_paise` paid-ins or paid-outs only; both require a reason. Cash sales and
+cash refunds are system-recorded only and are rejected from HTTP. Close with
+`POST /api/tills/{id}/close` and `counted_cash_paise`. Expected cash is opening
 float plus signed cash movements; card/UPI sales are never added automatically.
 
-The mock does not offer idempotent refund creation or search-by-POS-refund.
-After an ambiguous Shopify refund response, the local record remains
-`REFUND_UNKNOWN` and recovery does not submit a second refund.
+The sample historical tills are not loaded at application startup. To import
+them into a disposable development database, explicitly choose that database and
+confirm the import:
+
+```powershell
+python scripts/load_till_fixture.py --database .\eluno-till-fixture.sqlite3 --confirm-fixture-import
+```
+
+Imports are idempotent and never overwrite an existing session with a matching
+fixture ID. Do not point this command at a live or user-data database.
+
+The Shopify mock does not offer idempotent refund creation or search-by-POS-refund.
+If the terminal refund succeeds but the Shopify write has an ambiguous result,
+the local record remains `REFUND_UNKNOWN` with its terminal refund reference.
+Recovery does not replay either external write; an operator must reconcile the
+provider and Shopify records before another refund attempt.
 
 ## Day-end reporting
 
@@ -439,6 +675,12 @@ timestamps are interpreted in Bengaluru local time. Metrics include completed
 bills, gross, discounts, net sales before/after refunds, taxable value, CGST,
 SGST, sales/refund tax, and successful payment gateway totals, all in paise.
 Missing or invalid refund timestamps are exceptions, not assigned to a date.
+
+Admins can request the same date across every active Eluno store with
+`GET /api/reports/overall?date=2026-10-26`. It aggregates the store-local
+metrics, payment methods, channels, refunds, tills, and reconciliation
+exceptions, and includes a per-store breakdown. This report has the same
+bounded Shopify mock-order limitation as an individual store report.
 
 The mock order listing is bounded and supplies no cursor pagination, so reports
 are marked bounded and may be incomplete above that limit. Cash checkout stores

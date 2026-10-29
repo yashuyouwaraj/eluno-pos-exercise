@@ -104,6 +104,30 @@ class Shopify:
 
 
 class DocumentTests(unittest.TestCase):
+    def test_invoice_shows_rx_id_without_repeating_on_file_label(self):
+        order = dict(ORDER)
+        order["line_items"] = [dict(ORDER["line_items"][0])]
+        order["line_items"][0]["properties"] = [
+            {"name": "rx_id", "value": "RX99000009"},
+        ]
+
+        class Prescriptions:
+            def prescriptions_by_customer(self, customer_id):
+                return [{
+                    "customer_id": customer_id,
+                    "phone": "+919000000005",
+                    "rx_id": "RX99000009",
+                    "date": "2026-10-25",
+                    "valid_until": "2027-10-25",
+                    "od": {"sph": "-1.00", "cyl": "-0.50"},
+                    "os": {"sph": "-1.00", "cyl": "-0.50"},
+                }]
+
+        html = DocumentService(Sales(), Refunds(), Shopify(order), Prescriptions()).invoice_html("sale_1")
+        text = html[html.index("<pre class='invoice'>") + len("<pre class='invoice'>"):html.index("</pre>")]
+        self.assertIn("Rx on file : RX99000009", text)
+        self.assertNotIn("Rx on file : On file:", text)
+
     def test_invoice_uses_reference_structure_and_print_friendly_monospaced_layout(self):
         html = DocumentService(Sales(), Refunds(), Shopify()).invoice_html("sale_1")
         text = html[html.index("<pre class='invoice'>") + len("<pre class='invoice'>"):html.index("</pre>")]
@@ -118,6 +142,8 @@ class DocumentTests(unittest.TestCase):
         self.assertIn("font-family:Consolas,'Courier New',monospace", html)
         self.assertIn("@page{size:A4 landscape;margin:10mm}", html)
         self.assertIn("white-space:pre", html)
+        self.assertIn("onclick='window.print()'>Print</button>", html)
+        self.assertIn(".print-control{display:none}", html)
         self.assertIn("ELU/HSR/FY26/00001", text)
         self.assertIn("Eluno HSR Layout · HSR Layout, Bengaluru", text)
         self.assertIn("Frame &lt;blue&gt; Olive", text)
@@ -162,7 +188,7 @@ class DocumentTests(unittest.TestCase):
         text = html[html.index("<pre class='invoice'>") + len("<pre class='invoice'>"):html.index("</pre>")]
         self.assertEqual(0, shopify.get_order_calls)
         self.assertIn("Customer   : Walk-in", text)
-        self.assertIn("Rx on file : None", text)
+        self.assertIn("Rx on file : Not on file", text)
         self.assertIn("Offers applied : None", text)
         self.assertIn("Stored frame description", text)
         self.assertIn("100.00", text)
@@ -240,10 +266,13 @@ class DocumentTests(unittest.TestCase):
         html = DocumentService(Sales(overrides={"amount_paise": 23300}), Refunds(), products_shopify).invoice_html("sale_1")
         text = html[html.index("<pre class='invoice'>") + len("<pre class='invoice'>"):html.index("</pre>")]
         self.assertIn("Progressive 1.6 blue cut lens, Rx RX9", text)
+        self.assertIn("ELU/HSR/FY26/00001", text)
         self.assertIn("90015000", text)
         self.assertIn("2.5% 5.75", text)
+        self.assertIn("Discount", text)
         self.assertIn("5.00", text)
         self.assertIn("233.00", text)
+        self.assertIn("UPI ₹233.00", text)
         self.assertIn("ref txn_real_2", text)
         self.assertIn("RX9", text)
 
@@ -258,7 +287,7 @@ class DocumentTests(unittest.TestCase):
         ).invoice_html("sale_1")
         self.assertIn("Customer   : Walk-in", html)
         self.assertIn("Phone       : N/A", html)
-        self.assertIn("Rx on file : None", html)
+        self.assertIn("Rx on file : Not on file", html)
         self.assertIn("Offers applied : None", html)
         self.assertIn("ref N/A", html)
         self.assertIn("Store      : N/A", html)

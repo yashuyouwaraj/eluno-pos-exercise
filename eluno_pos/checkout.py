@@ -9,7 +9,7 @@ import logging
 from pathlib import Path
 import sqlite3
 import threading
-from typing import Any, Dict, FrozenSet, List, Optional, Protocol, Tuple
+from typing import Any, Dict, FrozenSet, List, Optional, Protocol, Sequence, Tuple
 from uuid import uuid4
 
 from .adapters.http import HttpRequestError
@@ -21,6 +21,8 @@ from .services import CustomerPrescriptionService, LensCatalogSource, LensValida
 
 
 LOG = logging.getLogger(__name__)
+SHOPIFY_ORDER_PAGE_SIZE = 250
+SHOPIFY_ORDER_PAGE_LIMIT = 1000
 
 
 class CheckoutError(ValueError):
@@ -42,6 +44,9 @@ class TerminalSource(Protocol):
 
 class OrderSource(Protocol):
     def create_order(self, order: Dict[str, Any]) -> Dict[str, Any]:
+        ...
+
+    def list_orders(self, **query: str) -> List[Dict[str, Any]]:
         ...
 
 
@@ -80,6 +85,7 @@ class CheckoutRequest:
     customer_phone: Optional[str] = None
     till_session_id: Optional[str] = None
     selected_offer_ids: Optional[Tuple[str, ...]] = None
+    reviewed_prescription_ids: Tuple[str, ...] = ()
 
     def fingerprint(self) -> str:
         data = {
@@ -92,6 +98,7 @@ class CheckoutRequest:
             "customer_phone": self.customer_phone,
             "till_session_id": self.till_session_id,
             "selected_offer_ids": self.selected_offer_ids,
+            "reviewed_prescription_ids": self.reviewed_prescription_ids,
         }
         return hashlib.sha256(json.dumps(data, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
 
@@ -145,6 +152,9 @@ class SaleStore:
                     pass
             connection.execute("""CREATE TABLE IF NOT EXISTS invoice_series (
                 store_code TEXT PRIMARY KEY, next_number INTEGER NOT NULL)""")
+            connection.execute(
+                "CREATE UNIQUE INDEX IF NOT EXISTS sales_invoice_no_unique ON sales(invoice_no)"
+            )
             connection.execute("""CREATE TABLE IF NOT EXISTS audit_events (
                 event_id TEXT PRIMARY KEY, occurred_at TEXT NOT NULL, actor TEXT NOT NULL,
                 action TEXT NOT NULL, entity_type TEXT NOT NULL, entity_id TEXT NOT NULL,
@@ -159,6 +169,7 @@ class SaleStore:
         order_payload: Dict[str, Any], payment_method: str, amount_paise: int, till_session_id: Optional[str] = None,
         business_date: Optional[date] = None, channel: Optional[str] = None, operator: Optional[str] = None,
         customer_phone: Optional[str] = None, taxable_lines_json: str = "[]",
+        existing_invoice_numbers: Optional[Sequence[str]] = None,
     ) -> Tuple[Dict[str, Any], bool]:
         if not idempotency_key or len(idempotency_key) > 200:
             raise CheckoutError("idempotency_key is required and must be at most 200 characters")
@@ -173,6 +184,12 @@ class SaleStore:
                 return sale, False
             series = connection.execute("SELECT next_number FROM invoice_series WHERE store_code = ?", (store_code,)).fetchone()
             number = int(series["next_number"]) if series else 1
+            known_numbers = set(existing_invoice_numbers or ())
+            known_numbers.update(
+                row["invoice_no"] for row in connection.execute("SELECT invoice_no FROM sales").fetchall()
+            )
+            while "{}{:05d}".format(invoice_prefix, number) in known_numbers:
+                number += 1
             if series:
                 connection.execute("UPDATE invoice_series SET next_number = ? WHERE store_code = ?", (number + 1, store_code))
             else:
@@ -215,10 +232,22 @@ class SaleStore:
 
     def get_by_invoice_no(self, invoice_no: str) -> Optional[Dict[str, Any]]:
         with self._lock, self._session() as connection:
+            rows = connection.execute(
+                "SELECT * FROM sales WHERE invoice_no = ? LIMIT 2", (invoice_no,)
+            ).fetchall()
+        if len(rows) > 1:
+            raise CheckoutError("invoice number is ambiguous in the POS sale ledger")
+        return None if not rows else dict(rows[0])
+
+    def sale_for_order(self, order_id: str) -> Optional[Dict[str, Any]]:
+        with self._lock, self._session() as connection:
             row = connection.execute(
-                "SELECT * FROM sales WHERE invoice_no = ?", (invoice_no,)
-            ).fetchone()
-        return None if row is None else dict(row)
+                "SELECT * FROM sales WHERE order_id = ? AND status = 'COMPLETED' LIMIT 2",
+                (str(order_id),),
+            ).fetchall()
+        if len(row) > 1:
+            raise CheckoutError("Shopify order is linked to multiple local sales")
+        return None if not row else dict(row[0])
     def unresolved(self):
         with self._lock, self._session() as connection:
             return [dict(r) for r in connection.execute("SELECT * FROM sales WHERE status IN ('PAYMENT_UNKNOWN','ORDER_UNKNOWN','ORDER_FAILED')").fetchall()]
@@ -361,12 +390,14 @@ class CheckoutService:
         for item_id, quantity in by_item.items():
             if item_id not in available_by_item:
                 raise CheckoutError(
-                    "Frame inventory is not recorded for this item at the selected store; no payment was taken."
+                    "Frame inventory is not recorded for this item at {} (location {}); no payment was taken.".format(
+                        request.cart.store_code, location_id
+                    )
                 )
             if available_by_item[item_id] < quantity:
                 raise CheckoutError(
-                    "Insufficient frame stock at the selected store ({} available, {} requested); no payment was taken.".format(
-                        available_by_item[item_id], quantity
+                    "Insufficient frame stock at {} (location {}): {} available, {} requested; no payment was taken.".format(
+                        request.cart.store_code, location_id, available_by_item[item_id], quantity
                     )
                 )
 
@@ -399,6 +430,13 @@ class CheckoutService:
             raise CheckoutError("a current valid prescription for this customer is required for lens items")
 
         prescription = lookup.prescription
+        if any(
+            eye.axis is not None and eye.axis % 5
+            for eye in (prescription.od, prescription.os)
+        ) and prescription.rx_id not in request.reviewed_prescription_ids:
+            raise CheckoutError(
+                "prescription axis requires optometrist review acknowledgement; no payment was taken."
+            )
         options_by_variant = {str(option.variant_id): option for option in options}
         cart_lines = {str(line.variant_id): line for line in request.cart.lines}
         for priced_line in lens_lines:
@@ -442,6 +480,7 @@ class CheckoutService:
             raise CheckoutDependencyError("catalog or offer data could not be verified: {}".format(exc)) from exc
         self._validate_lens_prescriptions(request, pricing)
         prefix, location_snapshot = self._invoice_prefix(request.cart)
+        existing_invoice_numbers = self._existing_shopify_invoices()
         self._validate_frame_inventory(request, pricing)
         payload = self._order_payload(request, pricing)
         sale, created = self._sales.create_or_get(
@@ -456,6 +495,7 @@ class CheckoutService:
                  "hsn": line.catalog_variant.hsn}
                 for line in pricing.lines
             ], separators=(",", ":")),
+            existing_invoice_numbers,
         )
         if not created:
             return self._result(sale, "Existing sale returned; no additional payment was initiated.")
@@ -465,6 +505,77 @@ class CheckoutService:
 
     def selectable_offers(self, business_date: date) -> Tuple[OfferDefinition, ...]:
         return self._carts.selectable_offers(business_date)
+
+    def _existing_shopify_invoices(self) -> Tuple[str, ...]:
+        invoice_numbers = set()
+        cursor = 0
+        for _ in range(SHOPIFY_ORDER_PAGE_LIMIT):
+            try:
+                orders = self._orders.list_orders(
+                    status="any",
+                    limit=str(SHOPIFY_ORDER_PAGE_SIZE),
+                    since_id=str(cursor),
+                    order="created_at asc",
+                )
+            except HttpRequestError as exc:
+                raise CheckoutDependencyError(
+                    "Existing invoice numbers could not be checked; no payment was taken."
+                ) from exc
+            if (
+                not isinstance(orders, list)
+                or len(orders) > SHOPIFY_ORDER_PAGE_SIZE
+                or any(not isinstance(order, dict) for order in orders)
+            ):
+                raise CheckoutDependencyError(
+                    "Shopify invoice history is incomplete or invalid; reconcile the invoice sequence before checkout."
+                )
+            if not orders:
+                return tuple(invoice_numbers)
+
+            page_cursor = cursor
+            for order in orders:
+                order_id = order.get("id")
+                if isinstance(order_id, bool) or not (
+                    isinstance(order_id, int)
+                    or isinstance(order_id, str) and order_id.isdigit()
+                ):
+                    raise CheckoutDependencyError(
+                        "Shopify returned an invalid order ID while checking invoice history; no payment was taken."
+                    )
+                numeric_order_id = int(order_id)
+                if numeric_order_id <= page_cursor:
+                    raise CheckoutDependencyError(
+                        "Shopify order pagination did not advance; invoice history cannot be verified."
+                    )
+                page_cursor = numeric_order_id
+                attributes = order.get("note_attributes", [])
+                if not isinstance(attributes, list) or any(not isinstance(item, dict) for item in attributes):
+                    raise CheckoutDependencyError(
+                        "Shopify returned invalid invoice details; no payment was taken."
+                    )
+                matching = [
+                    attribute.get("value")
+                    for attribute in attributes
+                    if attribute.get("name") == "invoice_no"
+                ]
+                if len(matching) > 1:
+                    raise CheckoutDependencyError(
+                        "Shopify contains an ambiguous invoice record; no payment was taken."
+                    )
+                if matching:
+                    value = matching[0]
+                    if not isinstance(value, str) or not value:
+                        raise CheckoutDependencyError(
+                            "Shopify contains an invalid invoice identifier; no payment was taken."
+                        )
+                    invoice_numbers.add(value)
+
+            if len(orders) < SHOPIFY_ORDER_PAGE_SIZE:
+                return tuple(invoice_numbers)
+            cursor = page_cursor
+        raise CheckoutDependencyError(
+            "Shopify invoice history exceeds the safe verification limit; reconcile the invoice sequence before checkout."
+        )
 
     @staticmethod
     def _invoice_line_description(line: Any) -> str:
@@ -653,7 +764,10 @@ class CheckoutService:
             return self._sales.update(sale["sale_id"], sale["status"], cash_post_status="PENDING", error="cash till posting is not configured")
         try:
             if not self._tills.movement_exists(sale["sale_id"]):
-                self._tills.movement(sale["till_session_id"], "cash_sale", int(sale["amount_paise"]), "system", "completed checkout", sale["sale_id"])
+                self._tills.movement(
+                    sale["till_session_id"], "cash_sale", int(sale["amount_paise"]),
+                    sale.get("operator") or "unattributed", "completed checkout", sale["sale_id"],
+                )
             return self._sales.update(sale["sale_id"], sale["status"], cash_post_status="POSTED")
         except Exception as exc:
             return self._sales.update(sale["sale_id"], sale["status"], cash_post_status="PENDING", error="cash posting pending: {}".format(exc))

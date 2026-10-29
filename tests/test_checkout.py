@@ -10,7 +10,7 @@ from types import SimpleNamespace
 
 from eluno_pos.adapters.http import HttpRequestError
 from eluno_pos.cart import CartService
-from eluno_pos.checkout import CheckoutError, CheckoutRequest, CheckoutService, IdempotencyConflict, SaleStore
+from eluno_pos.checkout import CheckoutDependencyError, CheckoutError, CheckoutRequest, CheckoutService, IdempotencyConflict, SaleStore
 from eluno_pos.models import Cart, CartLine, CatalogVariant, LensLimits, LensOption, Prescription, PrescriptionDataError
 from eluno_pos.offers import OfferBook, OfferDefinition, OfferEngine
 from eluno_pos.tax import TaxRate, TaxRateTable
@@ -98,6 +98,12 @@ class Orders:
     def __init__(self, outcomes=None):
         self.outcomes = list(outcomes or [{"id": 101}])
         self.calls = []
+        self.existing_orders = []
+
+    def list_orders(self, **query):
+        cursor = int(query.get("since_id", "0"))
+        limit = int(query.get("limit", "250"))
+        return [order for order in self.existing_orders if int(order.get("id", 0)) > cursor][:limit]
 
     def create_order(self, order):
         self.calls.append(order)
@@ -162,11 +168,12 @@ class CheckoutTests(unittest.TestCase):
         self.tmp.cleanup()
 
     @staticmethod
-    def request(key="key-1", staff_id="S1", customer_id="42"):
+    def request(key="key-1", staff_id="S1", customer_id="42", reviewed_prescription_ids=()):
         return CheckoutRequest(
             key, Cart("HSR", "7", (CartLine("1", 1, "pair-a"), CartLine("2", 1, "pair-a", "RX1"))),
             date(2026, 10, 20), "upi", "walk_in", staff_id, customer_id,
             customer_phone=RX1.phone,
+            reviewed_prescription_ids=reviewed_prescription_ids,
         )
 
     def test_lens_checkout_rejects_mismatched_prescription_before_payment(self):
@@ -188,6 +195,36 @@ class CheckoutTests(unittest.TestCase):
         with self.assertRaisesRegex(CheckoutError, "does not match"):
             self.service.checkout(request)
 
+        self.assertEqual([], self.terminal.calls)
+        self.assertEqual([], self.orders.calls)
+
+    def test_invoice_allocation_skips_existing_shopify_invoice_numbers(self):
+        self.orders.existing_orders = [
+            {"id": 1, "note_attributes": [{"name": "invoice_no", "value": "ELU/HSR/FY26/00001"}]},
+            {"id": 3, "note_attributes": [{"name": "invoice_no", "value": "ELU/HSR/FY26/00003"}]},
+        ]
+        result = self.service.checkout(self.request(key="existing-shopify-invoices"))
+        self.assertEqual("COMPLETED", result.status)
+        self.assertEqual("ELU/HSR/FY26/00002", result.invoice_no)
+        attributes = self.orders.calls[0]["note_attributes"]
+        self.assertIn(
+            {"name": "invoice_no", "value": "ELU/HSR/FY26/00002"},
+            attributes,
+        )
+
+    def test_shopify_invoice_scan_failure_fails_before_payment(self):
+        class FailingSecondPage(Orders):
+            def list_orders(self, **query):
+                if query.get("since_id") != "0":
+                    raise HttpRequestError(503, "unavailable")
+                return [
+                    {"id": order_id, "note_attributes": []}
+                    for order_id in range(1, 251)
+                ]
+
+        self.service._orders = FailingSecondPage()
+        with self.assertRaisesRegex(CheckoutDependencyError, "could not be checked"):
+            self.service.checkout(self.request(key="incomplete-invoice-history"))
         self.assertEqual([], self.terminal.calls)
         self.assertEqual([], self.orders.calls)
 
@@ -237,7 +274,7 @@ class CheckoutTests(unittest.TestCase):
                 )
                 before_charges = len(self.terminal.calls)
                 before_orders = len(self.orders.calls)
-                with self.assertRaisesRegex(CheckoutError, "Insufficient frame stock"):
+                with self.assertRaisesRegex(CheckoutError, "Insufficient frame stock at HSR \\(location 7\\)"):
                     self.service.checkout(request)
                 self.assertEqual(before_charges, len(self.terminal.calls))
                 self.assertEqual(before_orders, len(self.orders.calls))
@@ -308,14 +345,15 @@ class CheckoutTests(unittest.TestCase):
         self.assertEqual([], self.terminal.calls)
         self.assertEqual([], self.orders.calls)
 
-    def test_off_grid_axis_in_either_eye_blocks_checkout_before_side_effects(self):
+    def test_off_grid_axis_requires_explicit_review_before_payment(self):
         cases = (
-            ("od", 91, "axis 91 is invalid"),
-            ("os", 91, "axis 91 is invalid"),
-            ("od", None, "Right eye axis is required"),
+            ("od", 91),
+            ("os", 91),
         )
-        for eye_name, axis, message in cases:
+        for eye_name, axis in cases:
             with self.subTest(eye=eye_name, axis=axis):
+                self.terminal.calls.clear()
+                self.orders.calls.clear()
                 rx_data = RX1.as_dict()
                 rx_data[eye_name] = dict(rx_data[eye_name], axis=axis)
                 invalid_rx = Prescription.from_data(rx_data)
@@ -333,14 +371,44 @@ class CheckoutTests(unittest.TestCase):
 
                 lookup.lookup = invalid_axis_lookup
                 service = self.make_service(prescription_lookup=lookup)
+                self.terminal.calls.clear()
+                self.orders.calls.clear()
                 request = self.request(key="off-grid-{}".format(eye_name))
 
-                with self.assertRaisesRegex(CheckoutError, message):
+                with self.assertRaisesRegex(CheckoutError, "requires optometrist review acknowledgement"):
                     service.checkout(request)
 
                 self.assertEqual([], self.terminal.calls)
                 self.assertEqual([], self.orders.calls)
                 self.assertIsNone(self.store.get_by_idempotency_key(request.idempotency_key))
+
+                reviewed = self.request(
+                    key="reviewed-{}".format(eye_name),
+                    reviewed_prescription_ids=(invalid_rx.rx_id,),
+                )
+                self.terminal.outcomes = [{"charge_id": "ch_{}".format(eye_name), "status": "captured"}]
+                self.orders.outcomes = [{"id": 101}]
+                result = service.checkout(reviewed)
+                self.assertEqual("COMPLETED", result.status)
+                self.assertEqual(1, len(self.terminal.calls))
+                self.assertEqual(1, len(self.orders.calls))
+
+        rx_data = RX1.as_dict()
+        rx_data["od"] = dict(rx_data["od"], axis=None)
+        invalid_rx = Prescription.from_data(rx_data)
+        lookup = PrescriptionLookup()
+        lookup.lookup = lambda phone, day: SimpleNamespace(
+            code="ready",
+            customer=SimpleNamespace(customer_id=invalid_rx.customer_id),
+            prescription=invalid_rx,
+        )
+        service = self.make_service(prescription_lookup=lookup)
+        self.terminal.calls.clear()
+        self.orders.calls.clear()
+        with self.assertRaisesRegex(CheckoutError, "axis is required"):
+            service.checkout(self.request(key="missing-axis"))
+        self.assertEqual([], self.terminal.calls)
+        self.assertEqual([], self.orders.calls)
 
     def test_malformed_prescription_axis_blocks_checkout_before_side_effects(self):
         lookup = PrescriptionLookup()
@@ -437,6 +505,34 @@ class CheckoutTests(unittest.TestCase):
         self.assertIsNone(record["order_snapshot_json"])
         self.assertEqual("[]", record["taxable_lines_json"])
 
+    def test_existing_invoice_history_is_scanned_across_shopify_pages(self):
+        self.orders.existing_orders = [
+            {"id": order_id, "note_attributes": [
+                {"name": "invoice_no", "value": "ELU/HSR/FY26/{:05d}".format(order_id)}
+            ]}
+            for order_id in range(1, 252)
+        ]
+        invoices = self.service._existing_shopify_invoices()
+        self.assertEqual(251, len(invoices))
+        self.assertIn("ELU/HSR/FY26/00251", invoices)
+
+    def test_invoice_history_scan_fails_closed_when_pagination_does_not_advance(self):
+        class NonAdvancingOrders(Orders):
+            def list_orders(self, **query):
+                return [{"id": 1, "note_attributes": []}] * 250
+
+        self.service._orders = NonAdvancingOrders()
+        with self.assertRaisesRegex(CheckoutDependencyError, "pagination did not advance"):
+            self.service._existing_shopify_invoices()
+
+    def test_invoice_number_has_a_local_unique_constraint(self):
+        connection = sqlite3.connect(self.store._path)
+        try:
+            indexes = connection.execute("PRAGMA index_list(sales)").fetchall()
+        finally:
+            connection.close()
+        self.assertIn("sales_invoice_no_unique", {row[1] for row in indexes})
+
     def test_decline_creates_no_order_and_is_only_retried_explicitly(self):
         self.terminal.outcomes = [{"status": "declined", "charge_id": "ch_declined"}]
         result = self.service.checkout(self.request())
@@ -465,6 +561,33 @@ class CheckoutTests(unittest.TestCase):
         self.assertEqual([], errors)
         self.assertEqual(1, len(self.terminal.calls))
         self.assertEqual(1, len({result.sale_id for result in results}))
+
+    def test_concurrent_invoice_reservations_are_unique_across_local_stores(self):
+        allocated = []
+        failures = []
+        stores = [SaleStore(Path(self.tmp.name) / "sales.sqlite3") for _ in range(8)]
+
+        def reserve(index):
+            key = "invoice-allocation-{}".format(index)
+            try:
+                sale, created = stores[index].create_or_get(
+                    key, key, "STORE-{}".format(index), "INV/",
+                    {"note_attributes": [{"name": "invoice_no", "value": ""}]},
+                    "upi", 100, existing_invoice_numbers=(),
+                )
+                self.assertTrue(created)
+                allocated.append(sale["invoice_no"])
+            except Exception as exc:
+                failures.append(exc)
+
+        workers = [threading.Thread(target=reserve, args=(index,)) for index in range(len(stores))]
+        for worker in workers:
+            worker.start()
+        for worker in workers:
+            worker.join()
+        self.assertEqual([], failures)
+        self.assertEqual(8, len(set(allocated)))
+        self.assertEqual(8, len(allocated))
 
     def test_payment_timeout_is_ambiguous_and_never_blindly_recharged(self):
         self.terminal.outcomes = [HttpRequestError(None, "timeout")]

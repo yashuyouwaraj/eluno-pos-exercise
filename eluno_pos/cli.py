@@ -1,6 +1,7 @@
 """Cashier-facing CLI. Durable work is performed only by the POS API."""
 import argparse
 from datetime import date, datetime
+import getpass
 import hashlib
 import json
 import os
@@ -33,15 +34,23 @@ class ApiError(RuntimeError):
         self.payload = payload or {}
 
 class ApiClient:
-    def __init__(self, base_url="http://127.0.0.1:8790"): self.base_url=base_url.rstrip("/")
+    def __init__(self, base_url="http://127.0.0.1:8790"):
+        self.base_url=base_url.rstrip("/")
+        self.session_cookie=None
     def request(self, method, path, body=None):
         data=json.dumps(body).encode("utf-8") if body is not None else None
         req=Request(self.base_url+path,data=data,method=method)
         if data is not None: req.add_header("Content-Type","application/json")
+        if self.session_cookie:
+            req.add_header("Cookie",self.session_cookie)
         try:
             with urlopen(req,timeout=8) as response:
                 status=response.status
                 raw=response.read()
+                if path == "/api/auth/login":
+                    cookie=response.headers.get("Set-Cookie","").split(";",1)[0]
+                    if cookie.startswith("eluno_session="):
+                        self.session_cookie=cookie
         except HTTPError as exc:
             payload = {}
             try:
@@ -1016,5 +1025,14 @@ def default_preview(mock_url):
         )
     return preview
 def main():
-    parser=argparse.ArgumentParser(description="Interactive Eluno POS cashier CLI");parser.add_argument("--base-url",default="http://127.0.0.1:8790");parser.add_argument("--mock-url",default="http://127.0.0.1:8787/admin/api/2026-10");args=parser.parse_args();return CashierCLI(ApiClient(args.base_url),preview=default_preview(args.mock_url),browser_open=webbrowser.open).run()
+    parser=argparse.ArgumentParser(description="Interactive Eluno POS cashier CLI");parser.add_argument("--base-url",default="http://127.0.0.1:8790");parser.add_argument("--mock-url",default="http://127.0.0.1:8787/admin/api/2026-10");args=parser.parse_args()
+    api=ApiClient(args.base_url)
+    username=os.environ.get("ELUNO_CLI_USERNAME") or input("POS username: ").strip()
+    password=getpass.getpass("POS password: ")
+    try:
+        api.request("POST","/api/auth/login",{"username":username,"password":password})
+    except ApiError as exc:
+        print("Unable to sign in to the POS API: {}".format(exc))
+        return 1
+    return CashierCLI(api,preview=default_preview(args.mock_url),browser_open=webbrowser.open).run()
 if __name__=="__main__":raise SystemExit(main())

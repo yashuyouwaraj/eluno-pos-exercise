@@ -42,6 +42,52 @@ class StartupTests(unittest.TestCase):
         self.assertEqual(str(start_local.MOCK_PORT),app_env["ELUNO_LOCAL_MOCK_PORT"])
         self.assertTrue(mock.terminated); self.assertTrue(app.terminated)
 
+    def test_render_uses_platform_port_public_app_bind_and_no_browser(self):
+        mock, app = Process(), Process()
+        env = {
+            "RENDER": "true",
+            "PORT": "12345",
+            "ELUNO_COOKIE_SECURE": "1",
+            "ELUNO_AUTH_USERS": '{"admin":{"password":"Strong-Admin-Password-2026!","role":"admin"},"cashier":{"password":"Strong-Cashier-Password-2026!","role":"cashier"}}',
+            "ELUNO_STATE_DB": "/var/data/eluno_pos_state.sqlite3",
+            "ELUNO_MOCK_STATE_DB": "/var/data/eluno_pos_mock_state.sqlite3",
+        }
+        with patch.dict(start_local.os.environ, env, clear=True), \
+             patch.object(start_local, "assert_port_available"), \
+             patch.object(start_local, "start_process", side_effect=[mock, app]) as start, \
+             patch.object(start_local, "wait_for_health"), \
+             patch.object(start_local.webbrowser, "open") as browser, \
+             patch.object(start_local.time, "sleep", side_effect=KeyboardInterrupt), \
+             patch.object(sys, "argv", ["start_local.py"]):
+            self.assertEqual(0, start_local.main())
+
+        app_command = start.call_args_list[1].args[0]
+        self.assertEqual(["--host", "0.0.0.0", "--port", "12345"], app_command[-4:])
+        app_env = start.call_args_list[1].kwargs["env"]
+        self.assertEqual("1", app_env["ELUNO_DISABLE_DEMO_ACCOUNTS"])
+        self.assertEqual(env["ELUNO_AUTH_USERS"], app_env["ELUNO_AUTH_USERS"])
+        mock_command = start.call_args_list[0].args[0]
+        self.assertIn(env["ELUNO_MOCK_STATE_DB"], mock_command)
+        browser.assert_not_called()
+        self.assertTrue(mock.terminated)
+        self.assertTrue(app.terminated)
+
+    def test_render_requires_custom_accounts_and_secure_cookies(self):
+        with patch.dict(start_local.os.environ, {"RENDER": "true", "PORT": "12345"}, clear=True), \
+             patch.object(sys, "argv", ["start_local.py"]):
+            with self.assertRaises(SystemExit) as raised:
+                start_local.main()
+        self.assertEqual(2, raised.exception.code)
+
+        with patch.dict(start_local.os.environ, {
+            "RENDER": "true",
+            "PORT": "12345",
+            "ELUNO_AUTH_USERS": '{"admin":{"password":"Strong-Admin-Password-2026!","role":"admin"},"cashier":{"password":"Strong-Cashier-Password-2026!","role":"cashier"}}',
+        }, clear=True), patch.object(sys, "argv", ["start_local.py"]):
+            with self.assertRaises(SystemExit) as raised:
+                start_local.main()
+        self.assertEqual(2, raised.exception.code)
+
     def test_cli_is_started_only_when_explicitly_requested(self):
         mock, app = Process(), Process()
         with patch.object(start_local, "assert_port_available"), \

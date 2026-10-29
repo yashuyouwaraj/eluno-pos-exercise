@@ -105,22 +105,62 @@ python -m unittest tests.test_terminal_mock -v
 The documented local launcher uses `--no-flake` for predictable day-to-day
 cashier sessions; that mode is not evidence of resilience.
 
-## Deployment constraints
+## Render Docker demo deployment
+
+The same launcher runs locally and in the Docker image:
+
+```powershell
+python scripts/start_local.py
+```
+
+Locally it keeps the loopback ports (`8787` for the private mock and `8790` for
+the app) and opens the browser. On Render, `RENDER=true` and Render's `PORT`
+environment variable make the launcher bind the app to `0.0.0.0:$PORT`, skip
+opening a browser, and keep the mock bound to loopback inside the container.
+The Docker image builds the React frontend and starts this launcher as its
+container command.
+
+To deploy this demo on Render:
+
+1. Create a **Web Service** from this repository and `main` branch. Leave the
+   root directory blank and select **Docker** as the runtime.
+2. Leave the build command blank so Render builds the repository's `Dockerfile`.
+   Set the start command to `python scripts/start_local.py` (the image has the
+   same command as its default).
+3. Add these environment variables in Render:
+   - `ELUNO_COOKIE_SECURE` = `1`
+   - `ELUNO_AUTH_USERS` = a JSON object with your own strong Admin and Cashier
+     passwords. For example, use the keys `admin` and `cashier`, with each
+     value containing a `password` and `role` (`admin` or `cashier`). Generate
+     unique passwords and never use the local demo passwords. Hosted mode
+     disables seeding the local demo accounts and refuses to start without
+     configured Admin and Cashier accounts.
+
+     ```json
+     {"admin":{"password":"REPLACE_WITH_UNIQUE_STRONG_ADMIN_PASSWORD","role":"admin"},"cashier":{"password":"REPLACE_WITH_UNIQUE_STRONG_CASHIER_PASSWORD","role":"cashier"}}
+     ```
+
+   - For a paid service with a persistent disk mounted at `/var/data`, set
+     `ELUNO_STATE_DB` to `/var/data/eluno_pos_state.sqlite3` and
+     `ELUNO_MOCK_STATE_DB` to `/var/data/eluno_pos_mock_state.sqlite3`.
+4. Deploy and open the Render service URL. Sign in with the usernames and
+   passwords configured in `ELUNO_AUTH_USERS`.
+
+The Render deployment still runs the **mock** Shopify, SMT, and payment
+terminal. It is for a demo with test data only, not a real POS deployment. The
+free Render instance has no persistent disk, may sleep, and can lose its SQLite
+data; do not rely on it for durable invoices, users, sales, or refunds. Do not
+enter real customer or payment data. The local terminal does not move real
+money.
+
+## Production deployment constraints
 
 The bundled application is for local demonstration, not a public retail service.
-The launcher binds the API and mock services to loopback, uses local SQLite
-files, starts the mock terminal, and assumes a single supervised process. The
-local demo accounts and server authorization are not a production identity
-service. There is no production identity provider or credential provisioning
-workflow; rate limiting is local and keyed to the client address. Public
-deployment must replace demo passwords, configure HTTPS and trusted proxy
-handling, and review identity lifecycle, secrets, and operational controls.
-Do not expose the app, its mock terminal, or demo credentials on a public host.
-A future hosted deployment needs production identity management, Shopify and
-payment-provider integrations, a persistent database or durable volume,
-secret management, and host-provided port/bind configuration. No free-tier
-provider has been verified as meeting those requirements; an ephemeral
-filesystem or sleeping service is not safe for invoice, sale, or refund state.
+The Render Docker instructions above only make the mock-backed demo reachable.
+A production deployment still needs real Shopify and payment-provider
+integrations, production identity management, durable shared storage, secret
+management, and operational controls. Do not expose demo credentials or use
+this mock deployment for retail transactions.
 
 ## AI tool-use note
 

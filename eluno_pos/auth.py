@@ -117,20 +117,26 @@ def _utc_now() -> str:
 class AuthManager:
     """SQLite is the source of truth; session tokens are only returned once at login."""
 
-    def __init__(self, database_path: Path, bootstrap_accounts: Optional[List[Dict[str, str]]] = None) -> None:
+    def __init__(
+        self,
+        database_path: Path,
+        bootstrap_accounts: Optional[List[Dict[str, str]]] = None,
+        seed_demo_accounts: bool = True,
+    ) -> None:
         self._path = str(database_path)
         Path(self._path).parent.mkdir(parents=True, exist_ok=True)
         self._lock = threading.RLock()
         self._initialise()
         for account in bootstrap_accounts or []:
             self._seed_if_missing(account)
-        for username, password, role, display_name in DEMO_ACCOUNTS:
-            self._seed_if_missing({
-                "username": username,
-                "password": password,
-                "role": role,
-                "display_name": display_name,
-            })
+        if seed_demo_accounts:
+            for username, password, role, display_name in DEMO_ACCOUNTS:
+                self._seed_if_missing({
+                    "username": username,
+                    "password": password,
+                    "role": role,
+                    "display_name": display_name,
+                })
 
     @property
     def configured(self) -> bool:
@@ -138,6 +144,7 @@ class AuthManager:
 
     @classmethod
     def from_env(cls, database_path: Optional[Path] = None) -> "AuthManager":
+        disable_demo_accounts = os.environ.get("ELUNO_DISABLE_DEMO_ACCOUNTS") == "1"
         if database_path is None:
             configured_path = os.environ.get("ELUNO_STATE_DB")
             if configured_path:
@@ -146,6 +153,8 @@ class AuthManager:
                 database_path = Path(__file__).resolve().parents[1] / "eluno_pos_state.sqlite3"
         raw = os.environ.get("ELUNO_AUTH_USERS", "").strip()
         if not raw:
+            if disable_demo_accounts:
+                raise ValueError("ELUNO_AUTH_USERS is required when demo accounts are disabled")
             return cls(database_path)
         try:
             configured = json.loads(raw)
@@ -179,7 +188,9 @@ class AuthManager:
                 "display_name": entry.get("display_name", normalized),
                 "created_by": "environment-bootstrap",
             })
-        return cls(database_path, accounts)
+        if disable_demo_accounts and {account["role"] for account in accounts} != {"admin", "cashier"}:
+            raise ValueError("ELUNO_AUTH_USERS must configure at least one Admin and one Cashier account")
+        return cls(database_path, accounts, seed_demo_accounts=not disable_demo_accounts)
 
     def _connect(self) -> sqlite3.Connection:
         connection = sqlite3.connect(self._path, timeout=10, isolation_level=None)

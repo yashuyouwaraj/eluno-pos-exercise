@@ -80,13 +80,29 @@ def main() -> int:
     modes.add_argument("--cli", action="store_true", help="start the optional interactive cashier CLI")
     modes.add_argument("--no-cli", action="store_true", help="run the browser POS without the optional CLI")
     parser.add_argument("--mock-port", type=int, default=MOCK_PORT, help=argparse.SUPPRESS)
-    parser.add_argument("--app-port", type=int, default=APP_PORT, help=argparse.SUPPRESS)
+    render_mode = os.environ.get("RENDER", "").lower() == "true"
+    default_app_port = os.environ.get("PORT", str(APP_PORT)) if render_mode else APP_PORT
+    try:
+        default_app_port = int(default_app_port)
+    except ValueError:
+        parser.error("PORT must be an integer between 1 and 65535")
+    if not 1 <= default_app_port <= 65535:
+        parser.error("PORT must be an integer between 1 and 65535")
+    parser.add_argument("--app-port", type=int, default=default_app_port, help=argparse.SUPPRESS)
     parser.add_argument(
         "--mock-state-db",
-        default=str(ROOT / "eluno_pos_mock_state.sqlite3"),
+        default=os.environ.get(
+            "ELUNO_MOCK_STATE_DB", str(ROOT / "eluno_pos_mock_state.sqlite3")
+        ),
         help="SQLite file for persistent local Shopify/SMT/terminal mock data",
     )
     args = parser.parse_args()
+    if render_mode:
+        if not os.environ.get("ELUNO_AUTH_USERS", "").strip():
+            parser.error("Render deployments require ELUNO_AUTH_USERS with custom Admin and Cashier accounts")
+        if os.environ.get("ELUNO_COOKIE_SECURE") != "1":
+            parser.error("Render deployments require ELUNO_COOKIE_SECURE=1")
+    app_host = "0.0.0.0" if render_mode else "127.0.0.1"
     processes = []
     try:
         assert_port_available(args.mock_port)
@@ -105,14 +121,23 @@ def main() -> int:
             "ELUNO_LOCAL_MOCK_MODE": "1",
             "ELUNO_LOCAL_MOCK_PORT": str(args.mock_port),
         })
+        if render_mode:
+            app_env["ELUNO_DISABLE_DEMO_ACCOUNTS"] = "1"
         app = start_process(
-            [sys.executable, "-u", "-m", "eluno_pos", "--port", str(args.app_port)], env=app_env,
+            [
+                sys.executable, "-u", "-m", "eluno_pos",
+                "--host", app_host, "--port", str(args.app_port),
+            ],
+            env=app_env,
         )
         processes.append(app)
         wait_for_health("http://127.0.0.1:{}/health".format(args.app_port), app, "Eluno Studio application")
         app_url = "http://127.0.0.1:{}/".format(args.app_port)
-        print("Local environment ready: mock=http://127.0.0.1:{} app={}".format(args.mock_port, app_url), flush=True)
-        open_browser(app_url)
+        if render_mode:
+            print("Eluno Studio ready on 0.0.0.0:{}; mock API is private".format(args.app_port), flush=True)
+        else:
+            print("Local environment ready: mock=http://127.0.0.1:{} app={}".format(args.mock_port, app_url), flush=True)
+            open_browser(app_url)
         if args.cli:
             print("Starting optional cashier CLI. Exit it (option 0), or press Ctrl+C, to stop all local services.", flush=True)
             return subprocess.call([sys.executable, "-m", "eluno_pos.cli", "--base-url", "http://127.0.0.1:{}".format(args.app_port), "--mock-url", "http://127.0.0.1:{}/admin/api/2026-10".format(args.mock_port)], cwd=str(ROOT))

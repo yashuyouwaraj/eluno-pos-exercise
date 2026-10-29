@@ -223,6 +223,38 @@ class AuthManagerTests(unittest.TestCase):
         self.assertIsNone(restarted.login("admin", "Changed-Env-Password-2026!", "127.0.0.13"))
         self.assertEqual(3, len(restarted.list_staff()))
 
+    def test_deployment_mode_disables_demo_accounts_and_requires_admin_and_cashier(self):
+        config = json.dumps({
+            "owner": {"password": STRONG_PASSWORD, "role": "admin"},
+            "staff": {"password": "Other-Staff-Password-2026!", "role": "cashier"},
+        })
+        with patch.dict(os.environ, {
+            "ELUNO_DISABLE_DEMO_ACCOUNTS": "1",
+            "ELUNO_AUTH_USERS": config,
+        }, clear=True):
+            manager = AuthManager.from_env(self.database)
+        self.assertEqual({"owner", "staff"}, {
+            account["username"] for account in manager.list_staff()
+        })
+        self.assertIsNotNone(manager.login("owner", STRONG_PASSWORD, "127.0.0.20"))
+        self.assertIsNotNone(manager.login("staff", "Other-Staff-Password-2026!", "127.0.0.21"))
+        self.assertIsNone(manager.login("admin", ADMIN_PASSWORD, "127.0.0.22"))
+        self.assertIsNone(manager.login("cashier", CASHIER_PASSWORD, "127.0.0.23"))
+
+    def test_deployment_mode_rejects_missing_or_incomplete_account_configuration(self):
+        with patch.dict(os.environ, {"ELUNO_DISABLE_DEMO_ACCOUNTS": "1"}, clear=True):
+            with self.assertRaisesRegex(ValueError, "ELUNO_AUTH_USERS is required"):
+                AuthManager.from_env(self.database)
+
+        with patch.dict(os.environ, {
+            "ELUNO_DISABLE_DEMO_ACCOUNTS": "1",
+            "ELUNO_AUTH_USERS": json.dumps({
+                "owner": {"password": STRONG_PASSWORD, "role": "admin"},
+            }),
+        }, clear=True):
+            with self.assertRaisesRegex(ValueError, "Admin and one Cashier"):
+                AuthManager.from_env(self.database)
+
     def test_login_attempts_are_throttled(self):
         manager = AuthManager(self.database)
         for _ in range(4):

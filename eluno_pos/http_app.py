@@ -40,7 +40,7 @@ from .checkout import (
     IdempotencyConflict,
     SaleStore,
 )
-from .models import Cart, CartLine, LensConfiguration, Prescription, axis_from_data
+from .models import CatalogVariant, Cart, CartLine, LensConfiguration, Prescription, axis_from_data
 from .offers import OfferBook, OfferEngine
 from .services import (
     CustomerPrescriptionService,

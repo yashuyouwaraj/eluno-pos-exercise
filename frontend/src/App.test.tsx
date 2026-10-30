@@ -134,7 +134,15 @@ function installApi(overrides: Record<string, unknown> = {}) {
       business_date: "2026-10-30",
     };
     else if (url === "/api/customer/orders" && init?.method === "POST") {
-      data = { order: { order_id: "web-created", payment_status: "awaiting_payment" }, duplicate: false };
+      data = {
+        order: {
+          order_id: "web-created",
+          status: "awaiting_store_review",
+          payment_status: "paid",
+          invoice_no: "ELU/HSR/FY26/00001",
+        },
+        duplicate: false,
+      };
       status = 201;
     }
     else if (url.startsWith("/api/customer/orders")) data = {
@@ -145,11 +153,16 @@ function installApi(overrides: Record<string, unknown> = {}) {
       const [, , , , orderId, decision] = url.split("/");
       data = { order: {
         order_id: orderId,
-        status: decision === "deny" ? "cancelled" : "awaiting_payment",
+        status: decision === "deny" ? "partially_refunded" : "sold",
         store_confirmation_status: decision === "deny" ? "denied" : "confirmed",
         store_decision_by: "S105",
         store_decision_at: "2026-10-30T12:00:00+00:00",
-        status_message: decision === "deny" ? "No payment was captured." : "Payment remains pending.",
+        payment_status: "paid",
+        invoice_no: "ELU/HSR/FY26/00001",
+        refund_id: decision === "deny" ? "refund-1" : undefined,
+        status_message: decision === "deny"
+          ? "The assisted lens refund is verified; remaining items stay sold."
+          : "Payment captured and sale recorded.",
       } };
       storeOrders = storeOrders.filter((item) => item.order_id !== orderId);
     }
@@ -559,7 +572,7 @@ describe("browser POS workflows", () => {
     expect(await screen.findByRole("heading", { name: "Returns & Refunds" })).toBeInTheDocument();
   });
 
-  it("lets Cashiers make store-scoped order decisions without claiming online payment", async () => {
+  it("lets Cashiers approve paid orders or deny assistance with a verified partial refund", async () => {
     const user = userEvent.setup();
     const calls = installApi({
       userRole: "cashier",
@@ -568,14 +581,16 @@ describe("browser POS workflows", () => {
           order_id: "web_confirm", created_at: "2026-10-30T10:00:00+05:30",
           store_code: "HSR", customer_name: "Mira Rao",
           items: [{ title: "Optical Frame", quantity: 1, prescription_assistance_requested: true }],
-          total_paise: 125000, payment_status: "awaiting_payment",
+          total_paise: 125000, payment_status: "paid", invoice_no: "ELU/HSR/FY26/00001",
+          has_prescription_assistance: true,
           store_confirmation_status: "pending", status_message: "Prescription assistance requested.",
         },
         {
           order_id: "web_deny", created_at: "2026-10-30T11:00:00+05:30",
           store_code: "HSR", customer_name: "Asha Rao",
-          items: [{ title: "Lens", quantity: 2, prescription_assistance_requested: false }],
-          total_paise: 50000, payment_status: "awaiting_payment",
+          items: [{ title: "Lens", quantity: 2, prescription_assistance_requested: true }],
+          total_paise: 50000, payment_status: "paid", invoice_no: "ELU/HSR/FY26/00002",
+          has_prescription_assistance: true,
           store_confirmation_status: "pending", status_message: "Awaiting store review.",
         },
       ],
@@ -590,19 +605,17 @@ describe("browser POS workflows", () => {
     expect(confirmCard).not.toBeNull();
     expect(within(confirmCard as HTMLElement).getByText("Mira Rao")).toBeInTheDocument();
     expect(within(confirmCard as HTMLElement).getByText(/Optometrist assistance requested/)).toBeInTheDocument();
-    expect(within(confirmCard as HTMLElement).getByText(
-      (_, element) => element?.tagName === "P" && element.textContent?.includes("Awaiting payment") === true,
-    )).toBeInTheDocument();
+    expect(within(confirmCard as HTMLElement).getByText(/Paid \(simulated demo terminal\)/)).toBeInTheDocument();
     expect(within(confirmCard as HTMLElement).queryByText("+919876543210")).not.toBeInTheDocument();
-    await user.click(within(confirmCard as HTMLElement).getByRole("button", { name: "Confirm store request" }));
-    expect(await screen.findByText("web_confirm confirmed for store review. Payment is still pending.")).toBeInTheDocument();
+    await user.click(within(confirmCard as HTMLElement).getByRole("button", { name: "Approve & mark sold" }));
+    expect(await screen.findByText(/web_confirm confirmed. The paid sale and invoice/)).toBeInTheDocument();
     expect(calls.some((call) => call.url === "/api/store/orders/web_confirm/confirm")).toBe(true);
 
     const denyCard = (await screen.findByRole("heading", { name: "web_deny" })).closest("article");
     expect(denyCard).not.toBeNull();
     await user.type(within(denyCard as HTMLElement).getByLabelText("Reason if denying"), "Unable to source this lens");
-    await user.click(within(denyCard as HTMLElement).getByRole("button", { name: "Deny request" }));
-    expect(await screen.findByText("web_deny denied. No payment was collected.")).toBeInTheDocument();
+    await user.click(within(denyCard as HTMLElement).getByRole("button", { name: "Deny & refund assisted lens" }));
+    expect(await screen.findByText(/web_deny denied. The assisted lens refund refund-1 is verified/)).toBeInTheDocument();
     expect(calls.find((call) => call.url === "/api/store/orders/web_deny/deny")?.body)
       .toEqual({ reason: "Unable to source this lens" });
   });
@@ -666,18 +679,19 @@ describe("browser POS workflows", () => {
     expect(calls.some((call) => call.url === "/api/customers/99000004?page=1")).toBe(true);
   });
 
-  it("shows confirmed store status in customer orders and can refresh the latest decision", async () => {
+  it("shows the paid sale and invoice in customer orders and can refresh", async () => {
     const user = userEvent.setup();
     const calls = installApi({
       authRequired: true,
       customerAuthenticated: true,
       customerOrders: [{
-        order_id: "web-confirmed", status: "awaiting_payment",
+        order_id: "web-confirmed", status: "sold",
         store_confirmation_status: "confirmed", created_at: "2026-10-30T10:00:00+05:30",
         store_code: "HSR", customer_name: "Mira Rao",
         delivery_address: { line1: "12 Retail Road", line2: "", city: "Bengaluru", state: "Karnataka", postal_code: "560001" },
         items: [{ variant_id: "lens-200", title: "Single Vision", line_type: "lens", quantity: 1, prescription_assistance_requested: true }],
-        total_paise: 50000, payment_status: "awaiting_payment",
+        total_paise: 50000, payment_status: "paid",
+        invoice_no: "ELU/HSR/FY26/00001",
         payment_method_preference: "upi", fulfillment_status: "not_submitted",
         tracking_available: false, status_message: "Store confirmed. Payment is still pending.",
       }],
@@ -688,10 +702,11 @@ describe("browser POS workflows", () => {
     expect(await screen.findByText(
       (_, element) => element?.tagName === "P" && element.textContent?.includes("Store: Confirmed") === true,
     )).toBeInTheDocument();
-    expect(screen.getByText(
-      (_, element) => element?.tagName === "P" && element.textContent?.includes("online payment is unavailable") === true,
-    )).toBeInTheDocument();
-    expect(screen.getByText("Store confirmed. Payment is still pending.")).toBeInTheDocument();
+    expect(screen.getByText(/Paid \(simulated demo terminal\)/)).toBeInTheDocument();
+    expect(screen.getByText(/ELU\/HSR\/FY26\/00001/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "View invoice" })).toHaveAttribute(
+      "href", "/api/customer/orders/web-confirmed/invoice",
+    );
     const initialRequestCount = calls.filter((call) => call.url.startsWith("/api/customer/orders")).length;
     await user.click(screen.getByRole("button", { name: "Refresh orders" }));
     await waitFor(() => expect(
@@ -1354,7 +1369,7 @@ describe("browser POS workflows", () => {
     expect(screen.getByRole("heading", { name: "Frames" })).toBeInTheDocument();
   });
 
-  it("records a UPI or card preference without suggesting that online payment was collected", async () => {
+  it("checks out with UPI or card and makes clear that demo payment is simulated", async () => {
     const user = userEvent.setup();
     const calls = installApi({ authRequired: true, customerAuthenticated: true });
     render(<App />);
@@ -1375,14 +1390,14 @@ describe("browser POS workflows", () => {
       });
     });
     expect(await screen.findByRole("region", { name: "Checkout summary" })).toBeInTheDocument();
-    expect(await screen.findByRole("button", { name: "Checkout · ₹1,100.00" })).toBeEnabled();
+    expect(await screen.findByRole("button", { name: "Checkout & pay · ₹1,100.00" })).toBeEnabled();
     expect(screen.getByRole("heading", { name: "Offers" })).toBeInTheDocument();
     expect(screen.getByText("Pair offer")).toBeInTheDocument();
     expect(screen.getAllByText("−₹100.00")).toHaveLength(2);
-    await user.selectOptions(await screen.findByLabelText("Preferred payment method"), "card");
-    expect(screen.getByText(/No UPI or card payment is collected online/)).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Checkout · ₹1,100.00" }));
-    expect(await screen.findByText(/Order request web-created saved. Payment has not been taken/)).toBeInTheDocument();
+    await user.selectOptions(await screen.findByLabelText("Payment method"), "card");
+    expect(screen.getByText(/This bundled demo uses a simulated payment terminal/)).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Checkout & pay · ₹1,100.00" }));
+    expect(await screen.findByText(/Demo payment completed for web-created · invoice ELU\/HSR\/FY26\/00001/)).toBeInTheDocument();
     const request = calls.find((call) => call.url === "/api/customer/orders" && call.body.payment_method_preference);
     expect(request?.body.payment_method_preference).toBe("card");
     expect(request?.body.cart).toMatchObject({

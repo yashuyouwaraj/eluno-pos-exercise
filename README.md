@@ -206,7 +206,7 @@ UUID-like staff identifier convention, rather than a username-derived value or
 a client-generated sequence. Checkout and supported audit records use the
 authenticated staff ID.
 
-### Customer accounts and online order requests
+### Customer accounts and online checkout
 
 The sign-in screen separates Staff Login, Customer Login, and Create Customer
 Account. Customer credentials are stored in separate SQLite tables and use
@@ -225,26 +225,29 @@ The delivery address is stored in the POS SQLite customer account; the current
 Shopify mock's customer update contract does not support address updates.
 
 The customer shop reuses the server catalog, offer evaluator, integer-paise
-pricing, inclusive GST, and current store inventory reads. Online lens orders
-are accepted only with an optometrist-assistance request until a customer
-prescription-selection workflow is available. Placing an order creates a
-durable, customer-owned local request with an idempotency key and server-
-calculated amounts. Customers may record a UPI or card preference, but this
-does **not** create a paid Shopify order or invoice, charge a payment method,
-reserve stock, or submit fulfilment. Payment status remains **awaiting
-payment** and fulfilment status remains **not submitted**; tracking is
-unavailable until a real order and carrier integration are added.
+pricing, inclusive GST, and current store inventory reads. A lens without a
+saved prescription can be checked out only when the customer explicitly asks
+for optometrist assistance. That exception is limited to the online-pickup
+customer flow; ordinary cashier checkout still requires a prescription.
 
-Cashiers can open **Store Orders** to review pending requests for their
-assigned store. Confirm/deny decisions are store-scoped, persisted, and
-audited against the signed-in staff account; denial requires a reason. The
-queue shows the customer's payment preference as uncollected. Confirming is
-not a payment capture or a fulfilment submission. Optometrist assistance is
-flagged on the request; after a store confirms it, the assigned Optometrist
-can see a separate assistance inbox and open the existing customer lookup and
-prescription workflow. The inbox does not itself record a clinical decision.
-This customer ordering path is a local request/confirmation workflow, not an
-online sales or payment integration.
+Customer checkout uses the existing payment-terminal adapter, creates a
+Shopify order with the invoice number, and records the sale in local SQLite.
+**Bundled local and Render demo modes use simulated payment services; they do
+not collect real UPI or card funds.** A payment failure or uncertain result is
+not presented as a completed sale. Fulfilment remains **not submitted** and
+tracking stays unavailable until a real order-fulfilment and carrier
+integration is added.
+
+Cashiers can open **Store Orders** to review paid checkouts assigned to their
+store. Approval records the store decision against the signed-in staff
+account; the sale and invoice are already recorded by checkout and the paid
+Shopify order is counted in admin reports. If a cashier denies requested lens
+assistance, the system submits an idempotent partial refund for the assisted
+lens items and records the denial only after the terminal and Shopify refund
+are verified. The remaining items stay sold under the original invoice.
+Uncertain refunds remain pending reconciliation and must not be treated as
+completed. Optometrist assistance remains flagged for the assigned
+Optometrist's separate review workflow.
 
 ## Scope and a practical sale
 

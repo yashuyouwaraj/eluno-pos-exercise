@@ -806,6 +806,208 @@ class LocalMockIntegrationTests(unittest.TestCase):
                 server.server_close()
                 thread.join()
 
+    def test_customer_assisted_lens_sale_is_in_admin_report_after_cashier_approval(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            mock_url = "http://127.0.0.1:{}".format(self.port)
+            environment = {
+                "ELUNO_SHOPIFY_BASE_URL": mock_url + "/admin/api/2026-10",
+                "ELUNO_SMT_BASE_URL": mock_url + "/smt",
+                "ELUNO_TERMINAL_BASE_URL": mock_url + "/terminal",
+                "ELUNO_STATE_DB": str(Path(temp_dir) / "customer-assisted-sale.sqlite3"),
+                "ELUNO_LOCAL_MOCK_MODE": "1",
+                "ELUNO_LOCAL_MOCK_PORT": str(self.port),
+            }
+            with patch.dict(os.environ, environment):
+                application = default_application()
+            server, thread, base = start_authenticated_pos(application, "admin")
+            try:
+                application.auth_manager.update_staff(
+                    "S105", {"store_code": "HSR"}, "integration-admin",
+                )
+                admin_token = application.auth_manager.login(
+                    "admin", "Test-Integration-Admin-Password-2026!",
+                )[0]
+                cashier_token = application.auth_manager.login(
+                    "cashier", "Test-Integration-Cashier-Password-2026!",
+                )[0]
+                shopify = ShopifyAdminClient(base_url=mock_url + "/admin/api/2026-10")
+                location = next(
+                    item for item in shopify.list_locations()
+                    if (item.get("eluno") or {}).get("store_code") == "HSR"
+                )
+                catalog = shopify.list_catalog_variants()
+                frame = next(item for item in catalog if item.line_type == "frame")
+                lens = next(item for item in catalog if item.line_type == "lens")
+                frame_inventory_id = shopify.get_variant(int(frame.variant_id))["inventory_item_id"]
+                stock = shopify.list_inventory_levels(
+                    [frame_inventory_id], int(location["id"]),
+                )
+                available = next(
+                    (int(item["available"]) for item in stock
+                     if str(item.get("inventory_item_id")) == str(frame_inventory_id)),
+                    0,
+                )
+                if available < 2:
+                    shopify.adjust_inventory(
+                        frame_inventory_id, int(location["id"]), 2 - available,
+                        "customer-assisted-integration-stock-" + uuid4().hex,
+                    )
+                phone = "+919{:09d}".format(uuid4().int % 1_000_000_000)
+                customer = shopify.create_customer("Integration", "Buyer", phone)
+                application.customer_accounts.create_account(
+                    str(customer["id"]), phone, "Integration Buyer",
+                    "Integration-Customer-Password-2026!",
+                )
+                customer_token = application.customer_accounts.login(
+                    phone, "Integration-Customer-Password-2026!", "127.0.0.1",
+                )[0]
+                business_day = bengaluru_today().isoformat()
+
+                def request_json(method, path, payload, token, cookie_name):
+                    body = None if payload is None else json.dumps(payload).encode("utf-8")
+                    request = Request(base + path, data=body, method=method)
+                    if body is not None:
+                        request.add_header("Content-Type", "application/json")
+                    request.add_header("Cookie", "{}={}".format(cookie_name, token))
+                    try:
+                        with urlopen(request) as response:
+                            return response.status, json.loads(response.read())
+                    except HTTPError as error:
+                        payload = json.loads(error.read())
+                        error.close()
+                        return error.code, payload
+
+                report_path = "/api/reports/day-end?store_id={}&date={}".format(
+                    location["id"], business_day,
+                )
+                status, before = request_json(
+                    "GET", report_path, None, admin_token, "eluno_session",
+                )
+                self.assertEqual(200, status)
+                checkout = {
+                    "idempotency_key": "assisted-lens-" + uuid4().hex,
+                    "cart": {
+                        "location_id": str(location["id"]),
+                        "lines": [
+                            {
+                                "variant_id": frame.variant_id,
+                                "quantity": 1,
+                                "pair_ref": "customer-assisted-pair",
+                            },
+                            {
+                                "variant_id": lens.variant_id,
+                                "quantity": 1,
+                                "pair_ref": "customer-assisted-pair",
+                                "needs_prescription_assistance": True,
+                            },
+                        ],
+                    },
+                    "delivery_address": {
+                        "line1": "12 Integration Road",
+                        "line2": "",
+                        "city": "Bengaluru",
+                        "state": "Karnataka",
+                        "postal_code": "560001",
+                    },
+                    "payment_method_preference": "upi",
+                }
+                status, created = request_json(
+                    "POST", "/api/customer/orders", checkout, customer_token,
+                    "eluno_customer_session",
+                )
+                self.assertEqual(201, status, created)
+                order = created["order"]
+                self.assertEqual("paid", order["payment_status"])
+                self.assertTrue(order["invoice_no"])
+                self.assertTrue(order["shopify_order_id"])
+                self.assertTrue(order["items"][1]["shopify_line_item_id"])
+
+                status, queue = request_json(
+                    "GET", "/api/store/orders/pending", None, cashier_token,
+                    "eluno_session",
+                )
+                self.assertEqual(200, status)
+                self.assertIn(order["order_id"], [item["order_id"] for item in queue["orders"]])
+                status, decision = request_json(
+                    "POST", "/api/store/orders/{}/confirm".format(order["order_id"]),
+                    {}, cashier_token, "eluno_session",
+                )
+                self.assertEqual(200, status)
+                self.assertEqual("sold", decision["order"]["status"])
+                self.assertEqual(order["invoice_no"], decision["order"]["invoice_no"])
+
+                denied_checkout = {
+                    **checkout,
+                    "idempotency_key": "assisted-lens-denial-" + uuid4().hex,
+                    "cart": {
+                        "location_id": str(location["id"]),
+                        "lines": [
+                            {
+                                "variant_id": frame.variant_id,
+                                "quantity": 1,
+                                "pair_ref": "customer-denied-pair",
+                            },
+                            {
+                                "variant_id": lens.variant_id,
+                                "quantity": 1,
+                                "pair_ref": "customer-denied-pair",
+                                "needs_prescription_assistance": True,
+                            },
+                        ],
+                    },
+                }
+                status, denied_created = request_json(
+                    "POST", "/api/customer/orders", denied_checkout, customer_token,
+                    "eluno_customer_session",
+                )
+                self.assertEqual(201, status, denied_created)
+                denied_order = denied_created["order"]
+                assisted_lens = next(
+                    item for item in denied_order["items"]
+                    if item["prescription_assistance_requested"]
+                )
+                status, denial = request_json(
+                    "POST",
+                    "/api/store/orders/{}/deny".format(denied_order["order_id"]),
+                    {"reason": "Prescription could not be verified in store"},
+                    cashier_token,
+                    "eluno_session",
+                )
+                self.assertEqual(200, status, denial)
+                self.assertEqual("partially_refunded", denial["order"]["status"])
+                self.assertEqual("COMPLETED", denial["order"]["refund_status"])
+                self.assertEqual(assisted_lens["total_paise"], denial["order"]["refund_amount_paise"])
+                self.assertEqual(denied_order["invoice_no"], denial["order"]["invoice_no"])
+
+                status, after = request_json(
+                    "GET", report_path, None, admin_token, "eluno_session",
+                )
+                self.assertEqual(200, status)
+                self.assertEqual(
+                    before["completed_bill_count"] + 2,
+                    after["completed_bill_count"],
+                )
+                self.assertEqual(
+                    before["channels"].get("online_pickup", {}).get("completed_bill_count", 0) + 2,
+                    after["channels"]["online_pickup"]["completed_bill_count"],
+                )
+                self.assertEqual(
+                    before["metrics"]["refund_amount_paise"] + assisted_lens["total_paise"],
+                    after["metrics"]["refund_amount_paise"],
+                )
+                invoice_request = Request(
+                    base + "/api/customer/orders/{}/invoice".format(order["order_id"]),
+                    headers={"Cookie": "eluno_customer_session={}".format(customer_token)},
+                )
+                with urlopen(invoice_request) as response:
+                    invoice = response.read().decode("utf-8")
+                self.assertIn(order["invoice_no"], invoice)
+                self.assertIn("Integration Buyer", invoice)
+            finally:
+                server.shutdown()
+                server.server_close()
+                thread.join()
+
     def test_checkout_invoice_refund_restock_and_day_end_use_real_local_mock(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             mock_url="http://127.0.0.1:{}".format(self.port)

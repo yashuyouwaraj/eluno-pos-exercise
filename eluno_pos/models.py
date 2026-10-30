@@ -184,6 +184,7 @@ class CartLine:
     quantity: int
     pair_ref: Optional[str] = None
     prescription_id: Optional[str] = None
+    prescription_assistance_requested: bool = False
 
 
 @dataclass(frozen=True)

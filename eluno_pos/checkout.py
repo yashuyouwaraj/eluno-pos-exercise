@@ -86,6 +86,7 @@ class CheckoutRequest:
     till_session_id: Optional[str] = None
     selected_offer_ids: Optional[Tuple[str, ...]] = None
     reviewed_prescription_ids: Tuple[str, ...] = ()
+    allow_prescription_assistance: bool = False
 
     def fingerprint(self) -> str:
         data = {
@@ -99,6 +100,7 @@ class CheckoutRequest:
             "till_session_id": self.till_session_id,
             "selected_offer_ids": self.selected_offer_ids,
             "reviewed_prescription_ids": self.reviewed_prescription_ids,
+            "allow_prescription_assistance": self.allow_prescription_assistance,
         }
         return hashlib.sha256(json.dumps(data, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
 
@@ -406,6 +408,20 @@ class CheckoutService:
             line for line in pricing.lines
             if line.catalog_variant.line_type == "lens"
         ]
+        assistance_lines = [
+            line for line in lens_lines
+            if line.cart_line.prescription_assistance_requested
+        ]
+        if assistance_lines and (
+            not request.allow_prescription_assistance
+            or request.channel != "online_pickup"
+            or any(line.cart_line.prescription_id for line in assistance_lines)
+        ):
+            raise CheckoutError("prescription assistance is only allowed for explicitly requested online lens items")
+        lens_lines = [
+            line for line in lens_lines
+            if not line.cart_line.prescription_assistance_requested
+        ]
         if not lens_lines:
             return
         if self._prescription_lookup is None or self._lens_catalog is None:
@@ -473,6 +489,7 @@ class CheckoutService:
         try:
             pricing = self._carts.price(
                 request.cart, request.business_date, customer_tags, request.selected_offer_ids,
+                allow_prescription_assistance=request.allow_prescription_assistance,
             )
         except ValueError as exc:
             raise CheckoutError(str(exc)) from exc
@@ -822,6 +839,8 @@ class CheckoutService:
                 properties.append({"name": "pair_ref", "value": line.cart_line.pair_ref})
             if line.cart_line.prescription_id:
                 properties.append({"name": "rx_id", "value": line.cart_line.prescription_id})
+            if line.cart_line.prescription_assistance_requested:
+                properties.append({"name": "prescription_assistance_requested", "value": "true"})
             if line.catalog_variant.lens_type:
                 properties.append({"name": "lens_config", "value": "{}/{}/{}".format(
                     line.catalog_variant.lens_type, line.catalog_variant.index, line.catalog_variant.coating)})

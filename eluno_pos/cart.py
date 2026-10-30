@@ -25,7 +25,9 @@ class CartService:
         self._offers = offers
         self._tax_rates = tax_rates
 
-    def resolve(self, cart: Cart) -> Tuple[CatalogVariant, ...]:
+    def resolve(
+        self, cart: Cart, allow_prescription_assistance: bool = False
+    ) -> Tuple[CatalogVariant, ...]:
         if not cart.store_code or not cart.location_id:
             raise CartError("store_code and location_id are required")
         if not cart.lines:
@@ -41,7 +43,11 @@ class CartService:
                 raise CartError("variant {} does not exist in the catalog".format(line.variant_id))
             if not variant.active:
                 raise CartError("variant {} is not active for sale".format(line.variant_id))
-            if variant.line_type == "lens" and not line.prescription_id:
+            if (
+                variant.line_type == "lens"
+                and not line.prescription_id
+                and not (allow_prescription_assistance and line.prescription_assistance_requested)
+            ):
                 raise CartError("lens variant {} requires a prescription reference".format(line.variant_id))
             if variant.line_type == "frame" and line.prescription_id:
                 raise CartError("frame variant {} cannot carry a prescription reference".format(line.variant_id))
@@ -61,8 +67,9 @@ class CartService:
         business_date: date,
         customer_tags: FrozenSet[str] = frozenset(),
         selected_offer_ids: Optional[Sequence[str]] = None,
+        allow_prescription_assistance: bool = False,
     ) -> CartPricing:
-        variants = self.resolve(cart)
+        variants = self.resolve(cart, allow_prescription_assistance)
         offers = self._offers.evaluate(cart, variants, business_date, customer_tags, selected_offer_ids)
         priced_lines = []
         for cart_line, variant, discount_paise in zip(cart.lines, variants, offers.line_discounts_paise):

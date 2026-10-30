@@ -105,6 +105,7 @@ class ProbeShopify:
         self.registered_customers = []
         self.inventory_available = 3
         self.order_records = []
+        self.order_line_items = [{"id": 10, "variant_id": 1, "quantity": 1}]
         self.search_results = None
     def search_customers_by_phone(self, phone):
         matches = [item for item in self.registered_customers if item.get("phone") == phone]
@@ -182,6 +183,8 @@ class ProbeShopify:
             "location_id": location_id,
             "available": self.inventory_available,
         }]
+    def get_order(self, order_id):
+        return {"id": order_id, "line_items": list(self.order_line_items)}
 
 
 class RefundLookupShopify:
@@ -1657,7 +1660,8 @@ class HttpApiTests(unittest.TestCase):
         )
         self.assertEqual(201, status, first)
         order = first["order"]
-        self.assertEqual("awaiting_payment", order["payment_status"])
+        self.assertEqual("paid", order["payment_status"])
+        self.assertEqual("ELU/HSR/FY26/00001", order["invoice_no"])
         self.assertEqual("card", order["payment_method_preference"])
         self.assertEqual("not_submitted", order["fulfillment_status"])
         self.assertFalse(order["tracking_available"])
@@ -1749,6 +1753,10 @@ class HttpApiTests(unittest.TestCase):
         self.shopify_probe.get_variant = lambda variant_id: {
             "id": variant_id, "inventory_item_id": 92000002,
         }
+        self.shopify_probe.order_line_items = [{
+            "id": 11, "variant_id": 2, "quantity": 1,
+            "properties": [{"name": "prescription_assistance_requested", "value": "true"}],
+        }]
         inventory_requests = []
         self.shopify_probe.list_inventory_levels = lambda item_ids, location_id: (
             inventory_requests.append((item_ids, location_id)) or []
@@ -1771,6 +1779,7 @@ class HttpApiTests(unittest.TestCase):
                 "line1": "12 Retail Road", "line2": "", "city": "Bengaluru",
                 "state": "Karnataka", "postal_code": "560001",
             },
+            "payment_method_preference": "upi",
         }
 
         status, response = self.request_customer_json(
@@ -1778,7 +1787,8 @@ class HttpApiTests(unittest.TestCase):
         )
 
         self.assertEqual(201, status, response)
-        self.assertEqual("awaiting_payment", response["order"]["payment_status"])
+        self.assertEqual("paid", response["order"]["payment_status"])
+        self.assertTrue(self.checkout.requests[-1].allow_prescription_assistance)
         self.assertEqual([], inventory_requests)
 
     def test_store_order_queue_is_cashier_only_store_scoped_and_decisions_are_audited(self):
@@ -1805,9 +1815,10 @@ class HttpApiTests(unittest.TestCase):
                 }],
                 "total_paise": 25000,
                 "payment_method_preference": "card",
-                "payment_status": "awaiting_payment",
+                "payment_status": "paid",
                 "fulfillment_status": "not_submitted",
                 "status_message": "Order request saved.",
+                "invoice_no": "ELU/HSR/FY26/00001",
             },
             {"idempotency_key": "store-queue-order"},
         )
@@ -1852,12 +1863,13 @@ class HttpApiTests(unittest.TestCase):
         self.assertEqual("confirmed", result["order"]["store_confirmation_status"])
         self.assertEqual("S-CASHIER", result["order"]["store_decision_by"])
         self.assertNotIn("delivery_address", result["order"])
-        self.assertEqual("awaiting_payment", result["order"]["status"])
+        self.assertEqual("sold", result["order"]["status"])
+        self.assertEqual("paid", result["order"]["payment_status"])
         status, duplicate = self.request_json("POST", decision_path, b"{}", role="cashier")
         self.assertEqual(409, status)
         self.assertEqual("store_order_decision_conflict", duplicate["error"])
 
-    def test_store_order_denial_requires_reason_and_does_not_claim_a_refund(self):
+    def test_store_order_denial_requires_verified_partial_lens_refund(self):
         customer = self.application.customer_accounts.create_account(
             "7405", "+919000000005", "Denied Order Customer", "Queue-Customer-Password-2026!",
         )
@@ -1869,9 +1881,16 @@ class HttpApiTests(unittest.TestCase):
                 "store_code": "HSR",
                 "location_id": "1",
                 "customer_name": customer.display_name,
-                "items": [],
-                "total_paise": 10000,
-                "payment_status": "awaiting_payment",
+                "items": [{
+                    "title": "Prescription Lens",
+                    "quantity": 1,
+                    "prescription_assistance_requested": True,
+                    "shopify_line_item_id": "11",
+                }],
+                "total_paise": 15000,
+                "payment_status": "paid",
+                "shopify_order_id": "99",
+                "invoice_no": "ELU/HSR/FY26/00001",
                 "fulfillment_status": "not_submitted",
             },
             {"idempotency_key": "store-denial-order"},
@@ -1885,9 +1904,13 @@ class HttpApiTests(unittest.TestCase):
             role="cashier",
         )
         self.assertEqual(200, status, result)
-        self.assertEqual("cancelled", result["order"]["status"])
-        self.assertIn("No payment was captured", result["order"]["status_message"])
-        self.assertEqual([], self.refund_shopify.calls)
+        self.assertEqual("partially_refunded", result["order"]["status"])
+        self.assertEqual("paid", result["order"]["payment_status"])
+        self.assertEqual(5000, result["order"]["refund_amount_paise"])
+        self.assertTrue(result["order"]["refund_id"])
+        self.assertEqual(1, len(self.refund_terminal.calls))
+        refund_calls = [call for call in self.refund_shopify.calls if call[0] == "CREATE_REFUND"]
+        self.assertEqual(1, len(refund_calls))
 
     def test_optometrist_assistance_queue_is_store_scoped_and_role_protected(self):
         customer = self.application.customer_accounts.create_account(
@@ -1908,7 +1931,7 @@ class HttpApiTests(unittest.TestCase):
                     "prescription_assistance_requested": True,
                 }],
                 "total_paise": 25000,
-                "payment_status": "awaiting_payment",
+                "payment_status": "paid",
                 "fulfillment_status": "not_submitted",
             },
             {"idempotency_key": "optometrist-assistance-order"},

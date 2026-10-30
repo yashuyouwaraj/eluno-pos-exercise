@@ -386,7 +386,11 @@ function CustomerPortal({
         offer_ids: pricing.offers.map((offer) => offer.offer_id),
         payment_method_preference: paymentMethodPreference,
       });
-      setNotice(`Order request ${result.order.order_id} saved. Payment has not been taken; the order is awaiting store confirmation.`);
+      setNotice(result.order.payment_status === "paid"
+        ? `Demo payment completed for ${result.order.order_id}${result.order.invoice_no ? ` · invoice ${result.order.invoice_no}` : ""}. The sale is recorded and awaiting store review.`
+        : result.order.payment_status === "payment_reconciliation_required"
+          ? `Payment status for ${result.order.order_id} is uncertain. Do not retry with a new order; check My Orders for reconciliation updates.`
+          : `Payment was not completed for ${result.order.order_id}. Review My Orders for the current status.`);
       setCart([]);
       setSection("orders");
       setOrderPage(1);
@@ -531,13 +535,13 @@ function CustomerPortal({
                 : <p className="muted small">No eligible offers for this selection.</p>}
               <p className="muted small">Offers and GST are calculated by Eluno for the selected store.</p>
             </section>
-            <label className="field">Preferred payment method
+            <label className="field">Payment method
               <select value={paymentMethodPreference} onChange={(event) => setPaymentMethodPreference(event.target.value as "upi" | "card")}>
                 <option value="upi">UPI</option><option value="card">Card</option>
               </select>
             </label>
-            <button type="button" className="button primary full-width" disabled={busy || pricingLoading || !cart.length} onClick={() => void placeOrder()}>{busy ? "Saving order…" : "Place order request"}</button>
-            <p className="muted small">Your preference is saved for the store. No UPI or card payment is collected online; the request remains unpaid until a supported payment flow is available.</p>
+            <button type="button" className="button primary full-width" disabled={busy || pricingLoading || !cart.length} onClick={() => void placeOrder()}>{busy ? "Processing…" : "Checkout & pay"}</button>
+            <p className="muted small">This bundled demo uses a simulated payment terminal; it does not collect real UPI or card funds. A successful demo checkout creates a Shopify order and invoice before the sale is shown as paid.</p>
           </>}
         </aside>
       </div>}
@@ -558,13 +562,13 @@ function CustomerPortal({
             disabled={busy || pricingLoading || !pricing}
             onClick={() => void placeOrder()}
           >
-            {busy ? "Submitting…" : pricing ? `Checkout · ${money(pricing.payable_paise)}` : "Checkout"}
+            {busy ? "Processing…" : pricing ? `Checkout & pay · ${money(pricing.payable_paise)}` : "Checkout & pay"}
           </button>
         </div>
       </div>}
       {section === "orders" && <section className="panel">
         <h1>My orders</h1>
-        {!orders.length && <p className="muted">No online order requests are saved to this account yet.</p>}
+        {!orders.length && <p className="muted">No online orders are saved to this account yet.</p>}
         <div className="section-title">
           <span className="muted small">Order updates refresh automatically.</span>
           <button type="button" className="button secondary" onClick={() => void loadOrders(orderPage)}>Refresh orders</button>
@@ -572,10 +576,13 @@ function CustomerPortal({
         <div className="customer-orders-list">{orders.map((order) => <article key={order.order_id} className="customer-order-card">
           <header><div><strong>{order.order_id}</strong><span>{order.created_at} · {order.store_code}</span></div><strong>{money(order.total_paise)}</strong></header>
           <p>{order.status_message}</p>
-          <p className="small"><strong>Store:</strong> {order.store_confirmation_status === "confirmed" ? "Confirmed" : order.store_confirmation_status === "denied" ? "Declined" : "Awaiting confirmation"} · <strong>Payment:</strong> {order.store_confirmation_status === "confirmed" ? "Pending — contact the store to arrange payment; online payment is unavailable" : order.store_confirmation_status === "denied" ? "Not required — request declined" : "Pending store confirmation"}{order.payment_method_preference ? ` · Preferred ${order.payment_method_preference.toUpperCase()}` : ""} · <strong>Fulfilment:</strong> Not submitted</p>
+          <p className="small"><strong>Sale:</strong> {order.payment_status === "paid" ? "Paid (simulated demo terminal)" : order.payment_status === "payment_failed" ? "Payment failed" : order.payment_status === "payment_reconciliation_required" ? "Payment status requires reconciliation" : "Not paid"}{order.payment_method_preference ? ` · ${order.payment_method_preference.toUpperCase()}` : ""} · <strong>Store:</strong> {order.store_confirmation_status === "confirmed" ? "Confirmed" : order.store_confirmation_status === "denied" ? "Declined" : "Awaiting review"} · <strong>Fulfilment:</strong> Not submitted</p>
+          {order.invoice_no && <p className="small"><strong>Invoice:</strong> {order.invoice_no}</p>}
+          {order.refund_status && <p className="small"><strong>Refund:</strong> {order.refund_status === "COMPLETED" ? `Verified (${money(order.refund_amount_paise || 0)})` : "Pending verification"}{order.credit_note ? ` · Credit note ${order.credit_note}` : ""}</p>}
+          {order.payment_status === "paid" && <a className="button secondary" href={`/api/customer/orders/${encodeURIComponent(order.order_id)}/invoice`} target="_blank" rel="noreferrer">View invoice</a>}
           <p className="small"><strong>Delivery:</strong> {[order.delivery_address.line1, order.delivery_address.city, order.delivery_address.state, order.delivery_address.postal_code].filter(Boolean).join(", ")}</p>
           <ul>{order.items.map((item, index) => <li key={`${item.variant_id}-${index}`}>{item.title} × {item.quantity}{item.prescription_assistance_requested ? " — prescription assistance requested" : ""}</li>)}</ul>
-          {!order.tracking_available && <p className="muted small">Tracking is not available until this order is confirmed and shipped.</p>}
+          {!order.tracking_available && <p className="muted small">Fulfilment and tracking have not been submitted.</p>}
         </article>)}</div>
         <div className="inline-actions">
           <button type="button" className="button secondary" disabled={orderPage <= 1} onClick={() => setOrderPage((page) => page - 1)}>Previous</button>
@@ -1228,8 +1235,8 @@ function Workspace({
       const result = await api.decideStoreOrder(order.order_id, decision, reason || undefined);
       setNotice({
         text: decision === "confirm"
-          ? `${result.order.order_id} confirmed for store review. Payment is still pending.`
-          : `${result.order.order_id} denied. No payment was collected.`,
+          ? `${result.order.order_id} confirmed. The paid sale and invoice ${result.order.invoice_no || ""} remain recorded.`
+          : `${result.order.order_id} denied. The assisted lens refund ${result.order.refund_id || ""} is verified; remaining items stay sold.`,
         tone: "success",
       });
       setStoreOrderReasons((current) => {
@@ -2118,26 +2125,27 @@ function Workspace({
               {storeOrdersLoading ? "Refreshing…" : "Refresh"}
             </button>
           </div>
-          <p className="muted">Review customer requests assigned to your store. Confirming records the store decision only; no online payment is collected and no fulfilment is submitted.</p>
+          <p className="muted">Review paid customer checkouts assigned to your store. Payment is simulated in this demo. A denial of prescription assistance triggers a verified partial lens refund; other items remain sold.</p>
           {storeOrdersError && <p className="notice error" role="alert">{storeOrdersError}</p>}
           {storeOrdersLoading && <p role="status" className="muted">Loading store requests…</p>}
-          {!storeOrdersLoading && !storeOrdersError && !storeOrders.length && <p className="empty">There are no pending customer order requests for this store.</p>}
+          {!storeOrdersLoading && !storeOrdersError && !storeOrders.length && <p className="empty">There are no paid customer orders awaiting store review.</p>}
           <div className="store-order-list">{storeOrders.map((order) => <article className="store-order-card" key={order.order_id}>
             <header><div><h2>{order.order_id}</h2><span>{new Date(order.created_at).toLocaleString("en-IN")} · {order.store_code}</span></div><strong>{money(order.total_paise)}</strong></header>
             <p><strong>Customer:</strong> {order.customer_name || "Name unavailable"}</p>
-            <p><strong>Payment:</strong> {order.payment_status === "paid" ? "Marked paid" : "Awaiting payment"}{order.payment_method_preference ? ` · Preferred ${order.payment_method_preference.toUpperCase()} (not collected)` : ""} · <strong>Store decision:</strong> Pending</p>
+            <p><strong>Payment:</strong> {order.payment_status === "paid" ? "Paid (simulated demo terminal)" : "Awaiting payment"}{order.payment_method_preference ? ` · ${order.payment_method_preference.toUpperCase()}` : ""} · <strong>Store decision:</strong> Pending</p>
+            {order.invoice_no && <p><strong>Invoice:</strong> {order.invoice_no}</p>}
             <ul>{order.items.map((item, index) => <li key={`${order.order_id}-${index}`}>{item.title} × {item.quantity}{item.prescription_assistance_requested ? " · Optometrist assistance requested" : ""}</li>)}</ul>
             {order.status_message && <p className="muted small">{order.status_message}</p>}
             <label className="field">Reason if denying
               <input maxLength={400} value={storeOrderReasons[order.order_id] || ""} onChange={(event) => setStoreOrderReasons((current) => ({ ...current, [order.order_id]: event.target.value }))} />
             </label>
             <div className="inline-actions">
-              <button type="button" className="button primary" disabled={storeOrderBusy !== null || order.payment_status === "paid"} onClick={() => void decideStoreOrder(order, "confirm")}>
-                {storeOrderBusy === order.order_id ? "Saving…" : "Confirm store request"}
+              <button type="button" className="button primary" disabled={storeOrderBusy !== null} onClick={() => void decideStoreOrder(order, "confirm")}>
+                {storeOrderBusy === order.order_id ? "Saving…" : "Approve & mark sold"}
               </button>
-              <button type="button" className="button secondary" disabled={storeOrderBusy !== null || order.payment_status === "paid"} onClick={() => void decideStoreOrder(order, "deny")}>Deny request</button>
+              <button type="button" className="button secondary" disabled={storeOrderBusy !== null || !order.has_prescription_assistance} onClick={() => void decideStoreOrder(order, "deny")}>Deny & refund assisted lens</button>
             </div>
-            {order.payment_status === "paid" && <p className="notice warning">This request shows a captured payment; it cannot be denied until a supported refund is recorded.</p>}
+            {!order.has_prescription_assistance && <p className="muted small">No lens prescription assistance was requested; this order can be approved but not denied from this review queue.</p>}
           </article>)}</div>
         </section>}
         {(view === "customers" || view === "prescriptions") && <section className="panel focused-view" aria-labelledby="customers-title">

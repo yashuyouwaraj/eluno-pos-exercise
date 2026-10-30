@@ -303,6 +303,9 @@ def make_handler(application: PosApplication) -> Type[BaseHTTPRequestHandler]:
                 if parsed.path == "/api/customer/orders":
                     self._customer_orders()
                     return
+                if parsed.path.startswith("/api/customer/orders/") and parsed.path.endswith("/invoice"):
+                    self._customer_order_invoice(parsed.path)
+                    return
                 if parsed.path == "/api/customer/catalog":
                     self._customer_catalog()
                     return
@@ -2481,6 +2484,8 @@ def make_handler(application: PosApplication) -> Type[BaseHTTPRequestHandler]:
                 quantity = value.get("quantity")
                 assistance = value.get("needs_prescription_assistance") is True
                 prescription_id = value.get("prescription_id")
+                if assistance and prescription_id:
+                    raise ValueError("use a saved prescription or request optometrist assistance, not both")
                 if value.get("prescription_id") is not None:
                     if not isinstance(value["prescription_id"], str) or not value["prescription_id"]:
                         raise ValueError("Prescription reference is invalid.")
@@ -2494,10 +2499,8 @@ def make_handler(application: PosApplication) -> Type[BaseHTTPRequestHandler]:
                     ), None)
                     if match is None:
                         raise ValueError("Prescription is not associated with this customer account.")
-                if assistance:
-                    prescription_id = "online-assistance"
                 line_values.append(CartLine(
-                    variant_id, quantity, value.get("pair_ref"), prescription_id
+                    variant_id, quantity, value.get("pair_ref"), prescription_id, assistance
                 ))
                 raw_lines.append({
                     "variant_id": variant_id,
@@ -2507,11 +2510,14 @@ def make_handler(application: PosApplication) -> Type[BaseHTTPRequestHandler]:
                     "needs_prescription_assistance": assistance,
                 })
             cart = Cart(store_code, location_id, tuple(line_values))
-            variants = application.pricing_service.resolve(cart)
-            for line, variant in zip(line_values, variants):
+            variants = application.pricing_service.resolve(
+                cart, allow_prescription_assistance=True,
+            )
+            for line, variant, raw in zip(line_values, variants, raw_lines):
+                if line.prescription_assistance_requested and variant.line_type != "lens":
+                    raise ValueError("prescription assistance can only be requested for lens items.")
                 if variant.line_type == "lens":
-                    raw = next(item for item in raw_lines if item["variant_id"] == line.variant_id)
-                    if not raw.get("prescription_id"):
+                    if not raw.get("prescription_id") and not raw.get("needs_prescription_assistance"):
                         raise ValueError("Choose a saved prescription or request optometrist assistance for each lens.")
             return cart, variants, raw_lines
 
@@ -2570,6 +2576,7 @@ def make_handler(application: PosApplication) -> Type[BaseHTTPRequestHandler]:
                 pricing = application.pricing_service.price(
                     cart, bengaluru_today(), tags,
                     tuple(offer_ids) if offer_ids is not None else None,
+                    allow_prescription_assistance=True,
                 )
             except PermissionError as exc:
                 self._send_json(403, {"error": "store_access_denied", "message": str(exc)})
@@ -2629,8 +2636,8 @@ def make_handler(application: PosApplication) -> Type[BaseHTTPRequestHandler]:
                 body = self._read_json_object()
                 address = _validated_delivery_address(body.get("delivery_address"))
                 payment_method_preference = body.get("payment_method_preference")
-                if payment_method_preference not in (None, "upi", "card"):
-                    raise ValueError("payment_method_preference must be upi or card.")
+                if payment_method_preference not in ("upi", "card"):
+                    raise ValueError("Choose UPI or card to pay for this order.")
                 request_payload = {
                     "cart": body.get("cart"),
                     "delivery_address": address,
@@ -2662,14 +2669,12 @@ def make_handler(application: PosApplication) -> Type[BaseHTTPRequestHandler]:
                 pricing = application.pricing_service.price(
                     cart, bengaluru_today(), tags,
                     tuple(offer_ids) if offer_ids is not None else None,
+                    allow_prescription_assistance=True,
                 )
                 catalog_by_id = {variant.variant_id: variant for variant in variants}
                 items = []
-                needs_assistance = False
-                for line in pricing.lines:
+                for line, raw in zip(pricing.lines, raw_lines):
                     selected = catalog_by_id[line.cart_line.variant_id]
-                    raw = next(item for item in raw_lines if item["variant_id"] == line.cart_line.variant_id)
-                    needs_assistance = needs_assistance or raw["needs_prescription_assistance"]
                     items.append({
                         "variant_id": line.cart_line.variant_id,
                         "title": " ".join(
@@ -2686,10 +2691,90 @@ def make_handler(application: PosApplication) -> Type[BaseHTTPRequestHandler]:
                         "tax_paise": line.tax_paise,
                         "total_paise": line.payable_paise,
                     })
+                idempotency_key = application.customer_orders._validate_idempotency_key(
+                    body.get("idempotency_key")
+                )
+                checkout_request = CheckoutRequest(
+                    idempotency_key="customer:{}:{}".format(
+                        self.authenticated_customer.customer_id, idempotency_key,
+                    ),
+                    cart=cart,
+                    business_date=bengaluru_today(),
+                    payment_method=payment_method_preference,
+                    channel="online_pickup",
+                    staff_id="online_customer:" + self.authenticated_customer.shopify_customer_id,
+                    customer_id=self.authenticated_customer.shopify_customer_id,
+                    customer_phone=self.authenticated_customer.phone,
+                    selected_offer_ids=tuple(offer_ids) if offer_ids is not None else None,
+                    allow_prescription_assistance=True,
+                )
+                checkout_result = application.checkout_service.checkout(checkout_request)
+                payment_status = (
+                    "paid" if checkout_result.status == "COMPLETED"
+                    else "payment_failed" if checkout_result.status in ("PAYMENT_FAILED", "PAYMENT_DECLINED")
+                    else "payment_reconciliation_required"
+                )
+                if payment_status == "paid":
+                    if not checkout_result.order_id or not checkout_result.invoice_no:
+                        raise CheckoutDependencyError(
+                            "Payment was captured, but the Shopify order and invoice could not be verified."
+                        )
+                    shopify_order = application.shopify_adapter.get_order(int(checkout_result.order_id))
+                    if (
+                        not isinstance(shopify_order, dict)
+                        or str(shopify_order.get("id")) != str(checkout_result.order_id)
+                        or not isinstance(shopify_order.get("line_items"), list)
+                    ):
+                        raise CheckoutDependencyError(
+                            "Payment was captured, but Shopify returned an invalid order for line-item reconciliation."
+                        )
+                    remaining_shopify_lines = list(shopify_order["line_items"])
+                    for item, raw in zip(items, raw_lines):
+                        expected_properties = {
+                            "pair_ref": raw.get("pair_ref"),
+                            "prescription_assistance_requested": (
+                                "true" if raw["needs_prescription_assistance"] else None
+                            ),
+                            "rx_id": raw.get("prescription_id"),
+                        }
+                        match_index = next((
+                            index for index, shopify_line in enumerate(remaining_shopify_lines)
+                            if isinstance(shopify_line, dict)
+                            and str(shopify_line.get("variant_id")) == str(item["variant_id"])
+                            and isinstance(shopify_line.get("quantity"), int)
+                            and not isinstance(shopify_line.get("quantity"), bool)
+                            and shopify_line["quantity"] == item["quantity"]
+                            and isinstance(shopify_line.get("properties", []), list)
+                            and all(
+                                value is None
+                                or any(
+                                    isinstance(prop, dict)
+                                    and prop.get("name") == name
+                                    and str(prop.get("value")) == value
+                                    for prop in shopify_line.get("properties", [])
+                                )
+                                for name, value in expected_properties.items()
+                            )
+                        ), None)
+                        if match_index is None:
+                            raise CheckoutDependencyError(
+                                "Payment was captured, but Shopify line items did not match the customer checkout."
+                            )
+                        shopify_line = remaining_shopify_lines.pop(match_index)
+                        if shopify_line.get("id") is None:
+                            raise CheckoutDependencyError(
+                                "Payment was captured, but Shopify did not return a line-item ID."
+                            )
+                        item["shopify_line_item_id"] = str(shopify_line["id"])
+                    if remaining_shopify_lines:
+                        raise CheckoutDependencyError(
+                            "Payment was captured, but Shopify returned unexpected line items for the customer checkout."
+                        )
                 order, duplicate = application.customer_orders.create(
                     self.authenticated_customer.customer_id,
-                    body.get("idempotency_key"),
+                    idempotency_key,
                     {
+                        "status": "awaiting_store_review" if payment_status == "paid" else "payment_reconciliation_required",
                         "created_at": bengaluru_today().isoformat(),
                         "store_code": cart.store_code,
                         "location_id": cart.location_id,
@@ -2708,19 +2793,29 @@ def make_handler(application: PosApplication) -> Type[BaseHTTPRequestHandler]:
                         "sgst_paise": pricing.sgst_paise,
                         "tax_paise": pricing.tax_paise,
                         "total_paise": pricing.payable_paise,
+                        "sale_id": checkout_result.sale_id,
+                        "shopify_order_id": checkout_result.order_id,
+                        "invoice_no": checkout_result.invoice_no,
                         "payment_method_preference": payment_method_preference,
-                        "payment_status": "awaiting_payment",
+                        "payment_status": payment_status,
                         "fulfillment_status": "not_submitted",
                         "tracking_available": False,
                         "status_message": (
-                            "Awaiting store confirmation for prescription assistance."
-                            if needs_assistance else "Order request saved; payment and store confirmation are pending."
+                            (
+                                "Demo payment was captured and the sale was recorded with invoice {}. "
+                                "Awaiting store review."
+                            ).format(checkout_result.invoice_no)
+                            if payment_status == "paid"
+                            else checkout_result.message
                         ),
                     },
                     request_payload,
                 )
             except (KeyError, TypeError, ValueError, CustomerOrderConflict) as exc:
                 self._send_json(400, {"error": "customer_order_invalid", "message": str(exc)})
+                return
+            except CheckoutError as exc:
+                self._send_json(422, {"error": "customer_checkout_failed", "message": str(exc)})
                 return
             except HttpRequestError as exc:
                 self._send_json(502, {"error": "customer_order_upstream_unavailable", "message": str(exc)})
@@ -2746,6 +2841,33 @@ def make_handler(application: PosApplication) -> Type[BaseHTTPRequestHandler]:
                 self._send_json(503, {"error": "customer_order_storage_unavailable", "message": "Order history is unavailable."})
                 return
             self._send_json(200, {"orders": orders, "page": int(raw_page), "has_more": has_more})
+
+        def _customer_order_invoice(self, path: str) -> None:
+            order_id = path[len("/api/customer/orders/"):-len("/invoice")].strip("/")
+            if not order_id or "/" in order_id or application.document_service is None:
+                self._send_json(404, {"error": "document_unavailable"})
+                return
+            try:
+                order = application.customer_orders.get_for_customer(
+                    unquote(order_id), self.authenticated_customer.customer_id,
+                )
+                sale_id = order.get("sale_id")
+                if not sale_id or order.get("payment_status") != "paid":
+                    raise CustomerOrderConflict("A completed customer sale is required for this invoice.")
+                html = application.document_service.invoice_html(sale_id)
+            except CustomerOrderConflict as exc:
+                self._send_json(404, {"error": "document_unavailable", "message": str(exc)})
+                return
+            except (DocumentError, CheckoutError, OperationsError, HttpRequestError, ValueError) as exc:
+                self._send_json(404, {"error": "document_unavailable", "message": str(exc)})
+                return
+            except sqlite3.Error:
+                self._send_json(503, {
+                    "error": "customer_order_storage_unavailable",
+                    "message": "Order ownership could not be verified. Retry the invoice request.",
+                })
+                return
+            self._send_html(200, html)
 
         def _store_pending_orders(self) -> None:
             store_code = self.authenticated_user.store_code
@@ -2776,6 +2898,11 @@ def make_handler(application: PosApplication) -> Type[BaseHTTPRequestHandler]:
                 "total_paise": order["total_paise"],
                 "payment_status": order["payment_status"],
                 "payment_method_preference": order.get("payment_method_preference"),
+                "invoice_no": order.get("invoice_no"),
+                "has_prescription_assistance": any(
+                    item.get("prescription_assistance_requested") is True
+                    for item in order.get("items", [])
+                ),
                 "store_confirmation_status": order.get("store_confirmation_status", "pending"),
                 "status_message": order.get("status_message", ""),
             } for order in orders]})
@@ -2823,12 +2950,82 @@ def make_handler(application: PosApplication) -> Type[BaseHTTPRequestHandler]:
                 store_code = self.authenticated_user.store_code
                 if not store_code:
                     raise PermissionError("A store assignment is required to decide this order.")
+                reason = body.get("reason")
+                if decision == "deny" and (
+                    not isinstance(reason, str) or not reason.strip() or len(reason.strip()) > 400
+                ):
+                    raise CustomerOrderConflict(
+                        "A denial reason is required and must be at most 400 characters."
+                    )
+                refund_details = None
+                if decision == "deny":
+                    pending_order = application.customer_orders.get_for_store(suffix, store_code)
+                    if pending_order.get("payment_status") == "paid":
+                        assisted_items = [
+                            item for item in pending_order.get("items", [])
+                            if item.get("prescription_assistance_requested") is True
+                        ]
+                        if not assisted_items:
+                            raise CustomerOrderConflict(
+                                "Only lens items awaiting prescription assistance can be denied from this queue."
+                            )
+                        if not pending_order.get("shopify_order_id") or not pending_order.get("invoice_no"):
+                            raise CustomerOrderConflict(
+                                "The paid order is missing its Shopify sale or invoice reference; do not retry the refund."
+                            )
+                        refund_lines = []
+                        for item in assisted_items:
+                            line_item_id = item.get("shopify_line_item_id")
+                            quantity = item.get("quantity")
+                            if (
+                                not line_item_id
+                                or not isinstance(quantity, int)
+                                or isinstance(quantity, bool)
+                                or quantity < 1
+                            ):
+                                raise CustomerOrderConflict(
+                                    "The assisted lens could not be matched to a Shopify line item; no refund was attempted."
+                                )
+                            refund_lines.append({
+                                "line_item_id": str(line_item_id),
+                                "quantity": quantity,
+                            })
+                        refund = application.refund_service.refund(
+                            int(pending_order["shopify_order_id"]),
+                            store_code,
+                            self.authenticated_user.staff_id,
+                            reason.strip(),
+                            items=refund_lines,
+                            idempotency_key="online-order-denied-lens:" + suffix,
+                            invoice_no=pending_order["invoice_no"],
+                        )
+                        if refund.get("status") in (
+                            "PENDING", "REFUND_UNKNOWN", "REFUND_RECONCILING",
+                        ):
+                            refund = application.refund_service.recover(refund["refund_id"])
+                        if refund.get("status") != "COMPLETED":
+                            self._send_json(202, {
+                                "error": "lens_refund_pending",
+                                "message": "The lens refund is not verified yet; the order decision remains pending. Reconcile refund {} before retrying.".format(
+                                    refund.get("refund_id", "unknown")
+                                ),
+                                "refund_id": refund.get("refund_id"),
+                                "refund_status": refund.get("status"),
+                            })
+                            return
+                        refund_details = {
+                            "refund_id": refund["refund_id"],
+                            "status": refund["status"],
+                            "amount_paise": refund["amount_paise"],
+                            "credit_note": refund["credit_note"],
+                        }
                 result = application.customer_orders.decide_for_store(
                     suffix,
                     store_code,
                     self.authenticated_user.staff_id,
                     decision,
-                    body.get("reason"),
+                    reason,
+                    refund_details,
                 )
             except PermissionError as exc:
                 self._send_json(403, {"error": "store_assignment_required", "message": str(exc)})
@@ -2836,6 +3033,12 @@ def make_handler(application: PosApplication) -> Type[BaseHTTPRequestHandler]:
             except CustomerOrderConflict as exc:
                 status = 404 if "not found" in str(exc).casefold() else 409
                 self._send_json(status, {"error": "store_order_decision_conflict", "message": str(exc)})
+                return
+            except (OperationsError, HttpRequestError) as exc:
+                self._send_json(502, {
+                    "error": "store_order_refund_unavailable",
+                    "message": "The order decision was not recorded because the lens refund could not be verified. Check the refund status before retrying. {}".format(exc),
+                })
                 return
             except (TypeError, ValueError) as exc:
                 self._send_json(400, {"error": "invalid_store_order_decision", "message": str(exc)})
@@ -2853,6 +3056,13 @@ def make_handler(application: PosApplication) -> Type[BaseHTTPRequestHandler]:
                 "store_decision_by": result["store_decision_by"],
                 "store_decision_at": result["store_decision_at"],
                 "status_message": result["status_message"],
+                "payment_status": result.get("payment_status"),
+                "sale_id": result.get("sale_id"),
+                "invoice_no": result.get("invoice_no"),
+                "refund_id": result.get("refund_id"),
+                "refund_status": result.get("refund_status"),
+                "refund_amount_paise": result.get("refund_amount_paise"),
+                "credit_note": result.get("credit_note"),
             }})
 
         def _customer_register(self) -> None:

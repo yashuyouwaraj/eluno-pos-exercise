@@ -33,7 +33,14 @@ export interface DeliveryAddress {
 
 export interface CustomerOrder {
   order_id: string;
-  status: "awaiting_payment" | "cancelled";
+  status:
+    | "awaiting_store_review"
+    | "sold"
+    | "partially_refunded"
+    | "refunded"
+    | "payment_failed"
+    | "payment_reconciliation_required"
+    | "cancelled";
   store_confirmation_status?: "pending" | "confirmed" | "denied";
   created_at: string;
   store_code: string;
@@ -63,7 +70,14 @@ export interface CustomerOrder {
   sgst_paise: number;
   tax_paise: number;
   total_paise: number;
-  payment_status: "awaiting_payment";
+  sale_id?: string | null;
+  shopify_order_id?: string | null;
+  invoice_no?: string | null;
+  refund_id?: string | null;
+  refund_status?: "COMPLETED" | "PENDING" | "REFUND_UNKNOWN" | "REFUND_RECONCILING";
+  refund_amount_paise?: number;
+  credit_note?: string | null;
+  payment_status: "awaiting_payment" | "paid" | "payment_failed" | "payment_reconciliation_required";
   payment_method_preference?: "upi" | "card" | null;
   fulfillment_status: "not_submitted";
   tracking_available: false;
@@ -83,6 +97,8 @@ export interface StoreOrderQueueItem {
   total_paise: number;
   payment_status: "awaiting_payment" | "paid";
   payment_method_preference?: "upi" | "card" | null;
+  invoice_no?: string | null;
+  has_prescription_assistance: boolean;
   store_confirmation_status: "pending";
   status_message: string;
 }
@@ -90,11 +106,16 @@ export interface StoreOrderQueueItem {
 export interface StoreOrderDecision {
   order: {
     order_id: string;
-    status: "awaiting_payment" | "cancelled";
+    status: "sold" | "partially_refunded" | "refunded" | "cancelled";
     store_confirmation_status: "confirmed" | "denied";
     store_decision_by: string;
     store_decision_at: string;
     status_message: string;
+    payment_status: "paid";
+    invoice_no?: string | null;
+    refund_id?: string;
+    refund_status?: "COMPLETED";
+    refund_amount_paise?: number;
   };
 }
 

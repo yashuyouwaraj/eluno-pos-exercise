@@ -420,7 +420,32 @@ class CustomerOrderStore:
                    ORDER BY created_at, order_id""",
                 (store_code.strip(),),
             ).fetchall()
-        return [json.loads(row["order_json"]) for row in rows]
+        orders = [json.loads(row["order_json"]) for row in rows]
+        return [order for order in orders if order.get("payment_status") == "paid"]
+
+    def get_for_store(self, order_id: str, store_code: str) -> Dict[str, Any]:
+        with closing(self._connect()) as connection:
+            row = connection.execute(
+                """SELECT order_json, store_code FROM customer_online_orders
+                   WHERE order_id = ?""",
+                (order_id,),
+            ).fetchone()
+        if not row:
+            raise CustomerOrderConflict("The order was not found.")
+        if row["store_code"] != store_code:
+            raise CustomerOrderConflict("This order belongs to a different store.")
+        return json.loads(row["order_json"])
+
+    def get_for_customer(self, order_id: str, customer_id: str) -> Dict[str, Any]:
+        with closing(self._connect()) as connection:
+            row = connection.execute(
+                """SELECT order_json FROM customer_online_orders
+                   WHERE order_id = ? AND customer_id = ?""",
+                (order_id, customer_id),
+            ).fetchone()
+        if not row:
+            raise CustomerOrderConflict("The order was not found.")
+        return json.loads(row["order_json"])
 
     def prescription_assistance_for_store(self, store_code: str) -> List[Dict[str, Any]]:
         if not isinstance(store_code, str) or not store_code.strip():
@@ -447,6 +472,7 @@ class CustomerOrderStore:
         staff_id: str,
         decision: str,
         reason: Optional[str] = None,
+        refund_details: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         if decision not in ("confirm", "deny"):
             raise CustomerOrderConflict("Choose confirm or deny for the store decision.")
@@ -477,10 +503,28 @@ class CustomerOrderStore:
                 connection.execute("ROLLBACK")
                 raise CustomerOrderConflict("A store decision has already been recorded.")
             order = json.loads(row["order_json"])
-            if decision == "deny" and order.get("payment_status") == "paid":
+            if order.get("payment_status") != "paid":
                 connection.execute("ROLLBACK")
                 raise CustomerOrderConflict(
-                    "This order has a captured payment and cannot be denied until a supported refund is recorded."
+                    "Payment must be captured and verified before the store can review this order."
+                )
+            assisted_items = [
+                item for item in order.get("items", [])
+                if item.get("prescription_assistance_requested") is True
+            ]
+            if decision == "deny" and not assisted_items:
+                connection.execute("ROLLBACK")
+                raise CustomerOrderConflict(
+                    "Only lens items awaiting prescription assistance can be denied from this queue."
+                )
+            if decision == "deny" and (
+                not isinstance(refund_details, dict)
+                or refund_details.get("status") != "COMPLETED"
+                or not refund_details.get("refund_id")
+            ):
+                connection.execute("ROLLBACK")
+                raise CustomerOrderConflict(
+                    "The assisted lens refund must be verified before denying the order."
                 )
             order["store_confirmation_status"] = "confirmed" if decision == "confirm" else "denied"
             order["store_decision_by"] = staff_id.strip()
@@ -491,23 +535,33 @@ class CustomerOrderStore:
                     item.get("prescription_assistance_requested") is True
                     for item in order.get("items", [])
                 )
+                order["status"] = "sold"
                 order["status_message"] = (
-                    "Store confirmed. Prescription assistance remains requested and awaits Optometrist review."
+                    "Payment captured and sale recorded. Prescription assistance remains requested and awaits Optometrist review."
                     if assistance_requested
-                    else "Store confirmed. Payment is still pending; this order has not been fulfilled."
+                    else "Payment captured, invoice issued, and store confirmed. This order has not been fulfilled."
                 )
             else:
-                order["status"] = "cancelled"
+                order["refund_id"] = refund_details["refund_id"]
+                order["refund_status"] = refund_details["status"]
+                order["refund_amount_paise"] = int(refund_details["amount_paise"])
+                order["credit_note"] = refund_details["credit_note"]
+                order["status"] = (
+                    "refunded"
+                    if order["refund_amount_paise"] >= int(order["total_paise"])
+                    else "partially_refunded"
+                )
                 order["status_message"] = (
-                    "The store declined this unpaid order request: {}. No payment was captured."
-                    .format(reason.strip())
+                    "Store declined prescription assistance: {}. The assisted lens refund is verified; "
+                    "the remaining items stay sold under invoice {}."
+                    .format(reason.strip(), order.get("invoice_no") or "unavailable")
                 )
             connection.execute(
                 """UPDATE customer_online_orders
                    SET status = ?, confirmation_status = ?, order_json = ?
                    WHERE order_id = ? AND confirmation_status = 'pending'""",
                 (
-                    order["status"],
+                    "awaiting_payment" if order.get("payment_status") == "paid" else order["status"],
                     order["store_confirmation_status"],
                     json.dumps(order, sort_keys=True, separators=(",", ":")),
                     order_id,

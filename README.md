@@ -50,9 +50,9 @@ The first local startup creates persistent demo accounts in the POS SQLite
 
 database; no authentication environment variable is required:
 
-- ******Admin:****** username `admin`, password `ElunoAdmin\\@2026`
+- ******Admin:****** username `admin`, password `ElunoAdmin@2026`
 
-- ******Cashier:****** username `cashier`, password `ElunoCashier\\@2026`
+- ******Cashier:****** username `cashier`, password `ElunoCashier@2026`
 
 These are temporary development-only credentials. Change both passwords and
 

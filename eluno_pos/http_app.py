@@ -9,7 +9,7 @@ import re
 import sqlite3
 import ssl
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple, Type
+from typing import Any, Dict, List, Optional, Tuple, Type
 from urllib.parse import parse_qs, unquote, urlparse, urlsplit
 from uuid import uuid4
 
